@@ -30,9 +30,16 @@ const HOTEL_SCENES := {
 		"intro": "The night clerk's counter is quiet. Notes, a phone, and the old monitor are ready for clues.",
 		"exits": [
 			{"label": "Corridor", "target": "corridor"},
+			{"label": "Laundry Room", "target": "laundry_room"},
 			{"label": "Guest Room", "target": "guest_room"},
 		],
 		"hotspots": [
+			{
+				"id": "front_left_edge",
+				"label": "Laundry",
+				"rect": Rect2(0.000, 0.000, 0.075, 1.000),
+				"target": "laundry_room",
+			},
 			{
 				"id": "front_right_edge",
 				"label": "Corridor",
@@ -77,6 +84,7 @@ const HOTEL_SCENES := {
 		"intro": "The outside corridor is damp and dim. Each numbered door could hide a different lead.",
 		"exits": [
 			{"label": "Front Desk", "target": "front_desk"},
+			{"label": "Exterior Stairs", "target": "exterior_stairs"},
 			{"label": "Guest Room", "target": "guest_room"},
 		],
 		"hotspots": [
@@ -85,6 +93,12 @@ const HOTEL_SCENES := {
 				"label": "Front Desk",
 				"rect": Rect2(0.000, 0.000, 0.075, 1.000),
 				"target": "front_desk",
+			},
+			{
+				"id": "corridor_bottom_edge",
+				"label": "Stairs",
+				"rect": Rect2(0.000, 0.860, 1.000, 0.140),
+				"target": "exterior_stairs",
 			},
 			{
 				"id": "room_105",
@@ -166,6 +180,7 @@ const HOTEL_SCENES := {
 		"intro": "From this angle the bathroom, closet door, television, and bed are all within reach.",
 		"exits": [
 			{"label": "Guest Room", "target": "guest_room"},
+			{"label": "Guest Bathroom", "target": "guest_bathroom"},
 			{"label": "Corridor", "target": "corridor"},
 		],
 		"hotspots": [
@@ -185,7 +200,7 @@ const HOTEL_SCENES := {
 				"id": "bathroom_sink",
 				"label": "Bathroom",
 				"rect": Rect2(0.458, 0.260, 0.220, 0.325),
-				"text": "The bathroom light is harsh. A damp towel smell lingers near the sink.",
+				"target": "guest_bathroom",
 			},
 			{
 				"id": "closet_door",
@@ -205,9 +220,106 @@ const HOTEL_SCENES := {
 				"rect": Rect2(0.270, 0.585, 0.145, 0.170),
 				"text": "A phone sits beside the bed. The room card is missing.",
 			},
-		],
-	},
-}
+			],
+		},
+		"guest_bathroom": {
+			"title": "Guest Bathroom",
+			"photo": "res://resource/guest_bathroom.png",
+			"intro": "The bathroom is cramped and bright. The mirror, sink, tub, and door are all close together.",
+			"exits": [
+				{"label": "Bathroom View", "target": "bathroom_view"},
+				{"label": "Guest Room", "target": "guest_room"},
+			],
+			"hotspots": [
+				{
+					"id": "bathroom_door",
+					"label": "Door",
+					"rect": Rect2(0.835, 0.000, 0.165, 1.000),
+					"target": "bathroom_view",
+				},
+				{
+					"id": "bathroom_mirror",
+					"label": "Mirror",
+					"rect": Rect2(0.000, 0.000, 0.225, 0.520),
+					"text": "The mirror is worn at the edges, blurring the room behind you.",
+				},
+				{
+					"id": "bathroom_sink",
+					"label": "Sink",
+					"rect": Rect2(0.000, 0.560, 0.395, 0.280),
+					"text": "A small tube rests near the sink. The counter is stained from years of use.",
+				},
+				{
+					"id": "bathroom_tub",
+					"label": "Tub",
+					"rect": Rect2(0.455, 0.120, 0.340, 0.760),
+					"text": "The shower curtain hangs still. The tub is dry.",
+				},
+			],
+		},
+		"laundry_room": {
+			"title": "Laundry Room",
+			"photo": "res://resource/laundry_room.png",
+			"intro": "The laundry room hums under fluorescent light. Machines line the walls and the exit is behind you.",
+			"exits": [
+				{"label": "Front Desk", "target": "front_desk"},
+			],
+			"hotspots": [
+				{
+					"id": "laundry_bottom_edge",
+					"label": "Exit",
+					"rect": Rect2(0.000, 0.880, 1.000, 0.120),
+					"target": "front_desk",
+				},
+				{
+					"id": "laundry_machines",
+					"label": "Machines",
+					"rect": Rect2(0.630, 0.410, 0.340, 0.370),
+					"text": "The machines are silent, but one lid has been left open.",
+				},
+				{
+					"id": "laundry_rules",
+					"label": "Rules",
+					"rect": Rect2(0.505, 0.260, 0.100, 0.150),
+					"text": "Laundry rules are posted beside the window in small print.",
+				},
+				{
+					"id": "detergent",
+					"label": "Detergent",
+					"rect": Rect2(0.175, 0.465, 0.185, 0.130),
+					"text": "Detergent bottles sit near the sink, lined up like someone left in a hurry.",
+				},
+			],
+		},
+		"exterior_stairs": {
+			"title": "Exterior Stairs",
+			"photo": "res://resource/exterior_stairs.png",
+			"intro": "The exterior stairs cut across the motel wall. Wet asphalt spreads out below.",
+			"exits": [
+				{"label": "Corridor", "target": "corridor"},
+			],
+			"hotspots": [
+				{
+					"id": "stairs_right_edge",
+					"label": "Corridor",
+					"rect": Rect2(0.900, 0.000, 0.100, 1.000),
+					"target": "corridor",
+				},
+				{
+					"id": "metal_stairs",
+					"label": "Stairs",
+					"rect": Rect2(0.295, 0.085, 0.440, 0.815),
+					"text": "The metal stairs creak under light pressure.",
+				},
+				{
+					"id": "parking_lot_light",
+					"label": "Parking Lot",
+					"rect": Rect2(0.000, 0.300, 0.250, 0.470),
+					"text": "The parking lot is quiet except for the buzz of the lamp.",
+				},
+			],
+		},
+	}
 
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D

@@ -8,6 +8,9 @@ Godot 4 GDScript starter for a 2.5D photo-based point-and-click hotel game.
 - `resource/corridor.png`: outside corridor
 - `resource/guest_room.png`: guest room angle
 - `resource/bathroom_view.png`: guest room and bathroom angle
+- `resource/guest_bathroom.png`: guest bathroom
+- `resource/exterior_stairs.png`: exterior stairs
+- `resource/laundry_room.png`: laundry room
 
 ## Start
 
@@ -53,9 +56,15 @@ To move to another scene when clicked, use `target`:
 
 - Front Desk: click the right edge to move to the Corridor.
 - Corridor: click the left edge to return to the Front Desk.
+- Corridor: click the bottom edge to move to the Exterior Stairs.
 - Corridor: click a room door to enter the Guest Room.
+- Exterior Stairs: click the right edge to return to the Corridor.
 - Guest Room: click the door to return to the Corridor.
 - Guest Room or Bathroom View: click either edge to turn to the other room angle.
+- Bathroom View: click the bathroom doorway to enter the Guest Bathroom.
+- Guest Bathroom: click the door to return to the Bathroom View.
+- Front Desk: click the left edge to enter the Laundry Room.
+- Laundry Room: click the bottom edge to return to the Front Desk.
 
 ## Test Toggles
 
