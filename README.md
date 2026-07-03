@@ -57,6 +57,11 @@ To move to another scene when clicked, use `target`:
 - Guest Room: click the door to return to the Corridor.
 - Guest Room or Bathroom View: click either edge to turn to the other room angle.
 
+## Test Toggles
+
+- `Areas Off/On`: click areas are hidden by default for the real game view. Turn this on only when testing hotspot placement.
+- `Chat On/Off`: shows or hides the bottom chat/message panel.
+
 ## Web Build
 
 The project already uses the GL Compatibility renderer and a scalable canvas setup, which are appropriate for a web export. In Godot, use `Project > Export > Add... > Web`.

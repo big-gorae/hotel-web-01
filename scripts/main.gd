@@ -16,6 +16,10 @@ const PRESS_STYLE := {
 	"bg": Color(0.25, 0.72, 1.0, 0.22),
 	"border": Color(0.45, 0.82, 1.0, 0.95),
 }
+const HIDDEN_STYLE := {
+	"bg": Color(1.0, 1.0, 1.0, 0.0),
+	"border": Color(1.0, 1.0, 1.0, 0.0),
+}
 
 const HOTEL_SCENES := {
 	"front_desk": {
@@ -206,15 +210,18 @@ const HOTEL_SCENES := {
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
-var show_hotspots := true
+var show_hotspots := false
+var show_chat := true
 var mouse_position := Vector2.ZERO
 
 var photo: TextureRect
 var hotspot_layer: Control
 var title_label: Label
+var bottom_panel: PanelContainer
 var message_label: Label
 var nav_bar: HBoxContainer
 var hotspot_toggle: Button
+var chat_toggle: Button
 
 
 func _ready() -> void:
@@ -278,13 +285,37 @@ func _build_ui() -> void:
 	title_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
 	top_row.add_child(title_label)
 
+	var corner_panel := PanelContainer.new()
+	corner_panel.anchor_left = 1.0
+	corner_panel.anchor_right = 1.0
+	corner_panel.anchor_top = 0.0
+	corner_panel.anchor_bottom = 0.0
+	corner_panel.offset_left = -190.0
+	corner_panel.offset_top = 18.0
+	corner_panel.offset_right = -18.0
+	corner_panel.offset_bottom = 58.0
+	corner_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
+	add_child(corner_panel)
+
+	var corner_row := HBoxContainer.new()
+	corner_row.add_theme_constant_override("separation", 8)
+	corner_panel.add_child(corner_row)
+
 	hotspot_toggle = Button.new()
-	hotspot_toggle.text = "Hide Hotspots"
+	hotspot_toggle.text = "Areas Off"
+	hotspot_toggle.custom_minimum_size = Vector2(76.0, 30.0)
 	hotspot_toggle.focus_mode = Control.FOCUS_NONE
 	hotspot_toggle.pressed.connect(_toggle_hotspots)
-	top_row.add_child(hotspot_toggle)
+	corner_row.add_child(hotspot_toggle)
 
-	var bottom_panel := PanelContainer.new()
+	chat_toggle = Button.new()
+	chat_toggle.text = "Chat On"
+	chat_toggle.custom_minimum_size = Vector2(72.0, 30.0)
+	chat_toggle.focus_mode = Control.FOCUS_NONE
+	chat_toggle.pressed.connect(_toggle_chat)
+	corner_row.add_child(chat_toggle)
+
+	bottom_panel = PanelContainer.new()
 	bottom_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	bottom_panel.offset_left = 18.0
 	bottom_panel.offset_top = -150.0
@@ -321,16 +352,12 @@ func _build_hotspots(hotspots: Array) -> void:
 		button.focus_mode = Control.FOCUS_NONE
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		button.set_meta("hotspot", hotspot)
-		button.add_theme_stylebox_override("normal", _make_panel_style(IDLE_STYLE["bg"], IDLE_STYLE["border"], 5))
-		button.add_theme_stylebox_override("hover", _make_panel_style(HOVER_STYLE["bg"], HOVER_STYLE["border"], 5))
-		button.add_theme_stylebox_override("pressed", _make_panel_style(PRESS_STYLE["bg"], PRESS_STYLE["border"], 5))
-		button.add_theme_color_override("font_color", Color(1.0, 0.96, 0.78))
-		button.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.62))
 		button.add_theme_font_size_override("font_size", 15)
-		button.visible = show_hotspots
 		button.pressed.connect(_on_hotspot_pressed.bind(hotspot))
 		hotspot_layer.add_child(button)
 		hotspot_buttons.append(button)
+
+	_apply_hotspot_display()
 
 
 func _build_navigation(exits: Array) -> void:
@@ -356,10 +383,36 @@ func _on_hotspot_pressed(hotspot: Dictionary) -> void:
 
 func _toggle_hotspots() -> void:
 	show_hotspots = not show_hotspots
-	hotspot_toggle.text = "Hide Hotspots" if show_hotspots else "Show Hotspots"
+	_apply_hotspot_display()
+
+
+func _toggle_chat() -> void:
+	show_chat = not show_chat
+	bottom_panel.visible = show_chat
+	chat_toggle.text = "Chat On" if show_chat else "Chat Off"
+
+
+func _apply_hotspot_display() -> void:
+	hotspot_toggle.text = "Areas On" if show_hotspots else "Areas Off"
 
 	for button in hotspot_buttons:
-		button.visible = show_hotspots
+		var hotspot: Dictionary = button.get_meta("hotspot")
+		if show_hotspots:
+			button.text = hotspot["label"]
+			button.tooltip_text = hotspot.get("text", hotspot["label"])
+			button.add_theme_stylebox_override("normal", _make_panel_style(IDLE_STYLE["bg"], IDLE_STYLE["border"], 5))
+			button.add_theme_stylebox_override("hover", _make_panel_style(HOVER_STYLE["bg"], HOVER_STYLE["border"], 5))
+			button.add_theme_stylebox_override("pressed", _make_panel_style(PRESS_STYLE["bg"], PRESS_STYLE["border"], 5))
+			button.add_theme_color_override("font_color", Color(1.0, 0.96, 0.78))
+			button.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.62))
+		else:
+			button.text = ""
+			button.tooltip_text = ""
+			button.add_theme_stylebox_override("normal", _make_panel_style(HIDDEN_STYLE["bg"], HIDDEN_STYLE["border"], 5))
+			button.add_theme_stylebox_override("hover", _make_panel_style(HIDDEN_STYLE["bg"], HIDDEN_STYLE["border"], 5))
+			button.add_theme_stylebox_override("pressed", _make_panel_style(HIDDEN_STYLE["bg"], HIDDEN_STYLE["border"], 5))
+			button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.0))
+			button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 0.0))
 
 
 func _set_message(message: String) -> void:
