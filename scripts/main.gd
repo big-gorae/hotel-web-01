@@ -31,7 +31,8 @@ const HOTEL_SCENES := {
 		"exits": [
 			{"label": "Corridor", "target": "corridor"},
 			{"label": "Laundry Room", "target": "laundry_room"},
-			{"label": "Guest Room", "target": "guest_room"},
+			{"label": "Room 105", "target": "room_105_bed_window"},
+			{"label": "Room 106", "target": "room_106_door_window"},
 		],
 		"hotspots": [
 			{
@@ -85,7 +86,8 @@ const HOTEL_SCENES := {
 		"exits": [
 			{"label": "Front Desk", "target": "front_desk"},
 			{"label": "Exterior Stairs", "target": "exterior_stairs"},
-			{"label": "Guest Room", "target": "guest_room"},
+			{"label": "Room 105", "target": "room_105_bed_window"},
+			{"label": "Room 106", "target": "room_106_door_window"},
 		],
 		"hotspots": [
 			{
@@ -104,13 +106,13 @@ const HOTEL_SCENES := {
 				"id": "room_105",
 				"label": "Room 105",
 				"rect": Rect2(0.080, 0.135, 0.145, 0.475),
-				"target": "guest_room",
+				"target": "room_105_bed_window",
 			},
 			{
 				"id": "room_106",
 				"label": "Room 106",
 				"rect": Rect2(0.302, 0.155, 0.102, 0.395),
-				"target": "guest_room",
+				"target": "room_106_door_window",
 			},
 			{
 				"id": "walkway_lights",
@@ -124,15 +126,97 @@ const HOTEL_SCENES := {
 				"rect": Rect2(0.830, 0.290, 0.165, 0.355),
 				"text": "Wet pavement reflects the motel lights. A car engine ticks as it cools.",
 			},
-		],
-	},
-	"guest_room": {
-		"title": "Guest Room",
-		"photo": "res://resource/guest_room.png",
+			],
+		},
+		"room_105_bed_window": {
+			"title": "Room 105 - Bed And Window",
+			"photo": "res://resource/room_105_bed_window.png",
+			"intro": "Room 105 is warmer and neater than the corridor outside. The bed, window, and motel painting stand out.",
+			"exits": [
+				{"label": "Corridor", "target": "corridor"},
+				{"label": "Room 105 Nightstand", "target": "room_105_bed_nightstand"},
+			],
+			"hotspots": [
+				{
+					"id": "room_105_left_edge",
+					"label": "Turn",
+					"rect": Rect2(0.000, 0.000, 0.095, 1.000),
+					"target": "room_105_bed_nightstand",
+				},
+				{
+					"id": "room_105_right_edge",
+					"label": "Turn",
+					"rect": Rect2(0.905, 0.000, 0.095, 1.000),
+					"target": "room_105_bed_nightstand",
+				},
+				{
+					"id": "room_105_bed",
+					"label": "Bed",
+					"rect": Rect2(0.000, 0.435, 0.625, 0.460),
+					"text": "The bedspread is pulled into place, but the room still feels recently used.",
+				},
+				{
+					"id": "room_105_window",
+					"label": "Window",
+					"rect": Rect2(0.485, 0.110, 0.390, 0.405),
+					"text": "The curtains leave a narrow view of the parking lot lights.",
+				},
+				{
+					"id": "room_105_motel_painting",
+					"label": "Painting",
+					"rect": Rect2(0.035, 0.100, 0.160, 0.245),
+					"text": "The motel painting looks older than the frame holding it.",
+				},
+			],
+		},
+		"room_105_bed_nightstand": {
+			"title": "Room 105 - Bed And Nightstand",
+			"photo": "res://resource/room_105_bed_nightstand.png",
+			"intro": "This side of Room 105 shows the nightstand, phone, and a messier bed.",
+			"exits": [
+				{"label": "Corridor", "target": "corridor"},
+				{"label": "Room 105 Window", "target": "room_105_bed_window"},
+			],
+			"hotspots": [
+				{
+					"id": "room_105_door",
+					"label": "Door",
+					"rect": Rect2(0.000, 0.000, 0.090, 1.000),
+					"target": "corridor",
+				},
+				{
+					"id": "room_105_turn_right",
+					"label": "Turn",
+					"rect": Rect2(0.905, 0.000, 0.095, 1.000),
+					"target": "room_105_bed_window",
+				},
+				{
+					"id": "room_105_nightstand",
+					"label": "Nightstand",
+					"rect": Rect2(0.750, 0.610, 0.205, 0.250),
+					"text": "The room phone sits beside a loose note and a warm lamp.",
+				},
+				{
+					"id": "room_105_window_view",
+					"label": "Window",
+					"rect": Rect2(0.175, 0.115, 0.245, 0.345),
+					"text": "A parked car is visible through the window.",
+				},
+				{
+					"id": "room_105_loose_papers",
+					"label": "Papers",
+					"rect": Rect2(0.760, 0.850, 0.135, 0.085),
+					"text": "A few papers lie on the carpet near the bed.",
+				},
+			],
+		},
+		"room_106_door_window": {
+			"title": "Room 106 - Door And Window",
+			"photo": "res://resource/room_106_door_window.png",
 		"intro": "A modest room with the curtains half closed. The bed, window, and door are the main points of interest.",
 		"exits": [
 			{"label": "Corridor", "target": "corridor"},
-			{"label": "Bathroom View", "target": "bathroom_view"},
+			{"label": "Room 106 Bathroom Entry", "target": "room_106_bathroom_entry"},
 			{"label": "Front Desk", "target": "front_desk"},
 		],
 		"hotspots": [
@@ -140,13 +224,13 @@ const HOTEL_SCENES := {
 				"id": "room_left_edge",
 				"label": "Turn",
 				"rect": Rect2(0.000, 0.680, 0.105, 0.240),
-				"target": "bathroom_view",
+				"target": "room_106_bathroom_entry",
 			},
 			{
 				"id": "room_right_edge",
 				"label": "Turn",
 				"rect": Rect2(0.905, 0.000, 0.095, 1.000),
-				"target": "bathroom_view",
+				"target": "room_106_bathroom_entry",
 			},
 			{
 				"id": "room_door",
@@ -174,13 +258,13 @@ const HOTEL_SCENES := {
 			},
 		],
 	},
-	"bathroom_view": {
-		"title": "Bathroom View",
-		"photo": "res://resource/bathroom_view.png",
+	"room_106_bathroom_entry": {
+		"title": "Room 106 - Bathroom Entry",
+		"photo": "res://resource/room_106_bathroom_entry.png",
 		"intro": "From this angle the bathroom, closet door, television, and bed are all within reach.",
 		"exits": [
-			{"label": "Guest Room", "target": "guest_room"},
-			{"label": "Guest Bathroom", "target": "guest_bathroom"},
+			{"label": "Room 106", "target": "room_106_door_window"},
+			{"label": "Room 106 Bathroom", "target": "room_106_bathroom"},
 			{"label": "Corridor", "target": "corridor"},
 		],
 		"hotspots": [
@@ -188,19 +272,19 @@ const HOTEL_SCENES := {
 				"id": "bathroom_left_edge",
 				"label": "Turn",
 				"rect": Rect2(0.000, 0.000, 0.095, 1.000),
-				"target": "guest_room",
+				"target": "room_106_door_window",
 			},
 			{
 				"id": "bathroom_right_edge",
 				"label": "Turn",
 				"rect": Rect2(0.925, 0.000, 0.075, 1.000),
-				"target": "guest_room",
+				"target": "room_106_door_window",
 			},
 			{
 				"id": "bathroom_sink",
 				"label": "Bathroom",
 				"rect": Rect2(0.458, 0.260, 0.220, 0.325),
-				"target": "guest_bathroom",
+				"target": "room_106_bathroom",
 			},
 			{
 				"id": "closet_door",
@@ -222,20 +306,20 @@ const HOTEL_SCENES := {
 			},
 			],
 		},
-		"guest_bathroom": {
-			"title": "Guest Bathroom",
-			"photo": "res://resource/guest_bathroom.png",
+		"room_106_bathroom": {
+			"title": "Room 106 - Bathroom",
+			"photo": "res://resource/room_106_bathroom.png",
 			"intro": "The bathroom is cramped and bright. The mirror, sink, tub, and door are all close together.",
 			"exits": [
-				{"label": "Bathroom View", "target": "bathroom_view"},
-				{"label": "Guest Room", "target": "guest_room"},
+				{"label": "Room 106 Bathroom Entry", "target": "room_106_bathroom_entry"},
+				{"label": "Room 106", "target": "room_106_door_window"},
 			],
 			"hotspots": [
 				{
 					"id": "bathroom_door",
 					"label": "Door",
 					"rect": Rect2(0.835, 0.000, 0.165, 1.000),
-					"target": "bathroom_view",
+					"target": "room_106_bathroom_entry",
 				},
 				{
 					"id": "bathroom_mirror",

@@ -6,9 +6,11 @@ Godot 4 GDScript starter for a 2.5D photo-based point-and-click hotel game.
 
 - `resource/front_desk.png`: hotel front desk
 - `resource/corridor.png`: outside corridor
-- `resource/guest_room.png`: guest room angle
-- `resource/bathroom_view.png`: guest room and bathroom angle
-- `resource/guest_bathroom.png`: guest bathroom
+- `resource/room_105_bed_window.png`: room 105 bed and window angle
+- `resource/room_105_bed_nightstand.png`: room 105 bed and nightstand angle
+- `resource/room_106_door_window.png`: room 106 door and window angle
+- `resource/room_106_bathroom_entry.png`: room 106 bathroom entry angle
+- `resource/room_106_bathroom.png`: room 106 bathroom
 - `resource/exterior_stairs.png`: exterior stairs
 - `resource/laundry_room.png`: laundry room
 
@@ -57,12 +59,13 @@ To move to another scene when clicked, use `target`:
 - Front Desk: click the right edge to move to the Corridor.
 - Corridor: click the left edge to return to the Front Desk.
 - Corridor: click the bottom edge to move to the Exterior Stairs.
-- Corridor: click a room door to enter the Guest Room.
+- Corridor: click Room 105 or Room 106 doors to enter different rooms.
 - Exterior Stairs: click the right edge to return to the Corridor.
-- Guest Room: click the door to return to the Corridor.
-- Guest Room or Bathroom View: click either edge to turn to the other room angle.
-- Bathroom View: click the bathroom doorway to enter the Guest Bathroom.
-- Guest Bathroom: click the door to return to the Bathroom View.
+- Room 105: click room edges to switch between its two bed angles; click the visible door to return to the Corridor.
+- Room 106: click the door to return to the Corridor.
+- Room 106 or Bathroom Entry: click either edge to turn to the other room angle.
+- Room 106 Bathroom Entry: click the bathroom doorway to enter the Room 106 Bathroom.
+- Room 106 Bathroom: click the door to return to the Bathroom Entry.
 - Front Desk: click the left edge to enter the Laundry Room.
 - Laundry Room: click the bottom edge to return to the Front Desk.
 

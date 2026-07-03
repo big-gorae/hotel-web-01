@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bwhjy1j58yk35"
-path="res://.godot/imported/guest_room.png-1aedefb684eee254a1f5d6b3fa99a7ce.ctex"
+uid="uid://dmvp4g5by24w0"
+path="res://.godot/imported/room_106_bathroom.png-d18e3aa1b870757c25495b864f82feed.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resource/guest_room.png"
-dest_files=["res://.godot/imported/guest_room.png-1aedefb684eee254a1f5d6b3fa99a7ce.ctex"]
+source_file="res://resource/room_106_bathroom.png"
+dest_files=["res://.godot/imported/room_106_bathroom.png-d18e3aa1b870757c25495b864f82feed.ctex"]
 
 [params]
 
