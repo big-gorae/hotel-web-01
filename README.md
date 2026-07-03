@@ -59,8 +59,9 @@ To move to another scene when clicked, use `target`:
 
 ## Test Toggles
 
-- `Areas Off/On`: click areas are hidden by default for the real game view. Turn this on only when testing hotspot placement.
-- `Chat On/Off`: shows or hides the bottom chat/message panel.
+- `▣`: click areas are hidden by default for the real game view. Turn this on only when testing hotspot placement.
+- `💬`: shows or hides the bottom chat/message panel.
+- `🧭`: shows or hides the quick travel buttons inside the chat panel.
 
 ## Web Build
 

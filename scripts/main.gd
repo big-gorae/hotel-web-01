@@ -3,6 +3,8 @@ extends Control
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
 const PARALLAX_STRENGTH := 18.0
+const TITLE_VISIBLE_SECONDS := 2.0
+const TITLE_FADE_SECONDS := 1.0
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -212,16 +214,20 @@ var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
 var show_hotspots := false
 var show_chat := true
+var show_navigation := false
 var mouse_position := Vector2.ZERO
+var title_tween: Tween
 
 var photo: TextureRect
 var hotspot_layer: Control
+var title_panel: PanelContainer
 var title_label: Label
 var bottom_panel: PanelContainer
 var message_label: Label
 var nav_bar: HBoxContainer
 var hotspot_toggle: Button
 var chat_toggle: Button
+var navigation_toggle: Button
 
 
 func _ready() -> void:
@@ -247,6 +253,7 @@ func show_scene(scene_id: String) -> void:
 	current_texture = load(scene_data["photo"]) as Texture2D
 	photo.texture = current_texture
 	title_label.text = scene_data["title"]
+	_show_title_banner()
 	_set_message(scene_data["intro"])
 	_build_hotspots(scene_data["hotspots"])
 	_build_navigation(scene_data["exits"])
@@ -265,35 +272,26 @@ func _build_ui() -> void:
 	hotspot_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(hotspot_layer)
 
-	var top_bar := PanelContainer.new()
-	top_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	top_bar.offset_left = 18.0
-	top_bar.offset_top = 18.0
-	top_bar.offset_right = -18.0
-	top_bar.offset_bottom = 78.0
-	top_bar.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
-	add_child(top_bar)
-
-	var top_row := HBoxContainer.new()
-	top_row.add_theme_constant_override("separation", 12)
-	top_bar.add_child(top_row)
+	title_panel = PanelContainer.new()
+	title_panel.position = Vector2(18.0, 18.0)
+	title_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
+	add_child(title_panel)
 
 	title_label = Label.new()
-	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.add_theme_font_size_override("font_size", 24)
 	title_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
-	top_row.add_child(title_label)
+	title_panel.add_child(title_label)
 
 	var corner_panel := PanelContainer.new()
 	corner_panel.anchor_left = 1.0
 	corner_panel.anchor_right = 1.0
 	corner_panel.anchor_top = 0.0
 	corner_panel.anchor_bottom = 0.0
-	corner_panel.offset_left = -190.0
+	corner_panel.offset_left = -184.0
 	corner_panel.offset_top = 18.0
 	corner_panel.offset_right = -18.0
-	corner_panel.offset_bottom = 58.0
+	corner_panel.offset_bottom = 66.0
 	corner_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
 	add_child(corner_panel)
 
@@ -301,19 +299,14 @@ func _build_ui() -> void:
 	corner_row.add_theme_constant_override("separation", 8)
 	corner_panel.add_child(corner_row)
 
-	hotspot_toggle = Button.new()
-	hotspot_toggle.text = "Areas Off"
-	hotspot_toggle.custom_minimum_size = Vector2(76.0, 30.0)
-	hotspot_toggle.focus_mode = Control.FOCUS_NONE
-	hotspot_toggle.pressed.connect(_toggle_hotspots)
+	hotspot_toggle = _make_debug_button("▣", "Show click areas", _toggle_hotspots)
 	corner_row.add_child(hotspot_toggle)
 
-	chat_toggle = Button.new()
-	chat_toggle.text = "Chat On"
-	chat_toggle.custom_minimum_size = Vector2(72.0, 30.0)
-	chat_toggle.focus_mode = Control.FOCUS_NONE
-	chat_toggle.pressed.connect(_toggle_chat)
+	chat_toggle = _make_debug_button("💬", "Hide chat panel", _toggle_chat)
 	corner_row.add_child(chat_toggle)
+
+	navigation_toggle = _make_debug_button("🧭", "Show quick travel buttons", _toggle_navigation)
+	corner_row.add_child(navigation_toggle)
 
 	bottom_panel = PanelContainer.new()
 	bottom_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -338,6 +331,10 @@ func _build_ui() -> void:
 	nav_bar = HBoxContainer.new()
 	nav_bar.add_theme_constant_override("separation", 8)
 	bottom_layout.add_child(nav_bar)
+
+	_apply_chat_display()
+	_apply_navigation_display()
+	_sync_debug_toggles()
 
 
 func _build_hotspots(hotspots: Array) -> void:
@@ -372,6 +369,8 @@ func _build_navigation(exits: Array) -> void:
 		button.pressed.connect(show_scene.bind(exit_data["target"]))
 		nav_bar.add_child(button)
 
+	_apply_navigation_display()
+
 
 func _on_hotspot_pressed(hotspot: Dictionary) -> void:
 	if hotspot.has("target"):
@@ -388,12 +387,16 @@ func _toggle_hotspots() -> void:
 
 func _toggle_chat() -> void:
 	show_chat = not show_chat
-	bottom_panel.visible = show_chat
-	chat_toggle.text = "Chat On" if show_chat else "Chat Off"
+	_apply_chat_display()
+
+
+func _toggle_navigation() -> void:
+	show_navigation = not show_navigation
+	_apply_navigation_display()
 
 
 func _apply_hotspot_display() -> void:
-	hotspot_toggle.text = "Areas On" if show_hotspots else "Areas Off"
+	_sync_debug_toggles()
 
 	for button in hotspot_buttons:
 		var hotspot: Dictionary = button.get_meta("hotspot")
@@ -415,6 +418,33 @@ func _apply_hotspot_display() -> void:
 			button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 0.0))
 
 
+func _apply_chat_display() -> void:
+	bottom_panel.visible = show_chat
+	_sync_debug_toggles()
+
+
+func _apply_navigation_display() -> void:
+	nav_bar.visible = show_navigation
+	_sync_debug_toggles()
+
+
+func _sync_debug_toggles() -> void:
+	if hotspot_toggle == null:
+		return
+
+	hotspot_toggle.button_pressed = show_hotspots
+	hotspot_toggle.tooltip_text = "Hide click areas" if show_hotspots else "Show click areas"
+	_style_debug_button(hotspot_toggle, show_hotspots)
+
+	chat_toggle.button_pressed = show_chat
+	chat_toggle.tooltip_text = "Hide chat panel" if show_chat else "Show chat panel"
+	_style_debug_button(chat_toggle, show_chat)
+
+	navigation_toggle.button_pressed = show_navigation
+	navigation_toggle.tooltip_text = "Hide quick travel buttons" if show_navigation else "Show quick travel buttons"
+	_style_debug_button(navigation_toggle, show_navigation)
+
+
 func _set_message(message: String) -> void:
 	message_label.text = message
 
@@ -427,6 +457,7 @@ func _update_layout() -> void:
 	var offset := _get_parallax_offset(viewport_size)
 	photo.position = Vector2(-PARALLAX_PADDING, -PARALLAX_PADDING) + offset
 	photo.size = viewport_size + Vector2(PARALLAX_PADDING * 2.0, PARALLAX_PADDING * 2.0)
+	_position_title_panel()
 	_update_hotspot_layout()
 
 
@@ -456,6 +487,53 @@ func _get_parallax_offset(viewport_size: Vector2) -> Vector2:
 
 	var normalized_mouse := (mouse_position / viewport_size) - Vector2(0.5, 0.5)
 	return -normalized_mouse * PARALLAX_STRENGTH
+
+
+func _show_title_banner() -> void:
+	_position_title_panel()
+
+	if title_tween != null:
+		title_tween.kill()
+
+	title_panel.visible = true
+	title_panel.modulate.a = 1.0
+	title_tween = create_tween()
+	title_tween.tween_interval(TITLE_VISIBLE_SECONDS)
+	title_tween.tween_property(title_panel, "modulate:a", 0.0, TITLE_FADE_SECONDS)
+	title_tween.finished.connect(_hide_title_banner)
+
+
+func _hide_title_banner() -> void:
+	title_panel.visible = false
+	title_tween = null
+
+
+func _position_title_panel() -> void:
+	if title_panel == null:
+		return
+
+	title_panel.size = title_panel.get_combined_minimum_size()
+	title_panel.position = Vector2(18.0, 18.0)
+
+
+func _make_debug_button(icon: String, tooltip: String, callback: Callable) -> Button:
+	var button := Button.new()
+	button.text = icon
+	button.tooltip_text = tooltip
+	button.toggle_mode = true
+	button.custom_minimum_size = Vector2(40.0, 32.0)
+	button.focus_mode = Control.FOCUS_NONE
+	button.pressed.connect(callback)
+	return button
+
+
+func _style_debug_button(button: Button, enabled: bool) -> void:
+	var background := Color(0.25, 0.72, 1.0, 0.24) if enabled else Color(1.0, 1.0, 1.0, 0.05)
+	var border := Color(0.45, 0.82, 1.0, 0.85) if enabled else Color(1.0, 1.0, 1.0, 0.18)
+	button.add_theme_stylebox_override("normal", _make_panel_style(background, border, 6))
+	button.add_theme_stylebox_override("hover", _make_panel_style(Color(1.0, 0.82, 0.28, 0.20), Color(1.0, 0.82, 0.28, 0.85), 6))
+	button.add_theme_stylebox_override("pressed", _make_panel_style(Color(0.25, 0.72, 1.0, 0.30), Color(0.45, 0.82, 1.0, 0.95), 6))
+	button.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95, 0.72) if enabled else Color(0.95, 0.95, 0.95, 0.50))
 
 
 func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBoxFlat:
