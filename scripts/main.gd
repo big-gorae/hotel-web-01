@@ -74,7 +74,7 @@ const HOTEL_SCENES := {
 				"id": "front_door",
 				"label": "Exit Door",
 				"rect": Rect2(0.330, 0.020, 0.235, 0.500),
-				"target": "corridor",
+				"text": "The glass door looks out toward the corridor, but this is not the way you leave the desk.",
 			},
 		],
 	},
@@ -268,7 +268,7 @@ const HOTEL_SCENES := {
 				{
 					"id": "laundry_bottom_edge",
 					"label": "Exit",
-					"rect": Rect2(0.000, 0.880, 1.000, 0.120),
+					"rect": Rect2(0.000, 0.740, 1.000, 0.135),
 					"target": "front_desk",
 				},
 				{
