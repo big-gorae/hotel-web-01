@@ -98,9 +98,20 @@ To move to another scene when clicked, use `target`:
 ## Audio
 
 - Scene transitions play `resource/sounds/footstep.ogg`.
-- The game repeats the single footstep four times at short intervals to imply walking between spaces.
+- The game repeats the single footstep three times at short intervals to imply walking between spaces.
 - Sound source records live in `resource/sounds/licenses/`; add one record per external source.
 - Current credit text, if credits are later added: `Footstep sound effects based on "Fantozzi's Footsteps (Grass/Sand & Stone)" by Fantozzi, submitted to OpenGameArt by qubodup. Licensed under CC0 1.0 Universal.`
+
+## Inventory And Equipment
+
+- `scripts/items/inventory_model.gd` owns inventory state and the currently equipped item.
+- `scripts/items/item_definition.gd` is the item data object used by inventory UI and future pickup logic.
+- `scripts/ui/inventory_screen.gd` builds the Esc inventory panel and the `Hand` drop slot.
+- `scripts/ui/inventory_item_button.gd` provides drag data for inventory items.
+- `scripts/ui/equipment_slot.gd` accepts dragged items and equips them through the inventory model.
+- `scripts/ui/equipment_hud.gd` shows the currently equipped item in the lower-left square.
+
+Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment can be verified before pickup gameplay exists.
 
 ## Dialogue
 
@@ -129,6 +140,9 @@ HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
 ## Pause Menu
 
 - Press `Esc` to open or close the menu.
+- Opening the menu pauses gameplay with `SceneTree.paused`.
+- `scripts/systems/playback_pause_manager.gd` also pauses active audio/video players under the gameplay layer so future sounds and videos follow the same pause rule.
+- The menu moves to the left side of the overlay; the inventory and `Hand` equipment slot appear to its right.
 - `Continue` returns to the game.
 - `Brightness` adjusts the game photo brightness without changing the menu UI.
 - `Quit` exits the running Godot game.

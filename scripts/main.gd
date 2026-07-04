@@ -1,6 +1,11 @@
 extends Control
 
 const HotelLocalization = preload("res://scripts/localization.gd")
+const HotelItemDefinitionScript = preload("res://scripts/items/item_definition.gd")
+const HotelInventoryModelScript = preload("res://scripts/items/inventory_model.gd")
+const HotelInventoryScreenScript = preload("res://scripts/ui/inventory_screen.gd")
+const HotelEquipmentHudScript = preload("res://scripts/ui/equipment_hud.gd")
+const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
@@ -658,6 +663,8 @@ const HOTEL_SCENES := {
 	}
 
 var localization := HotelLocalization.new()
+var inventory_model = null
+var playback_pause_manager = null
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
@@ -676,6 +683,7 @@ var footstep_players: Array[AudioStreamPlayer] = []
 var footstep_timer: Timer
 var footstep_index := 0
 
+var gameplay_layer: Control
 var photo: TextureRect
 var brightness_overlay: ColorRect
 var hotspot_layer: Control
@@ -694,12 +702,18 @@ var navigation_toggle: Button
 var menu_overlay: ColorRect
 var brightness_slider: HSlider
 var brightness_value_label: Label
+var inventory_screen
+var equipment_hud
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	inventory_model = HotelInventoryModelScript.new()
+	playback_pause_manager = HotelPlaybackPauseManagerScript.new()
 	debug_ui_enabled = _is_debug_ui_enabled()
 	get_tree().root.size_changed.connect(_update_layout)
+	_seed_inventory()
 	_build_ui()
 	_build_audio()
 	show_scene(START_SCENE_ID, false)
@@ -716,7 +730,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 
-	if event is InputEventMouseMotion:
+	if event is InputEventMouseMotion and not _is_menu_open():
 		mouse_position = event.position
 		_update_layout()
 
@@ -743,27 +757,33 @@ func show_scene(scene_id: String, play_transition_sound := true) -> void:
 
 
 func _build_ui() -> void:
+	gameplay_layer = Control.new()
+	gameplay_layer.process_mode = Node.PROCESS_MODE_PAUSABLE
+	gameplay_layer.mouse_filter = Control.MOUSE_FILTER_PASS
+	gameplay_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(gameplay_layer)
+
 	photo = TextureRect.new()
 	photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	photo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(photo)
+	gameplay_layer.add_child(photo)
 
 	brightness_overlay = ColorRect.new()
 	brightness_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	brightness_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(brightness_overlay)
+	gameplay_layer.add_child(brightness_overlay)
 	_apply_brightness()
 
 	hotspot_layer = Control.new()
 	hotspot_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hotspot_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(hotspot_layer)
+	gameplay_layer.add_child(hotspot_layer)
 
 	title_panel = PanelContainer.new()
 	title_panel.position = Vector2(18.0, 18.0)
 	title_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
-	add_child(title_panel)
+	gameplay_layer.add_child(title_panel)
 
 	title_label = Label.new()
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -782,7 +802,7 @@ func _build_ui() -> void:
 	debug_panel.offset_bottom = 66.0
 	debug_panel.visible = debug_ui_enabled
 	debug_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
-	add_child(debug_panel)
+	gameplay_layer.add_child(debug_panel)
 
 	var corner_row := HBoxContainer.new()
 	corner_row.add_theme_constant_override("separation", 8)
@@ -801,7 +821,7 @@ func _build_ui() -> void:
 	persistent_dialogue_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	persistent_dialogue_panel.gui_input.connect(_on_persistent_dialogue_input)
 	persistent_dialogue_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
-	add_child(persistent_dialogue_panel)
+	gameplay_layer.add_child(persistent_dialogue_panel)
 
 	var bottom_layout := VBoxContainer.new()
 	bottom_layout.add_theme_constant_override("separation", 10)
@@ -818,7 +838,7 @@ func _build_ui() -> void:
 	transient_dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	transient_dialogue_panel.visible = false
 	transient_dialogue_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.0), 8))
-	add_child(transient_dialogue_panel)
+	gameplay_layer.add_child(transient_dialogue_panel)
 
 	transient_dialogue_label = Label.new()
 	transient_dialogue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -830,17 +850,45 @@ func _build_ui() -> void:
 
 	navigation_panel = PanelContainer.new()
 	navigation_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
-	add_child(navigation_panel)
+	gameplay_layer.add_child(navigation_panel)
 
 	nav_bar = HBoxContainer.new()
 	nav_bar.add_theme_constant_override("separation", 8)
 	navigation_panel.add_child(nav_bar)
+
+	equipment_hud = HotelEquipmentHudScript.new()
+	equipment_hud.anchor_left = 0.0
+	equipment_hud.anchor_right = 0.0
+	equipment_hud.anchor_top = 1.0
+	equipment_hud.anchor_bottom = 1.0
+	equipment_hud.offset_left = 18.0
+	equipment_hud.offset_top = -106.0
+	equipment_hud.offset_right = 112.0
+	equipment_hud.offset_bottom = -18.0
+	gameplay_layer.add_child(equipment_hud)
+	equipment_hud.bind_inventory(inventory_model)
 
 	_position_bottom_panels()
 	_apply_persistent_dialogue_display()
 	_apply_navigation_display()
 	_sync_debug_toggles()
 	_build_menu()
+
+
+func _seed_inventory() -> void:
+	inventory_model.add_item(_make_inventory_item("room_105_key", "Room 105 Key", "A worn brass key from the front desk drawer.", "🔑"))
+	inventory_model.add_item(_make_inventory_item("small_flashlight", "Flashlight", "A compact flashlight. Useful when the power fails.", "🔦"))
+	inventory_model.add_item(_make_inventory_item("guest_note", "Guest Note", "A folded note with a room number written in pencil.", "📝"))
+
+
+func _make_inventory_item(item_id: String, item_name: String, item_description: String, item_icon_text: String, item_can_equip := true):
+	var item = HotelItemDefinitionScript.new()
+	item.id = item_id
+	item.display_name = item_name
+	item.description = item_description
+	item.icon_text = item_icon_text
+	item.can_equip = item_can_equip
+	return item
 
 
 func _build_audio() -> void:
@@ -851,20 +899,23 @@ func _build_audio() -> void:
 
 	for index in range(FOOTSTEP_COUNT):
 		var player := AudioStreamPlayer.new()
+		player.process_mode = Node.PROCESS_MODE_PAUSABLE
 		player.stream = footstep_stream
 		player.volume_db = FOOTSTEP_VOLUME_DB
-		add_child(player)
+		gameplay_layer.add_child(player)
 		footstep_players.append(player)
 
 	footstep_timer = Timer.new()
+	footstep_timer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	footstep_timer.one_shot = false
 	footstep_timer.wait_time = FOOTSTEP_INTERVAL_SECONDS
 	footstep_timer.timeout.connect(_on_footstep_timer_timeout)
-	add_child(footstep_timer)
+	gameplay_layer.add_child(footstep_timer)
 
 
 func _build_menu() -> void:
 	menu_overlay = ColorRect.new()
+	menu_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	menu_overlay.color = Color(0.0, 0.0, 0.0, 0.58)
 	menu_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	menu_overlay.visible = false
@@ -872,15 +923,23 @@ func _build_menu() -> void:
 	add_child(menu_overlay)
 
 	var center := CenterContainer.new()
+	center.process_mode = Node.PROCESS_MODE_ALWAYS
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	menu_overlay.add_child(center)
 
+	var shell := HBoxContainer.new()
+	shell.process_mode = Node.PROCESS_MODE_ALWAYS
+	shell.add_theme_constant_override("separation", 24)
+	center.add_child(shell)
+
 	var menu_panel := PanelContainer.new()
+	menu_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	menu_panel.custom_minimum_size = Vector2(360.0, 0.0)
 	menu_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.94), Color(1.0, 1.0, 1.0, 0.16), 12))
-	center.add_child(menu_panel)
+	shell.add_child(menu_panel)
 
 	var layout := VBoxContainer.new()
+	layout.process_mode = Node.PROCESS_MODE_ALWAYS
 	layout.add_theme_constant_override("separation", 14)
 	menu_panel.add_child(layout)
 
@@ -928,6 +987,12 @@ func _build_menu() -> void:
 	quit_button.focus_mode = Control.FOCUS_NONE
 	quit_button.pressed.connect(_quit_game)
 	layout.add_child(quit_button)
+
+	inventory_screen = HotelInventoryScreenScript.new()
+	inventory_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	inventory_screen.custom_minimum_size = Vector2(570.0, 420.0)
+	inventory_screen.setup(inventory_model)
+	shell.add_child(inventory_screen)
 
 	_update_brightness_label()
 
@@ -1051,7 +1116,18 @@ func _toggle_menu() -> void:
 	if menu_overlay == null:
 		return
 
-	menu_overlay.visible = not menu_overlay.visible
+	if menu_overlay.visible:
+		_hide_menu()
+	else:
+		_show_menu()
+
+
+func _show_menu() -> void:
+	if menu_overlay == null:
+		return
+
+	menu_overlay.visible = true
+	_set_game_paused(true)
 
 
 func _hide_menu() -> void:
@@ -1059,6 +1135,18 @@ func _hide_menu() -> void:
 		return
 
 	menu_overlay.visible = false
+	_set_game_paused(false)
+
+
+func _is_menu_open() -> bool:
+	return menu_overlay != null and menu_overlay.visible
+
+
+func _set_game_paused(paused: bool) -> void:
+	if paused:
+		playback_pause_manager.pause_tree(get_tree(), gameplay_layer)
+	else:
+		playback_pause_manager.resume_tree(get_tree())
 
 
 func _quit_game() -> void:
