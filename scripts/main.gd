@@ -1,5 +1,7 @@
 extends Control
 
+const HotelLocalization = preload("res://scripts/localization.gd")
+
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
 const PARALLAX_STRENGTH := 18.0
@@ -141,12 +143,6 @@ const HOTEL_SCENES := {
 				"rect": Rect2(0.245, 0.155, 0.085, 0.170),
 				"text": "The corridor lamps flicker at uneven intervals.",
 			},
-			{
-				"id": "parking_lot",
-				"label": "Parking Lot",
-				"rect": Rect2(0.830, 0.290, 0.165, 0.355),
-				"text": "Wet pavement reflects the motel lights. A car engine ticks as it cools.",
-			},
 			],
 		},
 		"room_106_bed_bathroom_entry": {
@@ -174,7 +170,7 @@ const HOTEL_SCENES := {
 					"id": "room_106_window",
 					"label": "Window",
 					"rect": Rect2(0.425, 0.170, 0.205, 0.310),
-					"text": "The curtains leave a narrow view of the parking lot lights.",
+					"text": "The curtains leave a narrow view of the outside lights.",
 				},
 				{
 					"id": "room_106_bathroom_entry",
@@ -400,7 +396,7 @@ const HOTEL_SCENES := {
 				"id": "window",
 				"label": "Window",
 				"rect": Rect2(0.222, 0.147, 0.205, 0.350),
-				"text": "The window faces the parking lot. The glass is cold to the touch.",
+				"text": "The window faces the motel exterior. The glass is cold to the touch.",
 			},
 			{
 				"id": "bed",
@@ -655,26 +651,22 @@ const HOTEL_SCENES := {
 					"rect": Rect2(0.295, 0.085, 0.440, 0.815),
 					"text": "The metal stairs creak under light pressure.",
 				},
-				{
-					"id": "parking_lot_light",
-					"label": "Parking Lot",
-					"rect": Rect2(0.000, 0.300, 0.250, 0.470),
-					"text": "The parking lot is quiet except for the buzz of the lamp.",
-				},
 			],
 		},
 	}
 
+var localization := HotelLocalization.new()
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
 var debug_ui_enabled := false
 var show_hotspots := false
-var show_chat := false
+var show_persistent_dialogue := false
 var show_navigation := false
 var game_brightness := DEFAULT_BRIGHTNESS
 var mouse_position := Vector2.ZERO
 var title_tween: Tween
+var transient_dialogue_tween: Tween
 
 var photo: TextureRect
 var brightness_overlay: ColorRect
@@ -682,8 +674,10 @@ var hotspot_layer: Control
 var title_panel: PanelContainer
 var title_label: Label
 var debug_panel: PanelContainer
-var bottom_panel: PanelContainer
-var message_label: Label
+var persistent_dialogue_panel: PanelContainer
+var persistent_dialogue_label: Label
+var transient_dialogue_panel: PanelContainer
+var transient_dialogue_label: Label
 var navigation_panel: PanelContainer
 var nav_bar: HBoxContainer
 var hotspot_toggle: Button
@@ -727,9 +721,9 @@ func show_scene(scene_id: String) -> void:
 	var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
 	current_texture = load(scene_data["photo"]) as Texture2D
 	photo.texture = current_texture
-	title_label.text = scene_data["title"]
+	title_label.text = _scene_text(scene_id, scene_data, "title")
 	_show_title_banner()
-	_set_message(scene_data["intro"])
+	_show_persistent_dialogue(_scene_text(scene_id, scene_data, "intro"))
 	_build_hotspots(scene_data["hotspots"])
 	_build_navigation(scene_data["exits"])
 	_update_layout()
@@ -781,29 +775,45 @@ func _build_ui() -> void:
 	corner_row.add_theme_constant_override("separation", 8)
 	debug_panel.add_child(corner_row)
 
-	hotspot_toggle = _make_debug_button("▣", "Show click areas", _toggle_hotspots)
+	hotspot_toggle = _make_debug_button("▣", _ui_text("debug.hotspots.show", "Show click areas"), _toggle_hotspots)
 	corner_row.add_child(hotspot_toggle)
 
-	chat_toggle = _make_debug_button("💬", "Hide chat panel", _toggle_chat)
+	chat_toggle = _make_debug_button("💬", _ui_text("debug.dialogue.hide", "Hide dialogue panel"), _toggle_chat)
 	corner_row.add_child(chat_toggle)
 
-	navigation_toggle = _make_debug_button("🧭", "Show quick travel buttons", _toggle_navigation)
+	navigation_toggle = _make_debug_button("🧭", _ui_text("debug.navigation.show", "Show quick travel buttons"), _toggle_navigation)
 	corner_row.add_child(navigation_toggle)
 
-	bottom_panel = PanelContainer.new()
-	bottom_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
-	add_child(bottom_panel)
+	persistent_dialogue_panel = PanelContainer.new()
+	persistent_dialogue_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	persistent_dialogue_panel.gui_input.connect(_on_persistent_dialogue_input)
+	persistent_dialogue_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
+	add_child(persistent_dialogue_panel)
 
 	var bottom_layout := VBoxContainer.new()
 	bottom_layout.add_theme_constant_override("separation", 10)
-	bottom_panel.add_child(bottom_layout)
+	persistent_dialogue_panel.add_child(bottom_layout)
 
-	message_label = Label.new()
-	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	message_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	message_label.add_theme_font_size_override("font_size", 18)
-	message_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
-	bottom_layout.add_child(message_label)
+	persistent_dialogue_label = Label.new()
+	persistent_dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	persistent_dialogue_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	persistent_dialogue_label.add_theme_font_size_override("font_size", 18)
+	persistent_dialogue_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
+	bottom_layout.add_child(persistent_dialogue_label)
+
+	transient_dialogue_panel = PanelContainer.new()
+	transient_dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	transient_dialogue_panel.visible = false
+	transient_dialogue_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.0), 8))
+	add_child(transient_dialogue_panel)
+
+	transient_dialogue_label = Label.new()
+	transient_dialogue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	transient_dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	transient_dialogue_label.max_lines_visible = 2
+	transient_dialogue_label.add_theme_font_size_override("font_size", 18)
+	transient_dialogue_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
+	transient_dialogue_panel.add_child(transient_dialogue_label)
 
 	navigation_panel = PanelContainer.new()
 	navigation_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
@@ -814,7 +824,7 @@ func _build_ui() -> void:
 	navigation_panel.add_child(nav_bar)
 
 	_position_bottom_panels()
-	_apply_chat_display()
+	_apply_persistent_dialogue_display()
 	_apply_navigation_display()
 	_sync_debug_toggles()
 	_build_menu()
@@ -842,20 +852,20 @@ func _build_menu() -> void:
 	menu_panel.add_child(layout)
 
 	var title := Label.new()
-	title.text = "Menu"
+	title.text = _ui_text("menu.title", "Menu")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 28)
 	title.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
 	layout.add_child(title)
 
 	var continue_button := Button.new()
-	continue_button.text = "Continue"
+	continue_button.text = _ui_text("menu.continue", "Continue")
 	continue_button.focus_mode = Control.FOCUS_NONE
 	continue_button.pressed.connect(_hide_menu)
 	layout.add_child(continue_button)
 
 	var brightness_label := Label.new()
-	brightness_label.text = "Brightness"
+	brightness_label.text = _ui_text("menu.brightness", "Brightness")
 	brightness_label.add_theme_font_size_override("font_size", 16)
 	brightness_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
 	layout.add_child(brightness_label)
@@ -881,7 +891,7 @@ func _build_menu() -> void:
 	brightness_row.add_child(brightness_value_label)
 
 	var quit_button := Button.new()
-	quit_button.text = "Quit"
+	quit_button.text = _ui_text("menu.quit", "Quit")
 	quit_button.focus_mode = Control.FOCUS_NONE
 	quit_button.pressed.connect(_quit_game)
 	layout.add_child(quit_button)
@@ -895,9 +905,10 @@ func _build_hotspots(hotspots: Array) -> void:
 	hotspot_buttons.clear()
 
 	for hotspot in hotspots:
+		var label := _hotspot_text(hotspot, "label")
 		var button := Button.new()
-		button.text = hotspot["label"]
-		button.tooltip_text = hotspot.get("text", hotspot["label"])
+		button.text = label
+		button.tooltip_text = _hotspot_tooltip(hotspot, label)
 		button.focus_mode = Control.FOCUS_NONE
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		button.set_meta("hotspot", hotspot)
@@ -915,7 +926,7 @@ func _build_navigation(exits: Array) -> void:
 
 	for exit_data in exits:
 		var button := Button.new()
-		button.text = exit_data["label"]
+		button.text = _exit_label(exit_data)
 		button.focus_mode = Control.FOCUS_NONE
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		button.pressed.connect(show_scene.bind(exit_data["target"]))
@@ -929,7 +940,8 @@ func _on_hotspot_pressed(hotspot: Dictionary) -> void:
 		show_scene(hotspot["target"])
 		return
 
-	_set_message(hotspot.get("text", hotspot["label"]))
+	var label := _hotspot_text(hotspot, "label")
+	_show_transient_dialogue(_hotspot_tooltip(hotspot, label))
 
 
 func _toggle_hotspots() -> void:
@@ -938,8 +950,8 @@ func _toggle_hotspots() -> void:
 
 
 func _toggle_chat() -> void:
-	show_chat = not show_chat
-	_apply_chat_display()
+	show_persistent_dialogue = not show_persistent_dialogue
+	_apply_persistent_dialogue_display()
 
 
 func _toggle_navigation() -> void:
@@ -993,14 +1005,81 @@ func _update_brightness_label() -> void:
 	brightness_value_label.text = "%d%%" % roundi(game_brightness * 100.0)
 
 
+func _on_persistent_dialogue_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_hide_persistent_dialogue()
+
+
+func _show_transient_dialogue(message: String) -> void:
+	if transient_dialogue_panel == null:
+		return
+
+	transient_dialogue_label.text = message
+	_position_transient_dialogue()
+	transient_dialogue_panel.visible = true
+	transient_dialogue_panel.modulate.a = 1.0
+
+	if transient_dialogue_tween != null:
+		transient_dialogue_tween.kill()
+
+	transient_dialogue_tween = create_tween()
+	transient_dialogue_tween.tween_interval(2.0)
+	transient_dialogue_tween.tween_property(transient_dialogue_panel, "modulate:a", 0.0, 0.6)
+	transient_dialogue_tween.finished.connect(_hide_transient_dialogue)
+
+
+func _hide_transient_dialogue() -> void:
+	if transient_dialogue_panel != null:
+		transient_dialogue_panel.visible = false
+
+	transient_dialogue_tween = null
+
+
+func _position_transient_dialogue() -> void:
+	if transient_dialogue_panel == null or transient_dialogue_label == null:
+		return
+
+	var viewport_size := get_viewport_rect().size
+	var max_width := minf(720.0, viewport_size.x - 48.0)
+	var estimated_width := clampf(transient_dialogue_label.text.length() * 10.0 + 48.0, 220.0, max_width)
+	transient_dialogue_label.custom_minimum_size = Vector2(estimated_width, 0.0)
+	transient_dialogue_panel.size = transient_dialogue_panel.get_combined_minimum_size()
+	transient_dialogue_panel.position = Vector2((viewport_size.x - transient_dialogue_panel.size.x) * 0.5, viewport_size.y - 230.0)
+
+
+func _scene_text(scene_id: String, scene_data: Dictionary, field: String) -> String:
+	return localization.translate("scene.%s.%s" % [scene_id, field], scene_data.get(field, ""))
+
+
+func _hotspot_text(hotspot: Dictionary, field: String) -> String:
+	var hotspot_id: String = hotspot.get("id", "unknown")
+	return localization.translate("hotspot.%s.%s.%s" % [current_scene_id, hotspot_id, field], hotspot.get(field, ""))
+
+
+func _hotspot_tooltip(hotspot: Dictionary, fallback: String) -> String:
+	if hotspot.has("text"):
+		return _hotspot_text(hotspot, "text")
+
+	return fallback
+
+
+func _exit_label(exit_data: Dictionary) -> String:
+	return localization.translate("exit.%s.%s.label" % [current_scene_id, exit_data["target"]], exit_data["label"])
+
+
+func _ui_text(key: String, fallback: String) -> String:
+	return localization.translate("ui.%s" % key, fallback)
+
+
 func _apply_hotspot_display() -> void:
 	_sync_debug_toggles()
 
 	for button in hotspot_buttons:
 		var hotspot: Dictionary = button.get_meta("hotspot")
+		var label := _hotspot_text(hotspot, "label")
 		if show_hotspots:
-			button.text = hotspot["label"]
-			button.tooltip_text = hotspot.get("text", hotspot["label"])
+			button.text = label
+			button.tooltip_text = _hotspot_tooltip(hotspot, label)
 			button.add_theme_stylebox_override("normal", _make_panel_style(IDLE_STYLE["bg"], IDLE_STYLE["border"], 5))
 			button.add_theme_stylebox_override("hover", _make_panel_style(HOVER_STYLE["bg"], HOVER_STYLE["border"], 5))
 			button.add_theme_stylebox_override("pressed", _make_panel_style(PRESS_STYLE["bg"], PRESS_STYLE["border"], 5))
@@ -1016,8 +1095,8 @@ func _apply_hotspot_display() -> void:
 			button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 0.0))
 
 
-func _apply_chat_display() -> void:
-	bottom_panel.visible = show_chat
+func _apply_persistent_dialogue_display() -> void:
+	persistent_dialogue_panel.visible = show_persistent_dialogue
 	_position_bottom_panels()
 	_sync_debug_toggles()
 
@@ -1036,31 +1115,31 @@ func _sync_debug_toggles() -> void:
 		return
 
 	hotspot_toggle.button_pressed = show_hotspots
-	hotspot_toggle.tooltip_text = "Hide click areas" if show_hotspots else "Show click areas"
+	hotspot_toggle.tooltip_text = _ui_text("debug.hotspots.hide", "Hide click areas") if show_hotspots else _ui_text("debug.hotspots.show", "Show click areas")
 	_style_debug_button(hotspot_toggle, show_hotspots)
 
-	chat_toggle.button_pressed = show_chat
-	chat_toggle.tooltip_text = "Hide chat panel" if show_chat else "Show chat panel"
-	_style_debug_button(chat_toggle, show_chat)
+	chat_toggle.button_pressed = show_persistent_dialogue
+	chat_toggle.tooltip_text = _ui_text("debug.dialogue.hide", "Hide dialogue panel") if show_persistent_dialogue else _ui_text("debug.dialogue.show", "Show dialogue panel")
+	_style_debug_button(chat_toggle, show_persistent_dialogue)
 
 	navigation_toggle.button_pressed = show_navigation
-	navigation_toggle.tooltip_text = "Hide quick travel buttons" if show_navigation else "Show quick travel buttons"
+	navigation_toggle.tooltip_text = _ui_text("debug.navigation.hide", "Hide quick travel buttons") if show_navigation else _ui_text("debug.navigation.show", "Show quick travel buttons")
 	_style_debug_button(navigation_toggle, show_navigation)
 
 
 func _position_bottom_panels() -> void:
-	if bottom_panel != null:
-		bottom_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-		bottom_panel.offset_left = 18.0
-		bottom_panel.offset_top = -150.0
-		bottom_panel.offset_right = -18.0
-		bottom_panel.offset_bottom = -18.0
+	if persistent_dialogue_panel != null:
+		persistent_dialogue_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		persistent_dialogue_panel.offset_left = 18.0
+		persistent_dialogue_panel.offset_top = -150.0
+		persistent_dialogue_panel.offset_right = -18.0
+		persistent_dialogue_panel.offset_bottom = -18.0
 
 	if navigation_panel != null:
 		navigation_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 		navigation_panel.offset_left = 18.0
 		navigation_panel.offset_right = -18.0
-		if show_chat:
+		if show_persistent_dialogue:
 			navigation_panel.offset_top = -210.0
 			navigation_panel.offset_bottom = -162.0
 		else:
@@ -1068,8 +1147,15 @@ func _position_bottom_panels() -> void:
 			navigation_panel.offset_bottom = -18.0
 
 
-func _set_message(message: String) -> void:
-	message_label.text = message
+func _show_persistent_dialogue(message: String) -> void:
+	persistent_dialogue_label.text = message
+	show_persistent_dialogue = true
+	_apply_persistent_dialogue_display()
+
+
+func _hide_persistent_dialogue() -> void:
+	show_persistent_dialogue = false
+	_apply_persistent_dialogue_display()
 
 
 func _update_layout() -> void:
@@ -1081,6 +1167,7 @@ func _update_layout() -> void:
 	photo.position = Vector2(-PARALLAX_PADDING, -PARALLAX_PADDING) + offset
 	photo.size = viewport_size + Vector2(PARALLAX_PADDING * 2.0, PARALLAX_PADDING * 2.0)
 	_position_title_panel()
+	_position_transient_dialogue()
 	_update_hotspot_layout()
 
 

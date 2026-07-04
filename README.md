@@ -83,6 +83,18 @@ To move to another scene when clicked, use `target`:
 - Front Desk: click the left edge to enter the Laundry Room.
 - Laundry Room: click the bottom edge to return to the Front Desk.
 
+## Dialogue
+
+- `persistent_dialogue`: scene-level dialogue shown near the bottom. Click it to dismiss it.
+- `transient_dialogue`: short hotspot feedback shown above `persistent_dialogue`. It is borderless, centered, capped to two lines, and fades out automatically.
+
+## Localization
+
+- `scripts/localization.gd` owns language state and translation lookup.
+- English is the default and current language.
+- Supported language slots are English, Korean, Japanese, Russian, and Chinese.
+- Scene, hotspot, exit, and UI text are routed through localization keys with the current English text as fallback.
+
 ## Debug Toggles
 
 The three debug toggles are visible when running from the Godot editor, or when Godot is launched with `HOTEL_DEBUG_UI=1`.
