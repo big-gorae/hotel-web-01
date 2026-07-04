@@ -12,6 +12,8 @@ const DEBUG_UI_ENABLED_VALUES := ["1", "true", "yes", "on"]
 const DEFAULT_BRIGHTNESS := 1.0
 const MIN_BRIGHTNESS := 0.55
 const MAX_BRIGHTNESS := 1.45
+const LAUNDRY_OPEN_PHOTO := "res://resource/laundry_room.png"
+const LAUNDRY_CLOSED_PHOTO := "res://resource/laundry_room_washer_closed.png"
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -612,10 +614,10 @@ const HOTEL_SCENES := {
 					"target": "front_desk",
 				},
 				{
-					"id": "laundry_machines",
-					"label": "Machines",
-					"rect": Rect2(0.630, 0.410, 0.340, 0.370),
-					"text": "The machines are silent, but one lid has been left open.",
+					"id": "laundry_second_washer",
+					"label": "Washer",
+					"rect": Rect2(0.585, 0.440, 0.130, 0.335),
+					"action": "toggle_laundry_washer",
 				},
 				{
 					"id": "laundry_rules",
@@ -663,6 +665,7 @@ var debug_ui_enabled := false
 var show_hotspots := false
 var show_persistent_dialogue := false
 var show_navigation := false
+var laundry_second_washer_open := true
 var game_brightness := DEFAULT_BRIGHTNESS
 var mouse_position := Vector2.ZERO
 var title_tween: Tween
@@ -719,7 +722,7 @@ func show_scene(scene_id: String) -> void:
 
 	current_scene_id = scene_id
 	var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
-	current_texture = load(scene_data["photo"]) as Texture2D
+	current_texture = load(_scene_photo(scene_id, scene_data)) as Texture2D
 	photo.texture = current_texture
 	title_label.text = _scene_text(scene_id, scene_data, "title")
 	_show_title_banner()
@@ -936,12 +939,37 @@ func _build_navigation(exits: Array) -> void:
 
 
 func _on_hotspot_pressed(hotspot: Dictionary) -> void:
+	if hotspot.has("action"):
+		_run_hotspot_action(hotspot["action"])
+		return
+
 	if hotspot.has("target"):
 		show_scene(hotspot["target"])
 		return
 
 	var label := _hotspot_text(hotspot, "label")
 	_show_transient_dialogue(_hotspot_tooltip(hotspot, label))
+
+
+func _run_hotspot_action(action: String) -> void:
+	match action:
+		"toggle_laundry_washer":
+			_toggle_laundry_washer()
+		_:
+			push_warning("Unknown hotspot action: %s" % action)
+
+
+func _toggle_laundry_washer() -> void:
+	laundry_second_washer_open = not laundry_second_washer_open
+	if current_scene_id == "laundry_room":
+		var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
+		current_texture = load(_scene_photo(current_scene_id, scene_data)) as Texture2D
+		photo.texture = current_texture
+		_update_layout()
+
+	var state_key := "opened" if laundry_second_washer_open else "closed"
+	var message := "The second washer door is open." if laundry_second_washer_open else "The second washer door is closed."
+	_show_transient_dialogue(localization.translate("hotspot.laundry_room.laundry_second_washer.%s" % state_key, message))
 
 
 func _toggle_hotspots() -> void:
@@ -1049,6 +1077,13 @@ func _position_transient_dialogue() -> void:
 
 func _scene_text(scene_id: String, scene_data: Dictionary, field: String) -> String:
 	return localization.translate("scene.%s.%s" % [scene_id, field], scene_data.get(field, ""))
+
+
+func _scene_photo(scene_id: String, scene_data: Dictionary) -> String:
+	if scene_id == "laundry_room" and not laundry_second_washer_open:
+		return LAUNDRY_CLOSED_PHOTO
+
+	return scene_data["photo"]
 
 
 func _hotspot_text(hotspot: Dictionary, field: String) -> String:

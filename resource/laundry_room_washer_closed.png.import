@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c1erqspxnm0cr"
-path="res://.godot/imported/laundry_room.png-d5f0e25e223f44e707f059dc2a4bc63e.ctex"
+uid="uid://dl173t6jdna3c"
+path="res://.godot/imported/laundry_room_washer_closed.png-bff592223c854ef90c267ead1d4f13d6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resource/laundry_room.png"
-dest_files=["res://.godot/imported/laundry_room.png-d5f0e25e223f44e707f059dc2a4bc63e.ctex"]
+source_file="res://resource/laundry_room_washer_closed.png"
+dest_files=["res://.godot/imported/laundry_room_washer_closed.png-bff592223c854ef90c267ead1d4f13d6.ctex"]
 
 [params]
 

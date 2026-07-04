@@ -38,6 +38,8 @@ var translations := {
 		"ui.debug.dialogue.hide": "Hide dialogue panel",
 		"ui.debug.navigation.show": "Show quick travel buttons",
 		"ui.debug.navigation.hide": "Hide quick travel buttons",
+		"hotspot.laundry_room.laundry_second_washer.opened": "The second washer door is open.",
+		"hotspot.laundry_room.laundry_second_washer.closed": "The second washer door is closed.",
 	}
 }
 
