@@ -15,7 +15,7 @@ const MAX_BRIGHTNESS := 1.45
 const LAUNDRY_OPEN_PHOTO := "res://resource/images/laundry_room.png"
 const LAUNDRY_CLOSED_PHOTO := "res://resource/images/laundry_room_washer_closed.png"
 const FOOTSTEP_SOUND := "res://resource/sounds/footstep.ogg"
-const FOOTSTEP_COUNT := 4
+const FOOTSTEP_COUNT := 3
 const FOOTSTEP_INTERVAL_SECONDS := 0.22
 const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
@@ -41,7 +41,7 @@ const HOTEL_SCENES := {
 	"front_desk": {
 		"title": "Front Desk",
 		"photo": "res://resource/images/front_desk.png",
-		"intro": "The night clerk's counter is quiet. Notes, a phone, and the old monitor are ready for clues.",
+		"intro": "The night clerk's counter is quiet. Notes, a phone, and the logbook are ready for clues.",
 		"exits": [
 			{"label": "Corridor", "target": "corridor"},
 			{"label": "Laundry Room", "target": "laundry_room"},
@@ -80,12 +80,6 @@ const HOTEL_SCENES := {
 				"label": "Logbook",
 				"rect": Rect2(0.390, 0.745, 0.245, 0.190),
 				"text": "Guest names, room numbers, and a few rushed pencil marks fill the page.",
-			},
-			{
-				"id": "monitor",
-				"label": "Monitor",
-				"rect": Rect2(0.760, 0.300, 0.220, 0.390),
-				"text": "The reservation screen is still open, but several entries are hard to read.",
 			},
 			{
 				"id": "front_door",
