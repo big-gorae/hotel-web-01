@@ -10,9 +10,13 @@ Godot 4 GDScript starter for a 2.5D photo-based point-and-click hotel game.
 - `resource/room_105_bathroom_entry.png`: room 105 bathroom entry angle
 - `resource/room_105_bathroom.png`: room 105 bathroom
 - `resource/room_106_bed_bathroom_entry.png`: room 106 bed and bathroom entry angle
+- `resource/room_106_bathroom.png`: room 106 reused bathroom angle
 - `resource/room_107_bed_nightstand.png`: room 107 bed and nightstand angle
+- `resource/room_107_bathroom_entry.png`: room 107 bathroom entry angle
+- `resource/room_107_bathroom.png`: room 107 reused bathroom angle
 - `resource/room_108_bed_window.png`: room 108 bed and window angle
 - `resource/room_108_bathroom_entry.png`: room 108 bathroom entry angle
+- `resource/room_108_bathroom.png`: room 108 reused bathroom angle
 - `resource/exterior_stairs.png`: exterior stairs
 - `resource/laundry_room.png`: laundry room
 - `resource/prev/prev_room_106_bed_window.png`: archived previous room 106 photo, disconnected from scenes
@@ -68,18 +72,28 @@ To move to another scene when clicked, use `target`:
 - Room 105 or Bathroom Entry: click either edge to turn to the other room angle.
 - Room 105 Bathroom Entry: click the bathroom doorway to enter the Room 105 Bathroom.
 - Room 105 Bathroom: click the door to return to the Bathroom Entry.
-- Room 106: single room angle for now; click the exit edge to return to the Corridor.
-- Room 107: single room angle for now; click the visible door to return to the Corridor.
+- Room 106: click the bathroom doorway to enter the reused Room 106 Bathroom, or the exit edge to return to the Corridor.
+- Room 106 Bathroom: click the door to return to Room 106.
+- Room 107: click the right edge to turn to the Bathroom Entry angle, or the visible door to return to the Corridor.
+- Room 107 Bathroom Entry: click the bathroom doorway to enter the reused Room 107 Bathroom.
+- Room 107 Bathroom: click the door to return to the Bathroom Entry.
 - Room 108: click the right edge to turn to the Bathroom Entry angle.
-- Room 108 Bathroom Entry: click the visible door to return to the Corridor, or the left edge to turn back.
+- Room 108 Bathroom Entry: click the bathroom doorway to enter the reused Room 108 Bathroom, the visible door to return to the Corridor, or the left edge to turn back.
+- Room 108 Bathroom: click the door to return to the Bathroom Entry.
 - Front Desk: click the left edge to enter the Laundry Room.
 - Laundry Room: click the bottom edge to return to the Front Desk.
 
-## Test Toggles
+## Debug Toggles
 
-- `▣`: click areas are hidden by default for the real game view. Turn this on only when testing hotspot placement.
-- `💬`: shows or hides the bottom chat/message panel.
-- `🧭`: shows or hides the quick travel buttons inside the chat panel.
+The three debug toggles are hidden unless Godot is launched with `HOTEL_DEBUG_UI=1`.
+
+```sh
+HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
+```
+
+- `▣`: shows or hides click area overlays. The real game view keeps them hidden by default.
+- `💬`: shows or hides the bottom chat/message panel. It is off by default.
+- `🧭`: shows or hides quick travel buttons. It is off by default and works independently from the chat panel.
 
 ## Web Build
 

@@ -5,6 +5,8 @@ const PARALLAX_PADDING := 48.0
 const PARALLAX_STRENGTH := 18.0
 const TITLE_VISIBLE_SECONDS := 2.0
 const TITLE_FADE_SECONDS := 1.0
+const DEBUG_UI_ENV := "HOTEL_DEBUG_UI"
+const DEBUG_UI_ENABLED_VALUES := ["1", "true", "yes", "on"]
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -149,6 +151,7 @@ const HOTEL_SCENES := {
 			"photo": "res://resource/room_106_bed_bathroom_entry.png",
 			"intro": "Room 106 has a clear view of the bed, window, bathroom entry, and dresser.",
 			"exits": [
+				{"label": "Room 106 Bathroom", "target": "room_106_bathroom"},
 				{"label": "Corridor", "target": "corridor"},
 			],
 			"hotspots": [
@@ -174,7 +177,7 @@ const HOTEL_SCENES := {
 					"id": "room_106_bathroom_entry",
 					"label": "Bathroom",
 					"rect": Rect2(0.095, 0.150, 0.170, 0.440),
-					"text": "The bathroom light is on, but this room does not have a separate bathroom view yet.",
+					"target": "room_106_bathroom",
 				},
 				{
 					"id": "room_106_dresser",
@@ -189,9 +192,16 @@ const HOTEL_SCENES := {
 			"photo": "res://resource/room_107_bed_nightstand.png",
 			"intro": "Room 107 shows the nightstand, phone, and a messier bed.",
 			"exits": [
+				{"label": "Room 107 Bathroom Entry", "target": "room_107_bathroom_entry"},
 				{"label": "Corridor", "target": "corridor"},
 			],
 			"hotspots": [
+				{
+					"id": "room_107_turn_edge",
+					"label": "Turn",
+					"rect": Rect2(0.900, 0.000, 0.100, 1.000),
+					"target": "room_107_bathroom_entry",
+				},
 				{
 					"id": "room_107_door",
 					"label": "Door",
@@ -215,6 +225,48 @@ const HOTEL_SCENES := {
 					"label": "Papers",
 					"rect": Rect2(0.760, 0.850, 0.135, 0.085),
 					"text": "A few papers lie on the carpet near the bed.",
+				},
+			],
+		},
+		"room_107_bathroom_entry": {
+			"title": "Room 107 - Bathroom Entry",
+			"photo": "res://resource/room_107_bathroom_entry.png",
+			"intro": "Room 107's second angle shows the bathroom entry and the corridor door.",
+			"exits": [
+				{"label": "Room 107", "target": "room_107_bed_nightstand"},
+				{"label": "Room 107 Bathroom", "target": "room_107_bathroom"},
+				{"label": "Corridor", "target": "corridor"},
+			],
+			"hotspots": [
+				{
+					"id": "room_107_left_edge",
+					"label": "Turn",
+					"rect": Rect2(0.000, 0.000, 0.095, 1.000),
+					"target": "room_107_bed_nightstand",
+				},
+				{
+					"id": "room_107_bathroom_doorway",
+					"label": "Bathroom",
+					"rect": Rect2(0.505, 0.095, 0.210, 0.585),
+					"target": "room_107_bathroom",
+				},
+				{
+					"id": "room_107_corridor_door",
+					"label": "Door",
+					"rect": Rect2(0.755, 0.140, 0.165, 0.620),
+					"target": "corridor",
+				},
+				{
+					"id": "room_107_bed_side",
+					"label": "Bed",
+					"rect": Rect2(0.000, 0.540, 0.470, 0.350),
+					"text": "The bed is half lit by the nightstand lamp.",
+				},
+				{
+					"id": "room_107_phone",
+					"label": "Phone",
+					"rect": Rect2(0.285, 0.420, 0.170, 0.185),
+					"text": "The phone is close enough to reach from the pillow.",
 				},
 			],
 		},
@@ -265,6 +317,7 @@ const HOTEL_SCENES := {
 			"intro": "From this angle, the bathroom entry and the corridor door are both visible.",
 			"exits": [
 				{"label": "Room 108", "target": "room_108_bed_window"},
+				{"label": "Room 108 Bathroom", "target": "room_108_bathroom"},
 				{"label": "Corridor", "target": "corridor"},
 			],
 			"hotspots": [
@@ -284,7 +337,7 @@ const HOTEL_SCENES := {
 					"id": "room_108_bathroom",
 					"label": "Bathroom",
 					"rect": Rect2(0.505, 0.095, 0.210, 0.585),
-					"text": "The bathroom is visible from here, but there is no separate bathroom scene yet.",
+					"target": "room_108_bathroom",
 				},
 				{
 					"id": "room_108_bed_side",
@@ -431,6 +484,108 @@ const HOTEL_SCENES := {
 				},
 			],
 		},
+		"room_106_bathroom": {
+			"title": "Room 106 - Bathroom",
+			"photo": "res://resource/room_106_bathroom.png",
+			"intro": "Room 106 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
+			"exits": [
+				{"label": "Room 106", "target": "room_106_bed_bathroom_entry"},
+			],
+			"hotspots": [
+				{
+					"id": "room_106_bathroom_door",
+					"label": "Door",
+					"rect": Rect2(0.835, 0.000, 0.165, 1.000),
+					"target": "room_106_bed_bathroom_entry",
+				},
+				{
+					"id": "room_106_bathroom_mirror",
+					"label": "Mirror",
+					"rect": Rect2(0.000, 0.000, 0.225, 0.520),
+					"text": "The mirror is worn at the edges, blurring the room behind you.",
+				},
+				{
+					"id": "room_106_bathroom_sink",
+					"label": "Sink",
+					"rect": Rect2(0.000, 0.560, 0.395, 0.280),
+					"text": "A small tube rests near the sink. The counter is stained from years of use.",
+				},
+				{
+					"id": "room_106_bathroom_tub",
+					"label": "Tub",
+					"rect": Rect2(0.455, 0.120, 0.340, 0.760),
+					"text": "The shower curtain hangs still. The tub is dry.",
+				},
+			],
+		},
+		"room_107_bathroom": {
+			"title": "Room 107 - Bathroom",
+			"photo": "res://resource/room_107_bathroom.png",
+			"intro": "Room 107 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
+			"exits": [
+				{"label": "Room 107 Bathroom Entry", "target": "room_107_bathroom_entry"},
+			],
+			"hotspots": [
+				{
+					"id": "room_107_bathroom_door",
+					"label": "Door",
+					"rect": Rect2(0.835, 0.000, 0.165, 1.000),
+					"target": "room_107_bathroom_entry",
+				},
+				{
+					"id": "room_107_bathroom_mirror",
+					"label": "Mirror",
+					"rect": Rect2(0.000, 0.000, 0.225, 0.520),
+					"text": "The mirror is worn at the edges, blurring the room behind you.",
+				},
+				{
+					"id": "room_107_bathroom_sink",
+					"label": "Sink",
+					"rect": Rect2(0.000, 0.560, 0.395, 0.280),
+					"text": "A small tube rests near the sink. The counter is stained from years of use.",
+				},
+				{
+					"id": "room_107_bathroom_tub",
+					"label": "Tub",
+					"rect": Rect2(0.455, 0.120, 0.340, 0.760),
+					"text": "The shower curtain hangs still. The tub is dry.",
+				},
+			],
+		},
+		"room_108_bathroom": {
+			"title": "Room 108 - Bathroom",
+			"photo": "res://resource/room_108_bathroom.png",
+			"intro": "Room 108 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
+			"exits": [
+				{"label": "Room 108 Bathroom Entry", "target": "room_108_bathroom_entry"},
+			],
+			"hotspots": [
+				{
+					"id": "room_108_bathroom_door",
+					"label": "Door",
+					"rect": Rect2(0.835, 0.000, 0.165, 1.000),
+					"target": "room_108_bathroom_entry",
+				},
+				{
+					"id": "room_108_bathroom_mirror",
+					"label": "Mirror",
+					"rect": Rect2(0.000, 0.000, 0.225, 0.520),
+					"text": "The mirror is worn at the edges, blurring the room behind you.",
+				},
+				{
+					"id": "room_108_bathroom_sink",
+					"label": "Sink",
+					"rect": Rect2(0.000, 0.560, 0.395, 0.280),
+					"text": "A small tube rests near the sink. The counter is stained from years of use.",
+				},
+				{
+					"id": "room_108_bathroom_tub",
+					"label": "Tub",
+					"rect": Rect2(0.455, 0.120, 0.340, 0.760),
+					"text": "The shower curtain hangs still. The tub is dry.",
+				},
+			],
+		},
 		"laundry_room": {
 			"title": "Laundry Room",
 			"photo": "res://resource/laundry_room.png",
@@ -498,8 +653,9 @@ const HOTEL_SCENES := {
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
+var debug_ui_enabled := false
 var show_hotspots := false
-var show_chat := true
+var show_chat := false
 var show_navigation := false
 var mouse_position := Vector2.ZERO
 var title_tween: Tween
@@ -508,8 +664,10 @@ var photo: TextureRect
 var hotspot_layer: Control
 var title_panel: PanelContainer
 var title_label: Label
+var debug_panel: PanelContainer
 var bottom_panel: PanelContainer
 var message_label: Label
+var navigation_panel: PanelContainer
 var nav_bar: HBoxContainer
 var hotspot_toggle: Button
 var chat_toggle: Button
@@ -518,9 +676,15 @@ var navigation_toggle: Button
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	debug_ui_enabled = _is_debug_ui_enabled()
 	get_tree().root.size_changed.connect(_update_layout)
 	_build_ui()
 	show_scene(START_SCENE_ID)
+
+
+func _is_debug_ui_enabled() -> bool:
+	var value := OS.get_environment(DEBUG_UI_ENV).strip_edges().to_lower()
+	return DEBUG_UI_ENABLED_VALUES.has(value)
 
 
 func _input(event: InputEvent) -> void:
@@ -569,21 +733,22 @@ func _build_ui() -> void:
 	title_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
 	title_panel.add_child(title_label)
 
-	var corner_panel := PanelContainer.new()
-	corner_panel.anchor_left = 1.0
-	corner_panel.anchor_right = 1.0
-	corner_panel.anchor_top = 0.0
-	corner_panel.anchor_bottom = 0.0
-	corner_panel.offset_left = -184.0
-	corner_panel.offset_top = 18.0
-	corner_panel.offset_right = -18.0
-	corner_panel.offset_bottom = 66.0
-	corner_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
-	add_child(corner_panel)
+	debug_panel = PanelContainer.new()
+	debug_panel.anchor_left = 1.0
+	debug_panel.anchor_right = 1.0
+	debug_panel.anchor_top = 0.0
+	debug_panel.anchor_bottom = 0.0
+	debug_panel.offset_left = -184.0
+	debug_panel.offset_top = 18.0
+	debug_panel.offset_right = -18.0
+	debug_panel.offset_bottom = 66.0
+	debug_panel.visible = debug_ui_enabled
+	debug_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
+	add_child(debug_panel)
 
 	var corner_row := HBoxContainer.new()
 	corner_row.add_theme_constant_override("separation", 8)
-	corner_panel.add_child(corner_row)
+	debug_panel.add_child(corner_row)
 
 	hotspot_toggle = _make_debug_button("▣", "Show click areas", _toggle_hotspots)
 	corner_row.add_child(hotspot_toggle)
@@ -595,11 +760,6 @@ func _build_ui() -> void:
 	corner_row.add_child(navigation_toggle)
 
 	bottom_panel = PanelContainer.new()
-	bottom_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom_panel.offset_left = 18.0
-	bottom_panel.offset_top = -150.0
-	bottom_panel.offset_right = -18.0
-	bottom_panel.offset_bottom = -18.0
 	bottom_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
 	add_child(bottom_panel)
 
@@ -614,10 +774,15 @@ func _build_ui() -> void:
 	message_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
 	bottom_layout.add_child(message_label)
 
+	navigation_panel = PanelContainer.new()
+	navigation_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
+	add_child(navigation_panel)
+
 	nav_bar = HBoxContainer.new()
 	nav_bar.add_theme_constant_override("separation", 8)
-	bottom_layout.add_child(nav_bar)
+	navigation_panel.add_child(nav_bar)
 
+	_position_bottom_panels()
 	_apply_chat_display()
 	_apply_navigation_display()
 	_sync_debug_toggles()
@@ -706,15 +871,20 @@ func _apply_hotspot_display() -> void:
 
 func _apply_chat_display() -> void:
 	bottom_panel.visible = show_chat
+	_position_bottom_panels()
 	_sync_debug_toggles()
 
 
 func _apply_navigation_display() -> void:
-	nav_bar.visible = show_navigation
+	navigation_panel.visible = show_navigation
+	_position_bottom_panels()
 	_sync_debug_toggles()
 
 
 func _sync_debug_toggles() -> void:
+	if debug_panel != null:
+		debug_panel.visible = debug_ui_enabled
+
 	if hotspot_toggle == null:
 		return
 
@@ -729,6 +899,26 @@ func _sync_debug_toggles() -> void:
 	navigation_toggle.button_pressed = show_navigation
 	navigation_toggle.tooltip_text = "Hide quick travel buttons" if show_navigation else "Show quick travel buttons"
 	_style_debug_button(navigation_toggle, show_navigation)
+
+
+func _position_bottom_panels() -> void:
+	if bottom_panel != null:
+		bottom_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		bottom_panel.offset_left = 18.0
+		bottom_panel.offset_top = -150.0
+		bottom_panel.offset_right = -18.0
+		bottom_panel.offset_bottom = -18.0
+
+	if navigation_panel != null:
+		navigation_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		navigation_panel.offset_left = 18.0
+		navigation_panel.offset_right = -18.0
+		if show_chat:
+			navigation_panel.offset_top = -210.0
+			navigation_panel.offset_bottom = -162.0
+		else:
+			navigation_panel.offset_top = -66.0
+			navigation_panel.offset_bottom = -18.0
 
 
 func _set_message(message: String) -> void:
