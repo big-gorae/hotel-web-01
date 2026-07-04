@@ -78,14 +78,14 @@ To move to another scene when clicked, use `target`:
 - Room 107 Bathroom Entry: click the bathroom doorway to enter the reused Room 107 Bathroom.
 - Room 107 Bathroom: click the door to return to the Bathroom Entry.
 - Room 108: click the right edge to turn to the Bathroom Entry angle.
-- Room 108 Bathroom Entry: click the bathroom doorway to enter the reused Room 108 Bathroom, the visible door to return to the Corridor, or the left edge to turn back.
+- Room 108 Bathroom Entry: click the bathroom doorway to enter the reused Room 108 Bathroom, the closet door to inspect it, or the left edge to turn back.
 - Room 108 Bathroom: click the door to return to the Bathroom Entry.
 - Front Desk: click the left edge to enter the Laundry Room.
 - Laundry Room: click the bottom edge to return to the Front Desk.
 
 ## Debug Toggles
 
-The three debug toggles are hidden unless Godot is launched with `HOTEL_DEBUG_UI=1`.
+The three debug toggles are visible when running from the Godot editor, or when Godot is launched with `HOTEL_DEBUG_UI=1`.
 
 ```sh
 HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .

@@ -231,7 +231,7 @@ const HOTEL_SCENES := {
 		"room_107_bathroom_entry": {
 			"title": "Room 107 - Bathroom Entry",
 			"photo": "res://resource/room_107_bathroom_entry.png",
-			"intro": "Room 107's second angle shows the bathroom entry and the corridor door.",
+			"intro": "Room 107's second angle shows the bathroom entry and the closet door.",
 			"exits": [
 				{"label": "Room 107", "target": "room_107_bed_nightstand"},
 				{"label": "Room 107 Bathroom", "target": "room_107_bathroom"},
@@ -251,10 +251,10 @@ const HOTEL_SCENES := {
 					"target": "room_107_bathroom",
 				},
 				{
-					"id": "room_107_corridor_door",
-					"label": "Door",
+					"id": "room_107_closet_door",
+					"label": "Closet",
 					"rect": Rect2(0.755, 0.140, 0.165, 0.620),
-					"target": "corridor",
+					"text": "The door beside the bathroom is a closet, not the exit.",
 				},
 				{
 					"id": "room_107_bed_side",
@@ -314,7 +314,7 @@ const HOTEL_SCENES := {
 		"room_108_bathroom_entry": {
 			"title": "Room 108 - Bathroom Entry",
 			"photo": "res://resource/room_108_bathroom_entry.png",
-			"intro": "From this angle, the bathroom entry and the corridor door are both visible.",
+			"intro": "From this angle, the bathroom entry and the closet door are both visible.",
 			"exits": [
 				{"label": "Room 108", "target": "room_108_bed_window"},
 				{"label": "Room 108 Bathroom", "target": "room_108_bathroom"},
@@ -328,10 +328,10 @@ const HOTEL_SCENES := {
 					"target": "room_108_bed_window",
 				},
 				{
-					"id": "room_108_door",
-					"label": "Door",
+					"id": "room_108_closet_door",
+					"label": "Closet",
 					"rect": Rect2(0.755, 0.140, 0.165, 0.620),
-					"target": "corridor",
+					"text": "The door beside the bathroom is a closet, not the exit.",
 				},
 				{
 					"id": "room_108_bathroom",
@@ -684,7 +684,7 @@ func _ready() -> void:
 
 func _is_debug_ui_enabled() -> bool:
 	var value := OS.get_environment(DEBUG_UI_ENV).strip_edges().to_lower()
-	return DEBUG_UI_ENABLED_VALUES.has(value)
+	return DEBUG_UI_ENABLED_VALUES.has(value) or OS.has_feature("editor")
 
 
 func _input(event: InputEvent) -> void:
