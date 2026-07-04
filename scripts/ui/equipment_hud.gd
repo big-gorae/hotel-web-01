@@ -1,12 +1,17 @@
 class_name HotelEquipmentHud
 extends PanelContainer
 
+signal activated
+
 var icon_label: Label
 var name_label: Label
 
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(88.0, 88.0)
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	tooltip_text = "Open inventory"
 	add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.72), Color(1.0, 1.0, 1.0, 0.14), 8))
 
 	var layout := VBoxContainer.new()
@@ -44,6 +49,12 @@ func set_equipped_item(item) -> void:
 	else:
 		icon_label.text = item.icon_text
 		name_label.text = item.display_name
+
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		activated.emit()
+		accept_event()
 
 
 func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBoxFlat:

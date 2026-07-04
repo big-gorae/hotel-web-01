@@ -867,6 +867,7 @@ func _build_ui() -> void:
 	equipment_hud.offset_bottom = -18.0
 	gameplay_layer.add_child(equipment_hud)
 	equipment_hud.bind_inventory(inventory_model)
+	equipment_hud.activated.connect(_show_menu)
 
 	_position_bottom_panels()
 	_apply_persistent_dialogue_display()
