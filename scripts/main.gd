@@ -148,7 +148,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_106_bed_bathroom_entry": {
-			"title": "Room 106 - Bed And Bathroom Entry",
+			"title": "Room 106",
 			"photo": "res://resource/images/room_106_bed_bathroom_entry.png",
 			"intro": "Room 106 has a clear view of the bed, window, bathroom entry, and dresser.",
 			"exits": [
@@ -189,7 +189,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_107_bed_nightstand": {
-			"title": "Room 107 - Bed And Nightstand",
+			"title": "Room 107",
 			"photo": "res://resource/images/room_107_bed_nightstand.png",
 			"intro": "Room 107 shows the nightstand, phone, and a messier bed.",
 			"exits": [
@@ -230,7 +230,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_107_bathroom_entry": {
-			"title": "Room 107 - Bathroom Entry",
+			"title": "Room 107",
 			"photo": "res://resource/images/room_107_bathroom_entry.png",
 			"intro": "Room 107's second angle shows the bathroom entry and the closet door.",
 			"exits": [
@@ -272,7 +272,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_108_bed_window": {
-			"title": "Room 108 - Bed And Window",
+			"title": "Room 108",
 			"photo": "res://resource/images/room_108_bed_window.png",
 			"intro": "Room 108 opens on the bed, window, and desk side of the room.",
 			"exits": [
@@ -319,7 +319,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_108_bathroom_entry": {
-			"title": "Room 108 - Bathroom Entry",
+			"title": "Room 108",
 			"photo": "res://resource/images/room_108_bathroom_entry.png",
 			"intro": "From this angle, the bathroom entry, dresser, television, and bed are all visible.",
 			"exits": [
@@ -367,7 +367,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_105_door_window": {
-			"title": "Room 105 - Door And Window",
+			"title": "Room 105",
 			"photo": "res://resource/images/room_105_door_window.png",
 			"intro": "A modest room with the curtains half closed. The bed, window, and door are the main points of interest.",
 			"exits": [
@@ -415,7 +415,7 @@ const HOTEL_SCENES := {
 		],
 	},
 	"room_105_bathroom_entry": {
-		"title": "Room 105 - Bathroom Entry",
+		"title": "Room 105",
 		"photo": "res://resource/images/room_105_bathroom_entry.png",
 		"intro": "From this angle the bathroom, closet door, television, and bed are all within reach.",
 		"exits": [
@@ -463,7 +463,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_105_bathroom": {
-			"title": "Room 105 - Bathroom",
+			"title": "Room 105",
 			"photo": "res://resource/images/room_105_bathroom.png",
 			"intro": "The bathroom is cramped and bright. The mirror, sink, tub, and door are all close together.",
 			"exits": [
@@ -498,7 +498,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_106_bathroom": {
-			"title": "Room 106 - Bathroom",
+			"title": "Room 106",
 			"photo": "res://resource/images/room_106_bathroom.png",
 			"intro": "Room 106 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
 			"exits": [
@@ -532,7 +532,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_107_bathroom": {
-			"title": "Room 107 - Bathroom",
+			"title": "Room 107",
 			"photo": "res://resource/images/room_107_bathroom.png",
 			"intro": "Room 107 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
 			"exits": [
@@ -566,7 +566,7 @@ const HOTEL_SCENES := {
 			],
 		},
 		"room_108_bathroom": {
-			"title": "Room 108 - Bathroom",
+			"title": "Room 108",
 			"photo": "res://resource/images/room_108_bathroom.png",
 			"intro": "Room 108 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
 			"exits": [
