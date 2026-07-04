@@ -23,7 +23,8 @@ func refresh_text() -> void:
 	subtitle_label.text = _text("rule_book.subtitle", "Hotel night rules")
 
 	for child in rules_box.get_children():
-		child.queue_free()
+		rules_box.remove_child(child)
+		child.free()
 
 	for index in range(1, RULE_COUNT + 1):
 		var row := HBoxContainer.new()
