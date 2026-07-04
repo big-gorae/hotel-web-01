@@ -32,8 +32,9 @@ const HOTEL_SCENES := {
 			{"label": "Corridor", "target": "corridor"},
 			{"label": "Laundry Room", "target": "laundry_room"},
 			{"label": "Room 105", "target": "room_105_door_window"},
-			{"label": "Room 106", "target": "room_106_bed_window"},
+			{"label": "Room 106", "target": "room_106_bed_bathroom_entry"},
 			{"label": "Room 107", "target": "room_107_bed_nightstand"},
+			{"label": "Room 108", "target": "room_108_bed_window"},
 		],
 		"hotspots": [
 			{
@@ -88,8 +89,9 @@ const HOTEL_SCENES := {
 			{"label": "Front Desk", "target": "front_desk"},
 			{"label": "Exterior Stairs", "target": "exterior_stairs"},
 			{"label": "Room 105", "target": "room_105_door_window"},
-			{"label": "Room 106", "target": "room_106_bed_window"},
+			{"label": "Room 106", "target": "room_106_bed_bathroom_entry"},
 			{"label": "Room 107", "target": "room_107_bed_nightstand"},
+			{"label": "Room 108", "target": "room_108_bed_window"},
 		],
 		"hotspots": [
 			{
@@ -114,13 +116,19 @@ const HOTEL_SCENES := {
 				"id": "room_106",
 				"label": "Room 106",
 				"rect": Rect2(0.302, 0.155, 0.102, 0.395),
-				"target": "room_106_bed_window",
+				"target": "room_106_bed_bathroom_entry",
 			},
 			{
 				"id": "room_107",
 				"label": "Room 107",
 				"rect": Rect2(0.490, 0.175, 0.080, 0.330),
 				"target": "room_107_bed_nightstand",
+			},
+			{
+				"id": "room_108",
+				"label": "Room 108",
+				"rect": Rect2(0.630, 0.205, 0.060, 0.275),
+				"target": "room_108_bed_window",
 			},
 			{
 				"id": "walkway_lights",
@@ -136,37 +144,43 @@ const HOTEL_SCENES := {
 			},
 			],
 		},
-		"room_106_bed_window": {
-			"title": "Room 106 - Bed And Window",
-			"photo": "res://resource/room_106_bed_window.png",
-			"intro": "Room 106 is warmer and neater than the corridor outside. The bed, window, and motel painting stand out.",
+		"room_106_bed_bathroom_entry": {
+			"title": "Room 106 - Bed And Bathroom Entry",
+			"photo": "res://resource/room_106_bed_bathroom_entry.png",
+			"intro": "Room 106 has a clear view of the bed, window, bathroom entry, and dresser.",
 			"exits": [
 				{"label": "Corridor", "target": "corridor"},
 			],
 			"hotspots": [
 				{
 					"id": "room_106_exit_edge",
-					"label": "Door",
+					"label": "Corridor",
 					"rect": Rect2(0.000, 0.000, 0.095, 1.000),
 					"target": "corridor",
 				},
 				{
 					"id": "room_106_bed",
 					"label": "Bed",
-					"rect": Rect2(0.000, 0.435, 0.625, 0.460),
+					"rect": Rect2(0.320, 0.560, 0.680, 0.390),
 					"text": "The bedspread is pulled into place, but the room still feels recently used.",
 				},
 				{
 					"id": "room_106_window",
 					"label": "Window",
-					"rect": Rect2(0.485, 0.110, 0.390, 0.405),
+					"rect": Rect2(0.425, 0.170, 0.205, 0.310),
 					"text": "The curtains leave a narrow view of the parking lot lights.",
 				},
 				{
-					"id": "room_106_motel_painting",
-					"label": "Painting",
-					"rect": Rect2(0.035, 0.100, 0.160, 0.245),
-					"text": "The motel painting looks older than the frame holding it.",
+					"id": "room_106_bathroom_entry",
+					"label": "Bathroom",
+					"rect": Rect2(0.095, 0.150, 0.170, 0.440),
+					"text": "The bathroom light is on, but this room does not have a separate bathroom view yet.",
+				},
+				{
+					"id": "room_106_dresser",
+					"label": "Dresser",
+					"rect": Rect2(0.000, 0.500, 0.180, 0.455),
+					"text": "The coffee maker and drawers are within reach of the bathroom door.",
 				},
 			],
 		},
@@ -201,6 +215,88 @@ const HOTEL_SCENES := {
 					"label": "Papers",
 					"rect": Rect2(0.760, 0.850, 0.135, 0.085),
 					"text": "A few papers lie on the carpet near the bed.",
+				},
+			],
+		},
+		"room_108_bed_window": {
+			"title": "Room 108 - Bed And Window",
+			"photo": "res://resource/room_108_bed_window.png",
+			"intro": "Room 108 opens on the bed, window, and desk side of the room.",
+			"exits": [
+				{"label": "Room 108 Bathroom Entry", "target": "room_108_bathroom_entry"},
+				{"label": "Corridor", "target": "corridor"},
+			],
+			"hotspots": [
+				{
+					"id": "room_108_right_edge",
+					"label": "Turn",
+					"rect": Rect2(0.905, 0.000, 0.095, 1.000),
+					"target": "room_108_bathroom_entry",
+				},
+				{
+					"id": "room_108_bed",
+					"label": "Bed",
+					"rect": Rect2(0.000, 0.430, 0.620, 0.430),
+					"text": "The bed faces the window and catches most of the room's warm light.",
+				},
+				{
+					"id": "room_108_window",
+					"label": "Window",
+					"rect": Rect2(0.555, 0.115, 0.270, 0.405),
+					"text": "The opposite wing of the hotel is visible through the window.",
+				},
+				{
+					"id": "room_108_nightstand",
+					"label": "Nightstand",
+					"rect": Rect2(0.335, 0.280, 0.120, 0.230),
+					"text": "A lamp and a small notepad sit beside the bed.",
+				},
+				{
+					"id": "room_108_desk",
+					"label": "Desk",
+					"rect": Rect2(0.865, 0.430, 0.130, 0.435),
+					"text": "The desk is clear except for the coffee set.",
+				},
+			],
+		},
+		"room_108_bathroom_entry": {
+			"title": "Room 108 - Bathroom Entry",
+			"photo": "res://resource/room_108_bathroom_entry.png",
+			"intro": "From this angle, the bathroom entry and the corridor door are both visible.",
+			"exits": [
+				{"label": "Room 108", "target": "room_108_bed_window"},
+				{"label": "Corridor", "target": "corridor"},
+			],
+			"hotspots": [
+				{
+					"id": "room_108_left_edge",
+					"label": "Turn",
+					"rect": Rect2(0.000, 0.000, 0.095, 1.000),
+					"target": "room_108_bed_window",
+				},
+				{
+					"id": "room_108_door",
+					"label": "Door",
+					"rect": Rect2(0.755, 0.140, 0.165, 0.620),
+					"target": "corridor",
+				},
+				{
+					"id": "room_108_bathroom",
+					"label": "Bathroom",
+					"rect": Rect2(0.505, 0.095, 0.210, 0.585),
+					"text": "The bathroom is visible from here, but there is no separate bathroom scene yet.",
+				},
+				{
+					"id": "room_108_bed_side",
+					"label": "Bed",
+					"rect": Rect2(0.000, 0.540, 0.470, 0.350),
+					"text": "The blanket is loose near the nightstand.",
+				},
+				{
+					"id": "room_108_phone",
+					"label": "Phone",
+					"rect": Rect2(0.285, 0.420, 0.170, 0.185),
+					"text": "The phone rests beside the lamp, pointed toward the bed.",
 				},
 			],
 		},
