@@ -88,8 +88,8 @@ To move to another scene when clicked, use `target`:
 
 ## Dialogue
 
-- `persistent_dialogue`: scene-level dialogue shown near the bottom. Click it to dismiss it.
-- `transient_dialogue`: short hotspot feedback shown above `persistent_dialogue`. It is borderless, centered, capped to two lines, and fades out automatically.
+- `persistent_dialogue`: scene-level dialogue shown near the bottom. It is off by default and stays off across room changes until toggled on.
+- `transient_dialogue`: short hotspot feedback shown above `persistent_dialogue`. It is borderless, centered, capped to two lines, fades out automatically, and is hidden while dialogue is off.
 
 ## Localization
 

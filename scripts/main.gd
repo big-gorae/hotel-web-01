@@ -667,6 +667,7 @@ var show_persistent_dialogue := false
 var show_navigation := false
 var laundry_second_washer_open := true
 var game_brightness := DEFAULT_BRIGHTNESS
+var current_persistent_dialogue_text := ""
 var mouse_position := Vector2.ZERO
 var title_tween: Tween
 var transient_dialogue_tween: Tween
@@ -726,7 +727,7 @@ func show_scene(scene_id: String) -> void:
 	photo.texture = current_texture
 	title_label.text = _scene_text(scene_id, scene_data, "title")
 	_show_title_banner()
-	_show_persistent_dialogue(_scene_text(scene_id, scene_data, "intro"))
+	_set_persistent_dialogue(_scene_text(scene_id, scene_data, "intro"))
 	_build_hotspots(scene_data["hotspots"])
 	_build_navigation(scene_data["exits"])
 	_update_layout()
@@ -1042,6 +1043,10 @@ func _show_transient_dialogue(message: String) -> void:
 	if transient_dialogue_panel == null:
 		return
 
+	if not show_persistent_dialogue:
+		_hide_transient_dialogue()
+		return
+
 	transient_dialogue_label.text = message
 	_position_transient_dialogue()
 	transient_dialogue_panel.visible = true
@@ -1072,7 +1077,7 @@ func _position_transient_dialogue() -> void:
 	var estimated_width := clampf(transient_dialogue_label.text.length() * 10.0 + 48.0, 220.0, max_width)
 	transient_dialogue_label.custom_minimum_size = Vector2(estimated_width, 0.0)
 	transient_dialogue_panel.size = transient_dialogue_panel.get_combined_minimum_size()
-	transient_dialogue_panel.position = Vector2((viewport_size.x - transient_dialogue_panel.size.x) * 0.5, viewport_size.y - 230.0)
+	transient_dialogue_panel.position = Vector2((viewport_size.x - transient_dialogue_panel.size.x) * 0.5, viewport_size.y - 205.0)
 
 
 func _scene_text(scene_id: String, scene_data: Dictionary, field: String) -> String:
@@ -1132,6 +1137,9 @@ func _apply_hotspot_display() -> void:
 
 func _apply_persistent_dialogue_display() -> void:
 	persistent_dialogue_panel.visible = show_persistent_dialogue
+	if not show_persistent_dialogue:
+		_hide_transient_dialogue()
+
 	_position_bottom_panels()
 	_sync_debug_toggles()
 
@@ -1182,9 +1190,9 @@ func _position_bottom_panels() -> void:
 			navigation_panel.offset_bottom = -18.0
 
 
-func _show_persistent_dialogue(message: String) -> void:
-	persistent_dialogue_label.text = message
-	show_persistent_dialogue = true
+func _set_persistent_dialogue(message: String) -> void:
+	current_persistent_dialogue_text = message
+	persistent_dialogue_label.text = current_persistent_dialogue_text
 	_apply_persistent_dialogue_display()
 
 
