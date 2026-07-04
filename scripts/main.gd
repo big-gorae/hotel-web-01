@@ -12,6 +12,7 @@ const DEBUG_UI_ENABLED_VALUES := ["1", "true", "yes", "on"]
 const DEFAULT_BRIGHTNESS := 1.0
 const MIN_BRIGHTNESS := 0.55
 const MAX_BRIGHTNESS := 1.45
+const LAUNDRY_CLOSED_BRIGHTNESS_BOOST := 0.08
 const LAUNDRY_OPEN_PHOTO := "res://resource/images/laundry_room.png"
 const LAUNDRY_CLOSED_PHOTO := "res://resource/images/laundry_room_washer_closed.png"
 const FOOTSTEP_SOUND := "res://resource/sounds/footstep.ogg"
@@ -737,6 +738,7 @@ func show_scene(scene_id: String, play_transition_sound := true) -> void:
 	_set_persistent_dialogue(_scene_text(scene_id, scene_data, "intro"))
 	_build_hotspots(scene_data["hotspots"])
 	_build_navigation(scene_data["exits"])
+	_apply_brightness()
 	_update_layout()
 
 
@@ -1022,6 +1024,7 @@ func _toggle_laundry_washer() -> void:
 		var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
 		current_texture = load(_scene_photo(current_scene_id, scene_data)) as Texture2D
 		photo.texture = current_texture
+		_apply_brightness()
 		_update_layout()
 
 	var state_key := "opened" if laundry_second_washer_open else "closed"
@@ -1071,16 +1074,24 @@ func _apply_brightness() -> void:
 	if brightness_overlay == null:
 		return
 
-	if game_brightness < DEFAULT_BRIGHTNESS:
-		var darkness := (DEFAULT_BRIGHTNESS - game_brightness) / (DEFAULT_BRIGHTNESS - MIN_BRIGHTNESS)
+	var effective_brightness := clampf(game_brightness + _scene_brightness_boost(), MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+	if effective_brightness < DEFAULT_BRIGHTNESS:
+		var darkness := (DEFAULT_BRIGHTNESS - effective_brightness) / (DEFAULT_BRIGHTNESS - MIN_BRIGHTNESS)
 		brightness_overlay.color = Color(0.0, 0.0, 0.0, darkness * 0.55)
-	elif game_brightness > DEFAULT_BRIGHTNESS:
-		var lightness := (game_brightness - DEFAULT_BRIGHTNESS) / (MAX_BRIGHTNESS - DEFAULT_BRIGHTNESS)
+	elif effective_brightness > DEFAULT_BRIGHTNESS:
+		var lightness := (effective_brightness - DEFAULT_BRIGHTNESS) / (MAX_BRIGHTNESS - DEFAULT_BRIGHTNESS)
 		brightness_overlay.color = Color(1.0, 1.0, 1.0, lightness * 0.28)
 	else:
 		brightness_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
 
 	_update_brightness_label()
+
+
+func _scene_brightness_boost() -> float:
+	if current_scene_id == "laundry_room" and not laundry_second_washer_open:
+		return LAUNDRY_CLOSED_BRIGHTNESS_BOOST
+
+	return 0.0
 
 
 func _update_brightness_label() -> void:
