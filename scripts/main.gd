@@ -7,6 +7,9 @@ const TITLE_VISIBLE_SECONDS := 2.0
 const TITLE_FADE_SECONDS := 1.0
 const DEBUG_UI_ENV := "HOTEL_DEBUG_UI"
 const DEBUG_UI_ENABLED_VALUES := ["1", "true", "yes", "on"]
+const DEFAULT_BRIGHTNESS := 1.0
+const MIN_BRIGHTNESS := 0.55
+const MAX_BRIGHTNESS := 1.45
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -657,10 +660,12 @@ var debug_ui_enabled := false
 var show_hotspots := false
 var show_chat := false
 var show_navigation := false
+var game_brightness := DEFAULT_BRIGHTNESS
 var mouse_position := Vector2.ZERO
 var title_tween: Tween
 
 var photo: TextureRect
+var brightness_overlay: ColorRect
 var hotspot_layer: Control
 var title_panel: PanelContainer
 var title_label: Label
@@ -672,6 +677,9 @@ var nav_bar: HBoxContainer
 var hotspot_toggle: Button
 var chat_toggle: Button
 var navigation_toggle: Button
+var menu_overlay: ColorRect
+var brightness_slider: HSlider
+var brightness_value_label: Label
 
 
 func _ready() -> void:
@@ -688,6 +696,11 @@ func _is_debug_ui_enabled() -> bool:
 
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		_toggle_menu()
+		get_viewport().set_input_as_handled()
+		return
+
 	if event is InputEventMouseMotion:
 		mouse_position = event.position
 		_update_layout()
@@ -716,6 +729,12 @@ func _build_ui() -> void:
 	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	photo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(photo)
+
+	brightness_overlay = ColorRect.new()
+	brightness_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	brightness_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(brightness_overlay)
+	_apply_brightness()
 
 	hotspot_layer = Control.new()
 	hotspot_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -786,6 +805,76 @@ func _build_ui() -> void:
 	_apply_chat_display()
 	_apply_navigation_display()
 	_sync_debug_toggles()
+	_build_menu()
+
+
+func _build_menu() -> void:
+	menu_overlay = ColorRect.new()
+	menu_overlay.color = Color(0.0, 0.0, 0.0, 0.58)
+	menu_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	menu_overlay.visible = false
+	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(menu_overlay)
+
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	menu_overlay.add_child(center)
+
+	var menu_panel := PanelContainer.new()
+	menu_panel.custom_minimum_size = Vector2(360.0, 0.0)
+	menu_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.94), Color(1.0, 1.0, 1.0, 0.16), 12))
+	center.add_child(menu_panel)
+
+	var layout := VBoxContainer.new()
+	layout.add_theme_constant_override("separation", 14)
+	menu_panel.add_child(layout)
+
+	var title := Label.new()
+	title.text = "Menu"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 28)
+	title.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
+	layout.add_child(title)
+
+	var continue_button := Button.new()
+	continue_button.text = "Continue"
+	continue_button.focus_mode = Control.FOCUS_NONE
+	continue_button.pressed.connect(_hide_menu)
+	layout.add_child(continue_button)
+
+	var brightness_label := Label.new()
+	brightness_label.text = "Brightness"
+	brightness_label.add_theme_font_size_override("font_size", 16)
+	brightness_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
+	layout.add_child(brightness_label)
+
+	var brightness_row := HBoxContainer.new()
+	brightness_row.add_theme_constant_override("separation", 10)
+	layout.add_child(brightness_row)
+
+	brightness_slider = HSlider.new()
+	brightness_slider.min_value = MIN_BRIGHTNESS
+	brightness_slider.max_value = MAX_BRIGHTNESS
+	brightness_slider.step = 0.01
+	brightness_slider.value = game_brightness
+	brightness_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	brightness_slider.value_changed.connect(_on_brightness_changed)
+	brightness_row.add_child(brightness_slider)
+
+	brightness_value_label = Label.new()
+	brightness_value_label.custom_minimum_size = Vector2(56.0, 0.0)
+	brightness_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	brightness_value_label.add_theme_font_size_override("font_size", 16)
+	brightness_value_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
+	brightness_row.add_child(brightness_value_label)
+
+	var quit_button := Button.new()
+	quit_button.text = "Quit"
+	quit_button.focus_mode = Control.FOCUS_NONE
+	quit_button.pressed.connect(_quit_game)
+	layout.add_child(quit_button)
+
+	_update_brightness_label()
 
 
 func _build_hotspots(hotspots: Array) -> void:
@@ -844,6 +933,52 @@ func _toggle_chat() -> void:
 func _toggle_navigation() -> void:
 	show_navigation = not show_navigation
 	_apply_navigation_display()
+
+
+func _toggle_menu() -> void:
+	if menu_overlay == null:
+		return
+
+	menu_overlay.visible = not menu_overlay.visible
+
+
+func _hide_menu() -> void:
+	if menu_overlay == null:
+		return
+
+	menu_overlay.visible = false
+
+
+func _quit_game() -> void:
+	get_tree().quit()
+
+
+func _on_brightness_changed(value: float) -> void:
+	game_brightness = value
+	_apply_brightness()
+
+
+func _apply_brightness() -> void:
+	if brightness_overlay == null:
+		return
+
+	if game_brightness < DEFAULT_BRIGHTNESS:
+		var darkness := (DEFAULT_BRIGHTNESS - game_brightness) / (DEFAULT_BRIGHTNESS - MIN_BRIGHTNESS)
+		brightness_overlay.color = Color(0.0, 0.0, 0.0, darkness * 0.55)
+	elif game_brightness > DEFAULT_BRIGHTNESS:
+		var lightness := (game_brightness - DEFAULT_BRIGHTNESS) / (MAX_BRIGHTNESS - DEFAULT_BRIGHTNESS)
+		brightness_overlay.color = Color(1.0, 1.0, 1.0, lightness * 0.28)
+	else:
+		brightness_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
+
+	_update_brightness_label()
+
+
+func _update_brightness_label() -> void:
+	if brightness_value_label == null:
+		return
+
+	brightness_value_label.text = "%d%%" % roundi(game_brightness * 100.0)
 
 
 func _apply_hotspot_display() -> void:

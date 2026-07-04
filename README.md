@@ -95,6 +95,13 @@ HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
 - `💬`: shows or hides the bottom chat/message panel. It is off by default.
 - `🧭`: shows or hides quick travel buttons. It is off by default and works independently from the chat panel.
 
+## Pause Menu
+
+- Press `Esc` to open or close the menu.
+- `Continue` returns to the game.
+- `Brightness` adjusts the game photo brightness without changing the menu UI.
+- `Quit` exits the running Godot game.
+
 ## Web Build
 
 The project already uses the GL Compatibility renderer and a scalable canvas setup, which are appropriate for a web export. In Godot, use `Project > Export > Add... > Web`.
