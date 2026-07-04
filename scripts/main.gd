@@ -283,6 +283,12 @@ const HOTEL_SCENES := {
 			],
 			"hotspots": [
 				{
+					"id": "room_108_exit_edge",
+					"label": "Corridor",
+					"rect": Rect2(0.000, 0.000, 0.090, 1.000),
+					"target": "corridor",
+				},
+				{
 					"id": "room_108_right_edge",
 					"label": "Turn",
 					"rect": Rect2(0.905, 0.000, 0.095, 1.000),
@@ -317,7 +323,7 @@ const HOTEL_SCENES := {
 		"room_108_bathroom_entry": {
 			"title": "Room 108 - Bathroom Entry",
 			"photo": "res://resource/room_108_bathroom_entry.png",
-			"intro": "From this angle, the bathroom entry and the closet door are both visible.",
+			"intro": "From this angle, the bathroom entry, dresser, television, and bed are all visible.",
 			"exits": [
 				{"label": "Room 108", "target": "room_108_bed_window"},
 				{"label": "Room 108 Bathroom", "target": "room_108_bathroom"},
@@ -331,16 +337,22 @@ const HOTEL_SCENES := {
 					"target": "room_108_bed_window",
 				},
 				{
-					"id": "room_108_closet_door",
-					"label": "Closet",
-					"rect": Rect2(0.755, 0.140, 0.165, 0.620),
-					"text": "The door beside the bathroom is a closet, not the exit.",
+					"id": "room_108_bathroom_doorway",
+					"label": "Bathroom",
+					"rect": Rect2(0.830, 0.000, 0.170, 0.820),
+					"target": "room_108_bathroom",
 				},
 				{
-					"id": "room_108_bathroom",
-					"label": "Bathroom",
-					"rect": Rect2(0.505, 0.095, 0.210, 0.585),
-					"target": "room_108_bathroom",
+					"id": "room_108_television",
+					"label": "TV",
+					"rect": Rect2(0.610, 0.150, 0.135, 0.235),
+					"text": "The television is mounted high on the wall beside the bathroom entry.",
+				},
+				{
+					"id": "room_108_dresser",
+					"label": "Dresser",
+					"rect": Rect2(0.660, 0.475, 0.235, 0.420),
+					"text": "The dresser blocks most of the path along the right wall.",
 				},
 				{
 					"id": "room_108_bed_side",
