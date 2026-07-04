@@ -16,7 +16,7 @@ const LAUNDRY_OPEN_PHOTO := "res://resource/images/laundry_room.png"
 const LAUNDRY_CLOSED_PHOTO := "res://resource/images/laundry_room_washer_closed.png"
 const FOOTSTEP_SOUND := "res://resource/sounds/footstep.ogg"
 const FOOTSTEP_COUNT := 4
-const FOOTSTEP_INTERVAL_SECONDS := 0.15
+const FOOTSTEP_INTERVAL_SECONDS := 0.22
 const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 
