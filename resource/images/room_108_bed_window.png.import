@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3to4gtkbpa3a"
-path="res://.godot/imported/front_desk.png-e8fc080e655dd3cc1cf0e3b9416deeb2.ctex"
+uid="uid://b3v52axv73qps"
+path="res://.godot/imported/room_108_bed_window.png-26746549a7d0f05b8ccace4c312f139a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resource/front_desk.png"
-dest_files=["res://.godot/imported/front_desk.png-e8fc080e655dd3cc1cf0e3b9416deeb2.ctex"]
+source_file="res://resource/images/room_108_bed_window.png"
+dest_files=["res://.godot/imported/room_108_bed_window.png-26746549a7d0f05b8ccace4c312f139a.ctex"]
 
 [params]
 

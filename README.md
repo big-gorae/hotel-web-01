@@ -4,24 +4,33 @@ Godot 4 GDScript starter for a 2.5D photo-based point-and-click hotel game.
 
 ## Files
 
-- `resource/front_desk.png`: hotel front desk
-- `resource/corridor.png`: outside corridor
-- `resource/room_105_door_window.png`: room 105 door and window angle
-- `resource/room_105_bathroom_entry.png`: room 105 bathroom entry angle
-- `resource/room_105_bathroom.png`: room 105 bathroom
-- `resource/room_106_bed_bathroom_entry.png`: room 106 bed and bathroom entry angle
-- `resource/room_106_bathroom.png`: room 106 reused bathroom angle
-- `resource/room_107_bed_nightstand.png`: room 107 bed and nightstand angle
-- `resource/room_107_bathroom_entry.png`: room 107 bathroom entry angle
-- `resource/room_107_bathroom.png`: room 107 reused bathroom angle
-- `resource/room_108_bed_window.png`: room 108 bed and window angle
-- `resource/room_108_bathroom_entry.png`: room 108 bathroom entry angle
-- `resource/room_108_bathroom.png`: room 108 reused bathroom angle
-- `resource/exterior_stairs.png`: exterior stairs
-- `resource/laundry_room.png`: laundry room with the second washer door open
-- `resource/laundry_room_washer_closed.png`: laundry room with the second washer door closed
-- `resource/prev/prev_laundry_room.png`: archived previous laundry room photo, disconnected from scenes
-- `resource/prev/prev_room_106_bed_window.png`: archived previous room 106 photo, disconnected from scenes
+- `resource/images/front_desk.png`: hotel front desk
+- `resource/images/corridor.png`: outside corridor
+- `resource/images/room_105_door_window.png`: room 105 door and window angle
+- `resource/images/room_105_bathroom_entry.png`: room 105 bathroom entry angle
+- `resource/images/room_105_bathroom.png`: room 105 bathroom
+- `resource/images/room_106_bed_bathroom_entry.png`: room 106 bed and bathroom entry angle
+- `resource/images/room_106_bathroom.png`: room 106 reused bathroom angle
+- `resource/images/room_107_bed_nightstand.png`: room 107 bed and nightstand angle
+- `resource/images/room_107_bathroom_entry.png`: room 107 bathroom entry angle
+- `resource/images/room_107_bathroom.png`: room 107 reused bathroom angle
+- `resource/images/room_108_bed_window.png`: room 108 bed and window angle
+- `resource/images/room_108_bathroom_entry.png`: room 108 bathroom entry angle
+- `resource/images/room_108_bathroom.png`: room 108 reused bathroom angle
+- `resource/images/exterior_stairs.png`: exterior stairs
+- `resource/images/laundry_room.png`: laundry room with the second washer door open
+- `resource/images/laundry_room_washer_closed.png`: laundry room with the second washer door closed
+- `resource/images/prev/prev_laundry_room.png`: archived previous laundry room photo, disconnected from scenes
+- `resource/images/prev/prev_room_106_bed_window.png`: archived previous room 106 photo, disconnected from scenes
+- `resource/sounds/footstep.ogg`: movement footstep sound, repeated quickly during scene transitions
+- `resource/sounds/licenses/fantozzi_footsteps_license.txt`: source and license record for the footstep sound
+
+## Resource Organization
+
+- Put photos and other image assets under `resource/images/`.
+- Put sound assets under `resource/sounds/`.
+- Put sound source/license records under `resource/sounds/licenses/`.
+- Keep disconnected older image assets under `resource/images/prev/`.
 
 ## Start
 
@@ -85,6 +94,13 @@ To move to another scene when clicked, use `target`:
 - Front Desk: click the left edge to enter the Laundry Room.
 - Laundry Room: click the bottom edge to return to the Front Desk.
 - Laundry Room: click the second washer to toggle its door open or closed.
+
+## Audio
+
+- Scene transitions play `resource/sounds/footstep.ogg`.
+- The game repeats the single footstep four times at short intervals to imply walking between spaces.
+- Sound source records live in `resource/sounds/licenses/`; add one record per external source.
+- Current credit text, if credits are later added: `Footstep sound effects based on "Fantozzi's Footsteps (Grass/Sand & Stone)" by Fantozzi, submitted to OpenGameArt by qubodup. Licensed under CC0 1.0 Universal.`
 
 ## Dialogue
 

@@ -12,8 +12,13 @@ const DEBUG_UI_ENABLED_VALUES := ["1", "true", "yes", "on"]
 const DEFAULT_BRIGHTNESS := 1.0
 const MIN_BRIGHTNESS := 0.55
 const MAX_BRIGHTNESS := 1.45
-const LAUNDRY_OPEN_PHOTO := "res://resource/laundry_room.png"
-const LAUNDRY_CLOSED_PHOTO := "res://resource/laundry_room_washer_closed.png"
+const LAUNDRY_OPEN_PHOTO := "res://resource/images/laundry_room.png"
+const LAUNDRY_CLOSED_PHOTO := "res://resource/images/laundry_room_washer_closed.png"
+const FOOTSTEP_SOUND := "res://resource/sounds/footstep.ogg"
+const FOOTSTEP_COUNT := 4
+const FOOTSTEP_INTERVAL_SECONDS := 0.15
+const FOOTSTEP_VOLUME_DB := -9.0
+const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -35,7 +40,7 @@ const HIDDEN_STYLE := {
 const HOTEL_SCENES := {
 	"front_desk": {
 		"title": "Front Desk",
-		"photo": "res://resource/front_desk.png",
+		"photo": "res://resource/images/front_desk.png",
 		"intro": "The night clerk's counter is quiet. Notes, a phone, and the old monitor are ready for clues.",
 		"exits": [
 			{"label": "Corridor", "target": "corridor"},
@@ -92,7 +97,7 @@ const HOTEL_SCENES := {
 	},
 	"corridor": {
 		"title": "Corridor",
-		"photo": "res://resource/corridor.png",
+		"photo": "res://resource/images/corridor.png",
 		"intro": "The outside corridor is damp and dim. Each numbered door could hide a different lead.",
 		"exits": [
 			{"label": "Front Desk", "target": "front_desk"},
@@ -149,7 +154,7 @@ const HOTEL_SCENES := {
 		},
 		"room_106_bed_bathroom_entry": {
 			"title": "Room 106 - Bed And Bathroom Entry",
-			"photo": "res://resource/room_106_bed_bathroom_entry.png",
+			"photo": "res://resource/images/room_106_bed_bathroom_entry.png",
 			"intro": "Room 106 has a clear view of the bed, window, bathroom entry, and dresser.",
 			"exits": [
 				{"label": "Room 106 Bathroom", "target": "room_106_bathroom"},
@@ -190,7 +195,7 @@ const HOTEL_SCENES := {
 		},
 		"room_107_bed_nightstand": {
 			"title": "Room 107 - Bed And Nightstand",
-			"photo": "res://resource/room_107_bed_nightstand.png",
+			"photo": "res://resource/images/room_107_bed_nightstand.png",
 			"intro": "Room 107 shows the nightstand, phone, and a messier bed.",
 			"exits": [
 				{"label": "Room 107 Bathroom Entry", "target": "room_107_bathroom_entry"},
@@ -231,7 +236,7 @@ const HOTEL_SCENES := {
 		},
 		"room_107_bathroom_entry": {
 			"title": "Room 107 - Bathroom Entry",
-			"photo": "res://resource/room_107_bathroom_entry.png",
+			"photo": "res://resource/images/room_107_bathroom_entry.png",
 			"intro": "Room 107's second angle shows the bathroom entry and the closet door.",
 			"exits": [
 				{"label": "Room 107", "target": "room_107_bed_nightstand"},
@@ -273,7 +278,7 @@ const HOTEL_SCENES := {
 		},
 		"room_108_bed_window": {
 			"title": "Room 108 - Bed And Window",
-			"photo": "res://resource/room_108_bed_window.png",
+			"photo": "res://resource/images/room_108_bed_window.png",
 			"intro": "Room 108 opens on the bed, window, and desk side of the room.",
 			"exits": [
 				{"label": "Room 108 Bathroom Entry", "target": "room_108_bathroom_entry"},
@@ -320,7 +325,7 @@ const HOTEL_SCENES := {
 		},
 		"room_108_bathroom_entry": {
 			"title": "Room 108 - Bathroom Entry",
-			"photo": "res://resource/room_108_bathroom_entry.png",
+			"photo": "res://resource/images/room_108_bathroom_entry.png",
 			"intro": "From this angle, the bathroom entry, dresser, television, and bed are all visible.",
 			"exits": [
 				{"label": "Room 108", "target": "room_108_bed_window"},
@@ -368,7 +373,7 @@ const HOTEL_SCENES := {
 		},
 		"room_105_door_window": {
 			"title": "Room 105 - Door And Window",
-			"photo": "res://resource/room_105_door_window.png",
+			"photo": "res://resource/images/room_105_door_window.png",
 			"intro": "A modest room with the curtains half closed. The bed, window, and door are the main points of interest.",
 			"exits": [
 				{"label": "Corridor", "target": "corridor"},
@@ -416,7 +421,7 @@ const HOTEL_SCENES := {
 	},
 	"room_105_bathroom_entry": {
 		"title": "Room 105 - Bathroom Entry",
-		"photo": "res://resource/room_105_bathroom_entry.png",
+		"photo": "res://resource/images/room_105_bathroom_entry.png",
 		"intro": "From this angle the bathroom, closet door, television, and bed are all within reach.",
 		"exits": [
 			{"label": "Room 105", "target": "room_105_door_window"},
@@ -464,7 +469,7 @@ const HOTEL_SCENES := {
 		},
 		"room_105_bathroom": {
 			"title": "Room 105 - Bathroom",
-			"photo": "res://resource/room_105_bathroom.png",
+			"photo": "res://resource/images/room_105_bathroom.png",
 			"intro": "The bathroom is cramped and bright. The mirror, sink, tub, and door are all close together.",
 			"exits": [
 				{"label": "Room 105 Bathroom Entry", "target": "room_105_bathroom_entry"},
@@ -499,7 +504,7 @@ const HOTEL_SCENES := {
 		},
 		"room_106_bathroom": {
 			"title": "Room 106 - Bathroom",
-			"photo": "res://resource/room_106_bathroom.png",
+			"photo": "res://resource/images/room_106_bathroom.png",
 			"intro": "Room 106 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
 			"exits": [
 				{"label": "Room 106", "target": "room_106_bed_bathroom_entry"},
@@ -533,7 +538,7 @@ const HOTEL_SCENES := {
 		},
 		"room_107_bathroom": {
 			"title": "Room 107 - Bathroom",
-			"photo": "res://resource/room_107_bathroom.png",
+			"photo": "res://resource/images/room_107_bathroom.png",
 			"intro": "Room 107 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
 			"exits": [
 				{"label": "Room 107 Bathroom Entry", "target": "room_107_bathroom_entry"},
@@ -567,7 +572,7 @@ const HOTEL_SCENES := {
 		},
 		"room_108_bathroom": {
 			"title": "Room 108 - Bathroom",
-			"photo": "res://resource/room_108_bathroom.png",
+			"photo": "res://resource/images/room_108_bathroom.png",
 			"intro": "Room 108 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
 			"exits": [
 				{"label": "Room 108 Bathroom Entry", "target": "room_108_bathroom_entry"},
@@ -601,7 +606,7 @@ const HOTEL_SCENES := {
 		},
 		"laundry_room": {
 			"title": "Laundry Room",
-			"photo": "res://resource/laundry_room.png",
+			"photo": "res://resource/images/laundry_room.png",
 			"intro": "The laundry room hums under fluorescent light. Machines line the walls and the exit is behind you.",
 			"exits": [
 				{"label": "Front Desk", "target": "front_desk"},
@@ -635,7 +640,7 @@ const HOTEL_SCENES := {
 		},
 		"exterior_stairs": {
 			"title": "Exterior Stairs",
-			"photo": "res://resource/exterior_stairs.png",
+			"photo": "res://resource/images/exterior_stairs.png",
 			"intro": "The exterior stairs cut across the motel wall. Wet asphalt spreads out below.",
 			"exits": [
 				{"label": "Corridor", "target": "corridor"},
@@ -671,6 +676,10 @@ var current_persistent_dialogue_text := ""
 var mouse_position := Vector2.ZERO
 var title_tween: Tween
 var transient_dialogue_tween: Tween
+var footstep_stream: AudioStream
+var footstep_players: Array[AudioStreamPlayer] = []
+var footstep_timer: Timer
+var footstep_index := 0
 
 var photo: TextureRect
 var brightness_overlay: ColorRect
@@ -697,7 +706,8 @@ func _ready() -> void:
 	debug_ui_enabled = _is_debug_ui_enabled()
 	get_tree().root.size_changed.connect(_update_layout)
 	_build_ui()
-	show_scene(START_SCENE_ID)
+	_build_audio()
+	show_scene(START_SCENE_ID, false)
 
 
 func _is_debug_ui_enabled() -> bool:
@@ -716,10 +726,13 @@ func _input(event: InputEvent) -> void:
 		_update_layout()
 
 
-func show_scene(scene_id: String) -> void:
+func show_scene(scene_id: String, play_transition_sound := true) -> void:
 	if not HOTEL_SCENES.has(scene_id):
 		push_warning("Unknown hotel scene: %s" % scene_id)
 		return
+
+	if play_transition_sound and current_scene_id != scene_id:
+		_play_transition_footsteps()
 
 	current_scene_id = scene_id
 	var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
@@ -834,6 +847,26 @@ func _build_ui() -> void:
 	_build_menu()
 
 
+func _build_audio() -> void:
+	footstep_stream = load(FOOTSTEP_SOUND) as AudioStream
+	if footstep_stream == null:
+		push_warning("Missing footstep sound: %s" % FOOTSTEP_SOUND)
+		return
+
+	for index in range(FOOTSTEP_COUNT):
+		var player := AudioStreamPlayer.new()
+		player.stream = footstep_stream
+		player.volume_db = FOOTSTEP_VOLUME_DB
+		add_child(player)
+		footstep_players.append(player)
+
+	footstep_timer = Timer.new()
+	footstep_timer.one_shot = false
+	footstep_timer.wait_time = FOOTSTEP_INTERVAL_SECONDS
+	footstep_timer.timeout.connect(_on_footstep_timer_timeout)
+	add_child(footstep_timer)
+
+
 func _build_menu() -> void:
 	menu_overlay = ColorRect.new()
 	menu_overlay.color = Color(0.0, 0.0, 0.0, 0.58)
@@ -933,10 +966,14 @@ func _build_navigation(exits: Array) -> void:
 		button.text = _exit_label(exit_data)
 		button.focus_mode = Control.FOCUS_NONE
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		button.pressed.connect(show_scene.bind(exit_data["target"]))
+		button.pressed.connect(_on_navigation_pressed.bind(exit_data["target"]))
 		nav_bar.add_child(button)
 
 	_apply_navigation_display()
+
+
+func _on_navigation_pressed(scene_id: String) -> void:
+	show_scene(scene_id)
 
 
 func _on_hotspot_pressed(hotspot: Dictionary) -> void:
@@ -958,6 +995,31 @@ func _run_hotspot_action(action: String) -> void:
 			_toggle_laundry_washer()
 		_:
 			push_warning("Unknown hotspot action: %s" % action)
+
+
+func _play_transition_footsteps() -> void:
+	if footstep_stream == null or footstep_players.is_empty() or footstep_timer == null:
+		return
+
+	footstep_timer.stop()
+	footstep_index = 0
+	_play_next_footstep()
+	if footstep_index < FOOTSTEP_COUNT:
+		footstep_timer.start()
+
+
+func _on_footstep_timer_timeout() -> void:
+	_play_next_footstep()
+	if footstep_index >= FOOTSTEP_COUNT:
+		footstep_timer.stop()
+
+
+func _play_next_footstep() -> void:
+	var player := footstep_players[footstep_index % footstep_players.size()]
+	player.pitch_scale = FOOTSTEP_PITCHES[footstep_index % FOOTSTEP_PITCHES.size()]
+	player.stop()
+	player.play()
+	footstep_index += 1
 
 
 func _toggle_laundry_washer() -> void:

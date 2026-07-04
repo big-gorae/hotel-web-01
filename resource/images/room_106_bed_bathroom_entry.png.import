@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vv8lmyy7dwks"
-path="res://.godot/imported/exterior_stairs.png-9e86d264cf470fed0f34048a94b3e5d9.ctex"
+uid="uid://cnboo68u6c2kr"
+path="res://.godot/imported/room_106_bed_bathroom_entry.png-42720078e185f5ff48c78694dcf7b613.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resource/exterior_stairs.png"
-dest_files=["res://.godot/imported/exterior_stairs.png-9e86d264cf470fed0f34048a94b3e5d9.ctex"]
+source_file="res://resource/images/room_106_bed_bathroom_entry.png"
+dest_files=["res://.godot/imported/room_106_bed_bathroom_entry.png-42720078e185f5ff48c78694dcf7b613.ctex"]
 
 [params]
 

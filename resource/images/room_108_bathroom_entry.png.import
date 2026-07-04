@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bwhjy1j58yk35"
-path="res://.godot/imported/room_105_door_window.png-dd40cfa691a01d45e93ee94faa29ed1b.ctex"
+uid="uid://dgah7jv8v0k1n"
+path="res://.godot/imported/room_108_bathroom_entry.png-c0f878be9507d039bbfabaecdac48846.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resource/room_105_door_window.png"
-dest_files=["res://.godot/imported/room_105_door_window.png-dd40cfa691a01d45e93ee94faa29ed1b.ctex"]
+source_file="res://resource/images/room_108_bathroom_entry.png"
+dest_files=["res://.godot/imported/room_108_bathroom_entry.png-c0f878be9507d039bbfabaecdac48846.ctex"]
 
 [params]
 

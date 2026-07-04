@@ -1,0 +1,10 @@
+Asset: Fantozzi's Footsteps (Grass/Sand & Stone)
+Type: Sound Effects / Footsteps
+Author: Fantozzi
+Submitted on OpenGameArt by: qubodup
+Source: https://opengameart.org/content/fantozzis-footsteps-grasssand-stone
+Original source mentioned by OpenGameArt: https://www.freesound.org/people/Fantozzi/packs/10338/
+License: CC0 1.0 Universal
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+Downloaded on: 2026-07-04
+Modifications: Converted from FLAC to Ogg Vorbis and renamed for Godot/web playback.

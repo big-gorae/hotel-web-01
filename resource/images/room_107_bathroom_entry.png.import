@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cq8o6ksnxde21"
-path="res://.godot/imported/room_107_bed_nightstand.png-8f534e92961caf7cb94b02176a3b81e1.ctex"
+uid="uid://cmvfn36kocgf6"
+path="res://.godot/imported/room_107_bathroom_entry.png-28323822046cf0744219d7ac0eef6942.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resource/room_107_bed_nightstand.png"
-dest_files=["res://.godot/imported/room_107_bed_nightstand.png-8f534e92961caf7cb94b02176a3b81e1.ctex"]
+source_file="res://resource/images/room_107_bathroom_entry.png"
+dest_files=["res://.godot/imported/room_107_bathroom_entry.png-28323822046cf0744219d7ac0eef6942.ctex"]
 
 [params]
 
