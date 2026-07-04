@@ -110,6 +110,7 @@ To move to another scene when clicked, use `target`:
 - `scripts/ui/inventory_item_button.gd` provides drag data for inventory items.
 - `scripts/ui/equipment_slot.gd` accepts dragged items and equips them through the inventory model.
 - `scripts/ui/equipment_hud.gd` shows the currently equipped item in the lower-left square.
+- `scripts/ui/rule_book_screen.gd` renders the menu Rule Book panel from localized rule keys.
 
 Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment can be verified before pickup gameplay exists.
 
@@ -123,7 +124,10 @@ Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment can
 - `scripts/localization.gd` owns language state and translation lookup.
 - English is the default and current language.
 - Supported language slots are English, Korean, Japanese, Russian, and Chinese.
-- Scene, hotspot, exit, and UI text are routed through localization keys with the current English text as fallback.
+- Scene, hotspot, exit, UI text, item names/descriptions, rule book text, and scene photo paths are routed through localization keys with the current English text/path as fallback.
+- Item text uses `item.<item_id>.name` and `item.<item_id>.description`.
+- Localized photo variants can use `scene.<scene_id>.photo`; the closed laundry variant can use `scene.laundry_room.photo.closed`.
+- Rule Book entries use `ui.rule_book.rule.<number>`.
 
 ## Debug Toggles
 
@@ -142,7 +146,8 @@ HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
 - Press `Esc` to open or close the menu.
 - Opening the menu pauses gameplay with `SceneTree.paused`.
 - `scripts/systems/playback_pause_manager.gd` also pauses active audio/video players under the gameplay layer so future sounds and videos follow the same pause rule.
-- The menu moves to the left side of the overlay; the inventory and `Hand` equipment slot appear to its right.
+- The menu moves to the left side of the overlay; the right side can switch between Inventory/Hand and Rule Book.
+- `Rule Book` opens a Napolitan-style hotel rules list.
 - `Continue` returns to the game.
 - `Brightness` adjusts the game photo brightness without changing the menu UI.
 - `Quit` exits the running Godot game.

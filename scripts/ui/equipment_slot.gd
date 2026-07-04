@@ -7,6 +7,13 @@ const DRAG_KIND := "hotel_inventory_item"
 
 var icon_label: Label
 var name_label: Label
+var localization = null
+
+
+func setup(new_localization) -> void:
+	localization = new_localization
+	if name_label != null:
+		name_label.text = _text("inventory.hand.empty", "Drag item here")
 
 
 func _ready() -> void:
@@ -19,7 +26,7 @@ func _ready() -> void:
 	add_child(layout)
 
 	var title := Label.new()
-	title.text = "Hand"
+	title.text = _text("inventory.hand.title", "Hand")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 18)
 	title.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
@@ -33,7 +40,7 @@ func _ready() -> void:
 	layout.add_child(icon_label)
 
 	name_label = Label.new()
-	name_label.text = "Drag item here"
+	name_label.text = _text("inventory.hand.empty", "Drag item here")
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_label.add_theme_font_size_override("font_size", 14)
@@ -47,10 +54,10 @@ func set_equipped_item(item) -> void:
 
 	if item == null:
 		icon_label.text = "✋"
-		name_label.text = "Drag item here"
+		name_label.text = _text("inventory.hand.empty", "Drag item here")
 	else:
 		icon_label.text = item.icon_text
-		name_label.text = item.display_name
+		name_label.text = item.get_display_name(localization)
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
@@ -72,3 +79,10 @@ func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBo
 	style.content_margin_top = 12.0
 	style.content_margin_bottom = 12.0
 	return style
+
+
+func _text(key: String, fallback: String) -> String:
+	if localization == null:
+		return fallback
+
+	return localization.translate("ui.%s" % key, fallback)

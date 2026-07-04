@@ -5,13 +5,14 @@ signal activated
 
 var icon_label: Label
 var name_label: Label
+var localization = null
 
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(88.0, 88.0)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	tooltip_text = "Open inventory"
+	tooltip_text = _text("equipment.tooltip", "Open inventory")
 	add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.72), Color(1.0, 1.0, 1.0, 0.14), 8))
 
 	var layout := VBoxContainer.new()
@@ -27,14 +28,16 @@ func _ready() -> void:
 	layout.add_child(icon_label)
 
 	name_label = Label.new()
-	name_label.text = "Empty"
+	name_label.text = _text("equipment.empty", "Empty")
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 11)
 	name_label.add_theme_color_override("font_color", Color(0.82, 0.82, 0.78))
 	layout.add_child(name_label)
 
 
-func bind_inventory(model) -> void:
+func bind_inventory(model, new_localization) -> void:
+	localization = new_localization
+	tooltip_text = _text("equipment.tooltip", "Open inventory")
 	model.equipped_item_changed.connect(set_equipped_item)
 	set_equipped_item(model.equipped_item)
 
@@ -45,10 +48,10 @@ func set_equipped_item(item) -> void:
 
 	if item == null:
 		icon_label.text = "✋"
-		name_label.text = "Empty"
+		name_label.text = _text("equipment.empty", "Empty")
 	else:
 		icon_label.text = item.icon_text
-		name_label.text = item.display_name
+		name_label.text = item.get_display_name(localization)
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -68,3 +71,10 @@ func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBo
 	style.content_margin_top = 6.0
 	style.content_margin_bottom = 6.0
 	return style
+
+
+func _text(key: String, fallback: String) -> String:
+	if localization == null:
+		return fallback
+
+	return localization.translate("ui.%s" % key, fallback)

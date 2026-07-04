@@ -5,13 +5,15 @@ const InventoryItemButton := preload("res://scripts/ui/inventory_item_button.gd"
 const EquipmentSlot := preload("res://scripts/ui/equipment_slot.gd")
 
 var inventory_model = null
+var localization = null
 var items_grid: GridContainer
 var empty_label: Label
 var hand_slot = null
 
 
-func setup(model) -> void:
+func setup(model, new_localization) -> void:
 	inventory_model = model
+	localization = new_localization
 	_build()
 	inventory_model.items_changed.connect(_refresh_items)
 	inventory_model.equipped_item_changed.connect(_on_equipped_item_changed)
@@ -36,14 +38,14 @@ func _build() -> void:
 	inventory_panel.add_child(inventory_layout)
 
 	var title := Label.new()
-	title.text = "Inventory"
+	title.text = _text("inventory.title", "Inventory")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
 	inventory_layout.add_child(title)
 
 	var hint := Label.new()
-	hint.text = "Drag an item to Hand to equip it."
+	hint.text = _text("inventory.hint", "Drag an item to Hand to equip it.")
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.add_theme_font_size_override("font_size", 14)
 	hint.add_theme_color_override("font_color", Color(0.72, 0.72, 0.68))
@@ -60,13 +62,14 @@ func _build() -> void:
 	scroll.add_child(items_grid)
 
 	empty_label = Label.new()
-	empty_label.text = "No items yet."
+	empty_label.text = _text("inventory.empty", "No items yet.")
 	empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	empty_label.add_theme_font_size_override("font_size", 16)
 	empty_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.68))
 	inventory_layout.add_child(empty_label)
 
 	hand_slot = EquipmentSlot.new()
+	hand_slot.setup(localization)
 	hand_slot.item_dropped.connect(_on_hand_item_dropped)
 	add_child(hand_slot)
 
@@ -79,7 +82,7 @@ func _refresh_items() -> void:
 	empty_label.visible = items.is_empty()
 	for item in items:
 		var button = InventoryItemButton.new()
-		button.setup(item)
+		button.setup(item, localization)
 		items_grid.add_child(button)
 
 
@@ -103,3 +106,10 @@ func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBo
 	style.content_margin_top = 14.0
 	style.content_margin_bottom = 14.0
 	return style
+
+
+func _text(key: String, fallback: String) -> String:
+	if localization == null:
+		return fallback
+
+	return localization.translate("ui.%s" % key, fallback)

@@ -5,6 +5,7 @@ const HotelItemDefinitionScript = preload("res://scripts/items/item_definition.g
 const HotelInventoryModelScript = preload("res://scripts/items/inventory_model.gd")
 const HotelInventoryScreenScript = preload("res://scripts/ui/inventory_screen.gd")
 const HotelEquipmentHudScript = preload("res://scripts/ui/equipment_hud.gd")
+const HotelRuleBookScreenScript = preload("res://scripts/ui/rule_book_screen.gd")
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 
 const START_SCENE_ID := "front_desk"
@@ -704,6 +705,7 @@ var brightness_slider: HSlider
 var brightness_value_label: Label
 var inventory_screen
 var equipment_hud
+var rule_book_screen
 
 
 func _ready() -> void:
@@ -866,7 +868,7 @@ func _build_ui() -> void:
 	equipment_hud.offset_right = 112.0
 	equipment_hud.offset_bottom = -18.0
 	gameplay_layer.add_child(equipment_hud)
-	equipment_hud.bind_inventory(inventory_model)
+	equipment_hud.bind_inventory(inventory_model, localization)
 	equipment_hud.activated.connect(_show_menu)
 
 	_position_bottom_panels()
@@ -885,8 +887,10 @@ func _seed_inventory() -> void:
 func _make_inventory_item(item_id: String, item_name: String, item_description: String, item_icon_text: String, item_can_equip := true):
 	var item = HotelItemDefinitionScript.new()
 	item.id = item_id
-	item.display_name = item_name
-	item.description = item_description
+	item.name_key = "item.%s.name" % item_id
+	item.description_key = "item.%s.description" % item_id
+	item.fallback_display_name = item_name
+	item.fallback_description = item_description
 	item.icon_text = item_icon_text
 	item.can_equip = item_can_equip
 	return item
@@ -957,6 +961,18 @@ func _build_menu() -> void:
 	continue_button.pressed.connect(_hide_menu)
 	layout.add_child(continue_button)
 
+	var inventory_button := Button.new()
+	inventory_button.text = _ui_text("menu.inventory", "Inventory")
+	inventory_button.focus_mode = Control.FOCUS_NONE
+	inventory_button.pressed.connect(_show_inventory_menu_panel)
+	layout.add_child(inventory_button)
+
+	var rule_book_button := Button.new()
+	rule_book_button.text = _ui_text("menu.rule_book", "Rule Book")
+	rule_book_button.focus_mode = Control.FOCUS_NONE
+	rule_book_button.pressed.connect(_show_rule_book_menu_panel)
+	layout.add_child(rule_book_button)
+
 	var brightness_label := Label.new()
 	brightness_label.text = _ui_text("menu.brightness", "Brightness")
 	brightness_label.add_theme_font_size_override("font_size", 16)
@@ -992,8 +1008,15 @@ func _build_menu() -> void:
 	inventory_screen = HotelInventoryScreenScript.new()
 	inventory_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	inventory_screen.custom_minimum_size = Vector2(570.0, 420.0)
-	inventory_screen.setup(inventory_model)
+	inventory_screen.setup(inventory_model, localization)
 	shell.add_child(inventory_screen)
+
+	rule_book_screen = HotelRuleBookScreenScript.new()
+	rule_book_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	rule_book_screen.custom_minimum_size = Vector2(570.0, 420.0)
+	rule_book_screen.setup(localization)
+	rule_book_screen.visible = false
+	shell.add_child(rule_book_screen)
 
 	_update_brightness_label()
 
@@ -1127,6 +1150,7 @@ func _show_menu() -> void:
 	if menu_overlay == null:
 		return
 
+	_show_inventory_menu_panel()
 	menu_overlay.visible = true
 	_set_game_paused(true)
 
@@ -1141,6 +1165,23 @@ func _hide_menu() -> void:
 
 func _is_menu_open() -> bool:
 	return menu_overlay != null and menu_overlay.visible
+
+
+func _show_inventory_menu_panel() -> void:
+	if inventory_screen != null:
+		inventory_screen.visible = true
+
+	if rule_book_screen != null:
+		rule_book_screen.visible = false
+
+
+func _show_rule_book_menu_panel() -> void:
+	if inventory_screen != null:
+		inventory_screen.visible = false
+
+	if rule_book_screen != null:
+		rule_book_screen.visible = true
+		rule_book_screen.refresh_text()
 
 
 func _set_game_paused(paused: bool) -> void:
@@ -1242,9 +1283,9 @@ func _scene_text(scene_id: String, scene_data: Dictionary, field: String) -> Str
 
 func _scene_photo(scene_id: String, scene_data: Dictionary) -> String:
 	if scene_id == "laundry_room" and not laundry_second_washer_open:
-		return LAUNDRY_CLOSED_PHOTO
+		return localization.translate_scene_photo(scene_id, LAUNDRY_CLOSED_PHOTO, "closed")
 
-	return scene_data["photo"]
+	return localization.translate_scene_photo(scene_id, scene_data["photo"])
 
 
 func _hotspot_text(hotspot: Dictionary, field: String) -> String:
