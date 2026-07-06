@@ -711,6 +711,7 @@ var rule_book_screen
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	_hide_editor_hotspot_definitions()
 	inventory_model = HotelInventoryModelScript.new()
 	playback_pause_manager = HotelPlaybackPauseManagerScript.new()
 	debug_ui_enabled = _is_debug_ui_enabled()
@@ -752,7 +753,7 @@ func show_scene(scene_id: String, play_transition_sound := true) -> void:
 	title_label.text = _scene_text(scene_id, scene_data, "title")
 	_show_title_banner()
 	_set_persistent_dialogue(_scene_text(scene_id, scene_data, "intro"))
-	_build_hotspots(scene_data["hotspots"])
+	_build_hotspots(_scene_hotspots(scene_id, scene_data))
 	_build_navigation(scene_data["exits"])
 	_apply_brightness()
 	_update_layout()
@@ -876,6 +877,12 @@ func _build_ui() -> void:
 	_apply_navigation_display()
 	_sync_debug_toggles()
 	_build_menu()
+
+
+func _hide_editor_hotspot_definitions() -> void:
+	var definitions := get_node_or_null("HotspotDefinitions")
+	if definitions is CanvasItem:
+		definitions.visible = false
 
 
 func _seed_inventory() -> void:
@@ -1311,6 +1318,35 @@ func _scene_photo(scene_id: String, scene_data: Dictionary) -> String:
 		return localization.translate_scene_photo(scene_id, LAUNDRY_CLOSED_PHOTO, "closed")
 
 	return localization.translate_scene_photo(scene_id, scene_data["photo"])
+
+
+func _scene_hotspots(scene_id: String, scene_data: Dictionary) -> Array:
+	var editor_hotspots := _editor_hotspots_for_scene(scene_id)
+	if not editor_hotspots.is_empty():
+		return editor_hotspots
+
+	return scene_data["hotspots"]
+
+
+func _editor_hotspots_for_scene(scene_id: String) -> Array:
+	var definitions := get_node_or_null("HotspotDefinitions")
+	if definitions == null:
+		return []
+
+	var scene_group := definitions.get_node_or_null(scene_id)
+	if scene_group == null:
+		return []
+
+	var authoring_size := Vector2(1280.0, 720.0)
+	if scene_group is Control and scene_group.size.x > 0.0 and scene_group.size.y > 0.0:
+		authoring_size = scene_group.size
+
+	var hotspots := []
+	for child in scene_group.get_children():
+		if child.has_method("to_hotspot_data"):
+			hotspots.append(child.to_hotspot_data(authoring_size))
+
+	return hotspots
 
 
 func _hotspot_text(hotspot: Dictionary, field: String) -> String:

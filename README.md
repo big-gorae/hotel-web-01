@@ -39,9 +39,28 @@ Open this folder in Godot and run the main scene:
 - Main scene: `scenes/main.tscn`
 - Main script: `scripts/main.gd`
 
-## Add Or Edit Click Areas
+## Add Or Edit Click Areas In Godot
 
-Most game setup is in `scripts/main.gd`.
+Click areas are now editable in the Godot scene editor.
+
+1. Open `scenes/main.tscn`.
+2. In the Scene tree, open `Main > HotspotDefinitions`.
+3. Turn on visibility for the scene group you want to edit, such as `front_desk`, and turn off other scene groups to avoid overlap.
+4. Select a hotspot child node and drag or resize its rectangle in the 2D viewport.
+5. Edit its Inspector fields:
+   - `hotspot_id`: stable id for localization and saved logic
+   - `hotspot_label`: debug label shown when click areas are visible
+   - `target_scene_id`: scene id to move to when clicked
+   - `description_text`: text shown when clicked
+   - `action`: special action such as `toggle_laundry_washer`
+
+Each scene group includes a `PhotoPreview` node so the rectangles can be positioned over the actual photo. `PhotoPreview` is ignored at runtime.
+
+The legacy code data in `scripts/main.gd` still exists as fallback. Runtime reads editor-authored nodes first; if a scene has no nodes under `HotspotDefinitions/<scene_id>`, it falls back to `HOTEL_SCENES[scene_id]["hotspots"]`.
+
+## Legacy Click Area Data
+
+Most other game setup is still in `scripts/main.gd`.
 
 Each photo scene lives in `HOTEL_SCENES`. A click area is a `hotspots` entry:
 
