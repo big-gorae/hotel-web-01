@@ -18,7 +18,6 @@ const DEBUG_UI_ENABLED_VALUES := ["1", "true", "yes", "on"]
 const DEFAULT_BRIGHTNESS := 1.0
 const MIN_BRIGHTNESS := 0.55
 const MAX_BRIGHTNESS := 1.45
-const LAUNDRY_CLOSED_BRIGHTNESS_BOOST := 0.08
 const LAUNDRY_OPEN_PHOTO := "res://resource/images/laundry_room.png"
 const LAUNDRY_CLOSED_PHOTO := "res://resource/images/laundry_room_washer_closed.png"
 const FOOTSTEP_SOUND := "res://resource/sounds/footstep.ogg"
@@ -1204,7 +1203,7 @@ func _apply_brightness() -> void:
 	if brightness_overlay == null:
 		return
 
-	var effective_brightness := clampf(game_brightness + _scene_brightness_boost(), MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+	var effective_brightness := game_brightness
 	if effective_brightness < DEFAULT_BRIGHTNESS:
 		var darkness := (DEFAULT_BRIGHTNESS - effective_brightness) / (DEFAULT_BRIGHTNESS - MIN_BRIGHTNESS)
 		brightness_overlay.color = Color(0.0, 0.0, 0.0, darkness * 0.55)
@@ -1215,13 +1214,6 @@ func _apply_brightness() -> void:
 		brightness_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
 
 	_update_brightness_label()
-
-
-func _scene_brightness_boost() -> float:
-	if current_scene_id == "laundry_room" and not laundry_second_washer_open:
-		return LAUNDRY_CLOSED_BRIGHTNESS_BOOST
-
-	return 0.0
 
 
 func _update_brightness_label() -> void:
