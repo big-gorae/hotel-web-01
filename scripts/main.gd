@@ -26,6 +26,8 @@ const FOOTSTEP_COUNT := 3
 const FOOTSTEP_INTERVAL_SECONDS := 0.22
 const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
+const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
+const LOBBY_BLUR_SHADER_CODE := "shader_type canvas_item;\nuniform float blur_size = 3.5;\nvoid fragment() {\n\tvec2 px = TEXTURE_PIXEL_SIZE * blur_size;\n\tvec4 color = texture(TEXTURE, UV) * 0.18;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(-px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, -px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, px.y)) * 0.11;\n\tCOLOR = color;\n}\n"
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -683,6 +685,7 @@ var footstep_stream: AudioStream
 var footstep_players: Array[AudioStreamPlayer] = []
 var footstep_timer: Timer
 var footstep_index := 0
+var game_started := false
 
 var gameplay_layer: Control
 var photo: TextureRect
@@ -706,6 +709,7 @@ var brightness_value_label: Label
 var inventory_screen
 var equipment_hud
 var rule_book_screen
+var lobby_overlay: Control
 
 
 func _ready() -> void:
@@ -719,7 +723,7 @@ func _ready() -> void:
 	_seed_inventory()
 	_build_ui()
 	_build_audio()
-	show_scene(START_SCENE_ID, false)
+	_show_lobby()
 
 
 func _is_debug_ui_enabled() -> bool:
@@ -729,6 +733,10 @@ func _is_debug_ui_enabled() -> bool:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		if _is_lobby_open():
+			get_viewport().set_input_as_handled()
+			return
+
 		_toggle_menu()
 		get_viewport().set_input_as_handled()
 		return
@@ -877,6 +885,7 @@ func _build_ui() -> void:
 	_apply_navigation_display()
 	_sync_debug_toggles()
 	_build_menu()
+	_build_lobby()
 
 
 func _hide_editor_hotspot_definitions() -> void:
@@ -1060,6 +1069,103 @@ func _build_menu() -> void:
 	_update_brightness_label()
 
 
+func _build_lobby() -> void:
+	lobby_overlay = Control.new()
+	lobby_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	lobby_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	lobby_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(lobby_overlay)
+
+	var background := TextureRect.new()
+	background.process_mode = Node.PROCESS_MODE_ALWAYS
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.texture = load(LOBBY_BACKGROUND_PHOTO) as Texture2D
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.material = _make_lobby_blur_material()
+	lobby_overlay.add_child(background)
+
+	var shade := ColorRect.new()
+	shade.process_mode = Node.PROCESS_MODE_ALWAYS
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shade.color = Color(0.0, 0.0, 0.0, 0.46)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lobby_overlay.add_child(shade)
+
+	var center := CenterContainer.new()
+	center.process_mode = Node.PROCESS_MODE_ALWAYS
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lobby_overlay.add_child(center)
+
+	var panel := PanelContainer.new()
+	panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	panel.custom_minimum_size = Vector2(340.0, 0.0)
+	panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.90), Color(1.0, 1.0, 1.0, 0.14), 12))
+	center.add_child(panel)
+
+	var layout := VBoxContainer.new()
+	layout.process_mode = Node.PROCESS_MODE_ALWAYS
+	layout.add_theme_constant_override("separation", 14)
+	panel.add_child(layout)
+
+	var start_button := Button.new()
+	start_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	start_button.text = _ui_text("lobby.start_shift", "Start Shift")
+	start_button.focus_mode = Control.FOCUS_NONE
+	start_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	start_button.pressed.connect(_start_shift)
+	layout.add_child(start_button)
+
+	var continue_button := Button.new()
+	continue_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	continue_button.text = _ui_text("lobby.continue", "Continue")
+	continue_button.tooltip_text = _ui_text("lobby.continue.disabled", "Save data will be available later.")
+	continue_button.disabled = true
+	continue_button.focus_mode = Control.FOCUS_NONE
+	layout.add_child(continue_button)
+
+	var quit_button := Button.new()
+	quit_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	quit_button.text = _ui_text("lobby.quit", "Quit")
+	quit_button.focus_mode = Control.FOCUS_NONE
+	quit_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	quit_button.pressed.connect(_quit_game)
+	layout.add_child(quit_button)
+
+
+func _make_lobby_blur_material() -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = LOBBY_BLUR_SHADER_CODE
+
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("blur_size", 4.0)
+	return material
+
+
+func _show_lobby() -> void:
+	game_started = false
+	if lobby_overlay != null:
+		lobby_overlay.visible = true
+		lobby_overlay.move_to_front()
+
+	_set_game_paused(true)
+
+
+func _start_shift() -> void:
+	game_started = true
+	if lobby_overlay != null:
+		lobby_overlay.visible = false
+
+	_set_game_paused(false)
+	show_scene(START_SCENE_ID, false)
+
+
+func _is_lobby_open() -> bool:
+	return lobby_overlay != null and lobby_overlay.visible
+
+
 func _build_hotspots(hotspots: Array) -> void:
 	for button in hotspot_buttons:
 		button.queue_free()
@@ -1187,6 +1293,8 @@ func _toggle_menu() -> void:
 
 func _show_menu() -> void:
 	if menu_overlay == null:
+		return
+	if not game_started:
 		return
 
 	_show_inventory_menu_panel()

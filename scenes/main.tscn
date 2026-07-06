@@ -1,22 +1,22 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cebw6hg8jpgls"]
 
-[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/hotspots/hotspot_area.gd" id="2_0wfyh"]
-[ext_resource type="Texture2D" path="res://resource/images/corridor.png" id="2_muem4"]
-[ext_resource type="Texture2D" path="res://resource/images/exterior_stairs.png" id="4_dp3eg"]
-[ext_resource type="Texture2D" path="res://resource/images/front_desk.png" id="5_0ld40"]
-[ext_resource type="Texture2D" path="res://resource/images/laundry_room.png" id="6_gqmmt"]
-[ext_resource type="Texture2D" path="res://resource/images/room_105_bathroom.png" id="7_yc10j"]
-[ext_resource type="Texture2D" path="res://resource/images/room_105_bathroom_entry.png" id="8_jscy8"]
-[ext_resource type="Texture2D" path="res://resource/images/room_105_door_window.png" id="9_pm3ni"]
-[ext_resource type="Texture2D" path="res://resource/images/room_106_bathroom.png" id="10_y6deb"]
-[ext_resource type="Texture2D" path="res://resource/images/room_106_bed_bathroom_entry.png" id="11_og1vs"]
-[ext_resource type="Texture2D" path="res://resource/images/room_107_bathroom.png" id="12_2wyq8"]
-[ext_resource type="Texture2D" path="res://resource/images/room_107_bathroom_entry.png" id="13_vxglm"]
-[ext_resource type="Texture2D" path="res://resource/images/room_107_bed_nightstand.png" id="14_2f3dj"]
-[ext_resource type="Texture2D" path="res://resource/images/room_108_bathroom.png" id="15_yq6so"]
-[ext_resource type="Texture2D" path="res://resource/images/room_108_bathroom_entry.png" id="16_fv21b"]
-[ext_resource type="Texture2D" path="res://resource/images/room_108_bed_window.png" id="17_tel4y"]
+[ext_resource type="Script" uid="uid://bugl0ktd7eu3c" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Script" uid="uid://dgb4nvaon6ejk" path="res://scripts/hotspots/hotspot_area.gd" id="2_0wfyh"]
+[ext_resource type="Texture2D" uid="uid://bsbls80jr3d8y" path="res://resource/images/corridor.png" id="2_muem4"]
+[ext_resource type="Texture2D" uid="uid://vv8lmyy7dwks" path="res://resource/images/exterior_stairs.png" id="4_dp3eg"]
+[ext_resource type="Texture2D" uid="uid://3to4gtkbpa3a" path="res://resource/images/front_desk.png" id="5_0ld40"]
+[ext_resource type="Texture2D" uid="uid://c1erqspxnm0cr" path="res://resource/images/laundry_room.png" id="6_gqmmt"]
+[ext_resource type="Texture2D" uid="uid://dmvp4g5by24w0" path="res://resource/images/room_105_bathroom.png" id="7_yc10j"]
+[ext_resource type="Texture2D" uid="uid://bx1fll146f8nx" path="res://resource/images/room_105_bathroom_entry.png" id="8_jscy8"]
+[ext_resource type="Texture2D" uid="uid://bwhjy1j58yk35" path="res://resource/images/room_105_door_window.png" id="9_pm3ni"]
+[ext_resource type="Texture2D" uid="uid://b4ewxg4s62408" path="res://resource/images/room_106_bathroom.png" id="10_y6deb"]
+[ext_resource type="Texture2D" uid="uid://cnboo68u6c2kr" path="res://resource/images/room_106_bed_bathroom_entry.png" id="11_og1vs"]
+[ext_resource type="Texture2D" uid="uid://dswqh5a13m0fn" path="res://resource/images/room_107_bathroom.png" id="12_2wyq8"]
+[ext_resource type="Texture2D" uid="uid://cmvfn36kocgf6" path="res://resource/images/room_107_bathroom_entry.png" id="13_vxglm"]
+[ext_resource type="Texture2D" uid="uid://cq8o6ksnxde21" path="res://resource/images/room_107_bed_nightstand.png" id="14_2f3dj"]
+[ext_resource type="Texture2D" uid="uid://cmqjdidca5x10" path="res://resource/images/room_108_bathroom.png" id="15_yq6so"]
+[ext_resource type="Texture2D" uid="uid://dgah7jv8v0k1n" path="res://resource/images/room_108_bathroom_entry.png" id="16_fv21b"]
+[ext_resource type="Texture2D" uid="uid://b3v52axv73qps" path="res://resource/images/room_108_bed_window.png" id="17_tel4y"]
 
 [node name="Main" type="Control" unique_id=1019556374]
 layout_mode = 3
@@ -44,8 +44,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Corridor → Rooms"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/corridor" unique_id=1400906785]
@@ -82,7 +82,7 @@ anchors_preset = 0
 offset_left = 102.399994
 offset_top = 115.200005
 offset_right = 288.0
-offset_bottom = 520.5333
+offset_bottom = 760.00006
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_105"
@@ -91,10 +91,10 @@ target_scene_id = "room_105_door_window"
 
 [node name="room_106" type="Control" parent="HotspotDefinitions/corridor" unique_id=761304015]
 anchors_preset = 0
-offset_left = 386.56
-offset_top = 132.26666
-offset_right = 517.12
-offset_bottom = 469.33334
+offset_left = 381.99994
+offset_top = 154.00006
+offset_right = 512.55994
+offset_bottom = 672.00006
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_106"
@@ -103,10 +103,10 @@ target_scene_id = "room_106_bed_bathroom_entry"
 
 [node name="room_107" type="Control" parent="HotspotDefinitions/corridor" unique_id=208181868]
 anchors_preset = 0
-offset_left = 627.2
-offset_top = 149.33333
-offset_right = 729.6
-offset_bottom = 430.93335
+offset_left = 619.00006
+offset_top = 203.99995
+offset_right = 698.00006
+offset_bottom = 610.99994
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_107"
@@ -115,10 +115,10 @@ target_scene_id = "room_107_bed_nightstand"
 
 [node name="room_108" type="Control" parent="HotspotDefinitions/corridor" unique_id=1543703497]
 anchors_preset = 0
-offset_left = 806.4
-offset_top = 174.93333
-offset_right = 883.2
-offset_bottom = 409.6
+offset_left = 831.0001
+offset_top = 260.0
+offset_right = 877.0001
+offset_bottom = 539.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_108"
@@ -127,10 +127,10 @@ target_scene_id = "room_108_bed_window"
 
 [node name="walkway_lights" type="Control" parent="HotspotDefinitions/corridor" unique_id=1493500839]
 anchors_preset = 0
-offset_left = 313.6
-offset_top = 132.26666
-offset_right = 422.40002
-offset_bottom = 277.3333
+offset_left = 304.9999
+offset_top = 112.00006
+offset_right = 383.79993
+offset_bottom = 226.06671
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "walkway_lights"
@@ -149,8 +149,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Exterior Stairs ↓ Corridor"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/exterior_stairs" unique_id=1057225404]
@@ -163,7 +163,7 @@ expand_mode = 1
 
 [node name="stairs_right_edge" type="Control" parent="HotspotDefinitions/exterior_stairs" unique_id=688043703]
 anchors_preset = 0
-offset_left = 1152.0
+offset_left = 1115.0
 offset_right = 1280.0
 offset_bottom = 960.0
 mouse_filter = 2
@@ -174,10 +174,10 @@ target_scene_id = "corridor"
 
 [node name="metal_stairs" type="Control" parent="HotspotDefinitions/exterior_stairs" unique_id=437451956]
 anchors_preset = 0
-offset_left = 377.59998
-offset_top = 81.6
-offset_right = 940.8
-offset_bottom = 864.0
+offset_left = 394.99988
+offset_top = 69.9999
+offset_right = 958.1999
+offset_bottom = 852.3999
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "metal_stairs"
@@ -196,8 +196,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Front Desk (Center)"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/front_desk" unique_id=1304913496]
@@ -210,7 +210,7 @@ expand_mode = 1
 
 [node name="front_left_edge" type="Control" parent="HotspotDefinitions/front_desk" unique_id=1376562410]
 anchors_preset = 0
-offset_right = 119.0
+offset_right = 174.0
 offset_bottom = 853.8892
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
@@ -220,7 +220,7 @@ target_scene_id = "laundry_room"
 
 [node name="front_right_edge" type="Control" parent="HotspotDefinitions/front_desk" unique_id=346540240]
 anchors_preset = 0
-offset_left = 1151.0
+offset_left = 1101.0
 offset_right = 1280.0
 offset_bottom = 853.8892
 mouse_filter = 2
@@ -289,8 +289,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Laundry Room ← Front"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/laundry_room" unique_id=1822524942]
@@ -303,9 +303,9 @@ expand_mode = 1
 
 [node name="laundry_bottom_edge" type="Control" parent="HotspotDefinitions/laundry_room" unique_id=77315016]
 anchors_preset = 0
-offset_top = 710.20184
+offset_top = 702.99994
 offset_right = 1280.0
-offset_bottom = 839.7657
+offset_bottom = 932.99994
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "laundry_bottom_edge"
@@ -314,10 +314,10 @@ target_scene_id = "front_desk"
 
 [node name="laundry_second_washer" type="Control" parent="HotspotDefinitions/laundry_room" unique_id=1470642109]
 anchors_preset = 0
-offset_left = 748.8
-offset_top = 422.28217
-offset_right = 915.19995
-offset_bottom = 743.7925
+offset_left = 696.0
+offset_top = 478.99994
+offset_right = 895.0
+offset_bottom = 686.99994
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "laundry_second_washer"
@@ -326,10 +326,10 @@ action = "toggle_laundry_washer"
 
 [node name="laundry_rules" type="Control" parent="HotspotDefinitions/laundry_room" unique_id=158624341]
 anchors_preset = 0
-offset_left = 646.4
-offset_top = 249.53035
-offset_right = 774.4
-offset_bottom = 393.49017
+offset_left = 687.0
+offset_top = 211.99995
+offset_right = 815.0
+offset_bottom = 355.95978
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "laundry_rules"
@@ -338,10 +338,10 @@ description_text = "Laundry rules are posted beside the window in small print."
 
 [node name="detergent" type="Control" parent="HotspotDefinitions/laundry_room" unique_id=1087324263]
 anchors_preset = 0
-offset_left = 224.0
-offset_top = 446.27545
-offset_right = 460.8
-offset_bottom = 571.04065
+offset_left = 202.0
+offset_top = 415.00006
+offset_right = 438.8
+offset_bottom = 539.76526
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "detergent"
@@ -360,8 +360,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 105 - Bathroom"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_105_bathroom" unique_id=1581431528]
@@ -374,7 +374,8 @@ expand_mode = 1
 
 [node name="bathroom_door" type="Control" parent="HotspotDefinitions/room_105_bathroom" unique_id=224011986]
 anchors_preset = 0
-offset_left = 1068.7999
+offset_left = 1102.0001
+offset_top = -15.0
 offset_right = 1280.0
 offset_bottom = 960.0
 mouse_filter = 2
@@ -385,8 +386,8 @@ target_scene_id = "room_105_bathroom_entry"
 
 [node name="bathroom_mirror" type="Control" parent="HotspotDefinitions/room_105_bathroom" unique_id=1550802248]
 anchors_preset = 0
-offset_right = 288.0
-offset_bottom = 499.19998
+offset_right = 319.0
+offset_bottom = 464.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "bathroom_mirror"
@@ -395,9 +396,10 @@ description_text = "The mirror is worn at the edges, blurring the room behind yo
 
 [node name="bathroom_sink" type="Control" parent="HotspotDefinitions/room_105_bathroom" unique_id=1772623534]
 anchors_preset = 0
-offset_top = 537.6
-offset_right = 505.6
-offset_bottom = 806.39996
+offset_left = 68.0
+offset_top = 552.0
+offset_right = 503.6
+offset_bottom = 784.39996
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "bathroom_sink"
@@ -428,8 +430,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 105 - Bathroom Entry"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_105_bathroom_entry" unique_id=1277202648]
@@ -442,7 +444,7 @@ expand_mode = 1
 
 [node name="bathroom_left_edge" type="Control" parent="HotspotDefinitions/room_105_bathroom_entry" unique_id=1799858168]
 anchors_preset = 0
-offset_right = 121.6
+offset_right = 146.0
 offset_bottom = 853.8892
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
@@ -452,7 +454,7 @@ target_scene_id = "room_105_door_window"
 
 [node name="bathroom_right_edge" type="Control" parent="HotspotDefinitions/room_105_bathroom_entry" unique_id=1845654533]
 anchors_preset = 0
-offset_left = 1184.0
+offset_left = 1163.0
 offset_right = 1280.0
 offset_bottom = 853.8892
 mouse_filter = 2
@@ -463,10 +465,10 @@ target_scene_id = "room_105_door_window"
 
 [node name="bathroom_sink" type="Control" parent="HotspotDefinitions/room_105_bathroom_entry" unique_id=231959789]
 anchors_preset = 0
-offset_left = 586.24
-offset_top = 222.01118
-offset_right = 867.83997
-offset_bottom = 499.52515
+offset_left = 592.99976
+offset_top = 222.00002
+offset_right = 796.7595
+offset_bottom = 598.98883
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "bathroom_sink"
@@ -487,10 +489,10 @@ description_text = "The closet door is closed, but the knob is polished from fre
 
 [node name="television" type="Control" parent="HotspotDefinitions/room_105_bathroom_entry" unique_id=275684284]
 anchors_preset = 0
-offset_left = 1017.60004
-offset_top = 371.4418
-offset_right = 1235.2001
-offset_bottom = 576.37524
+offset_left = 1010.99994
+offset_top = 429.00003
+offset_right = 1163.0
+offset_bottom = 605.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "television"
@@ -499,10 +501,10 @@ description_text = "The television reflects the room back at you in a warped cur
 
 [node name="nightstand" type="Control" parent="HotspotDefinitions/room_105_bathroom_entry" unique_id=1448432583]
 anchors_preset = 0
-offset_left = 345.6
-offset_top = 499.52518
-offset_right = 531.2
-offset_bottom = 644.68634
+offset_left = 372.9999
+offset_top = 459.00003
+offset_right = 531.5999
+offset_bottom = 563.1612
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "nightstand"
@@ -521,8 +523,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 105 - Door / Window"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_105_door_window" unique_id=1996377809]
@@ -532,17 +534,6 @@ offset_bottom = 960.0
 mouse_filter = 2
 texture = ExtResource("9_pm3ni")
 expand_mode = 1
-
-[node name="room_left_edge" type="Control" parent="HotspotDefinitions/room_105_door_window" unique_id=1791929106]
-anchors_preset = 0
-offset_top = 652.8
-offset_right = 134.4
-offset_bottom = 883.19995
-mouse_filter = 2
-script = ExtResource("2_0wfyh")
-hotspot_id = "room_left_edge"
-hotspot_label = "Turn"
-target_scene_id = "room_105_bathroom_entry"
 
 [node name="room_right_edge" type="Control" parent="HotspotDefinitions/room_105_door_window" unique_id=490911088]
 anchors_preset = 0
@@ -558,8 +549,8 @@ target_scene_id = "room_105_bathroom_entry"
 [node name="room_door" type="Control" parent="HotspotDefinitions/room_105_door_window" unique_id=1911862992]
 anchors_preset = 0
 offset_top = 86.4
-offset_right = 172.8
-offset_bottom = 604.80005
+offset_right = 226.0
+offset_bottom = 719.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_door"
@@ -568,34 +559,22 @@ target_scene_id = "corridor"
 
 [node name="window" type="Control" parent="HotspotDefinitions/room_105_door_window" unique_id=32479981]
 anchors_preset = 0
-offset_left = 284.16
-offset_top = 141.12
-offset_right = 546.56
-offset_bottom = 477.12
+offset_left = 284.99985
+offset_top = 81.0
+offset_right = 547.39984
+offset_bottom = 417.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "window"
 hotspot_label = "Window"
 description_text = "The window faces the motel exterior. The glass is cold to the touch."
 
-[node name="bed" type="Control" parent="HotspotDefinitions/room_105_door_window" unique_id=1855190782]
-anchors_preset = 0
-offset_left = 394.24
-offset_top = 446.4
-offset_right = 1239.04
-offset_bottom = 820.8
-mouse_filter = 2
-script = ExtResource("2_0wfyh")
-hotspot_id = "bed"
-hotspot_label = "Bed"
-description_text = "The bedspread has been pulled tight, but one corner is slightly tucked under."
-
 [node name="lamp" type="Control" parent="HotspotDefinitions/room_105_door_window" unique_id=143598613]
 anchors_preset = 0
-offset_left = 780.80005
-offset_top = 321.6
-offset_right = 934.4
-offset_bottom = 542.4
+offset_left = 817.00024
+offset_top = 305.00003
+offset_right = 953.00024
+offset_bottom = 505.00003
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "lamp"
@@ -614,8 +593,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 106 - Bathroom"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_106_bathroom" unique_id=936745786]
@@ -628,7 +607,7 @@ expand_mode = 1
 
 [node name="room_106_bathroom_door" type="Control" parent="HotspotDefinitions/room_106_bathroom" unique_id=1342634932]
 anchors_preset = 0
-offset_left = 1068.7999
+offset_left = 1109.0001
 offset_right = 1280.0
 offset_bottom = 960.0
 mouse_filter = 2
@@ -639,8 +618,8 @@ target_scene_id = "room_106_bed_bathroom_entry"
 
 [node name="room_106_bathroom_mirror" type="Control" parent="HotspotDefinitions/room_106_bathroom" unique_id=1205590662]
 anchors_preset = 0
-offset_right = 288.0
-offset_bottom = 499.19998
+offset_right = 306.0
+offset_bottom = 463.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_106_bathroom_mirror"
@@ -682,8 +661,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 106 - Bed / Bath"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_106_bed_bathroom_entry" unique_id=1962406258]
@@ -740,17 +719,6 @@ hotspot_id = "room_106_bathroom_entry"
 hotspot_label = "Bathroom"
 target_scene_id = "room_106_bathroom"
 
-[node name="room_106_dresser" type="Control" parent="HotspotDefinitions/room_106_bed_bathroom_entry" unique_id=812796374]
-anchors_preset = 0
-offset_top = 480.0
-offset_right = 230.40001
-offset_bottom = 916.80005
-mouse_filter = 2
-script = ExtResource("2_0wfyh")
-hotspot_id = "room_106_dresser"
-hotspot_label = "Dresser"
-description_text = "The coffee maker and drawers are within reach of the bathroom door."
-
 [node name="room_107_bathroom" type="Control" parent="HotspotDefinitions" unique_id=1142376744]
 anchors_preset = 0
 offset_left = 7860.0
@@ -763,8 +731,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 107 - Bathroom"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_107_bathroom" unique_id=1405236186]
@@ -777,7 +745,7 @@ expand_mode = 1
 
 [node name="room_107_bathroom_door" type="Control" parent="HotspotDefinitions/room_107_bathroom" unique_id=642806767]
 anchors_preset = 0
-offset_left = 1068.7999
+offset_left = 1089.0001
 offset_right = 1280.0
 offset_bottom = 960.0
 mouse_filter = 2
@@ -788,8 +756,8 @@ target_scene_id = "room_107_bathroom_entry"
 
 [node name="room_107_bathroom_mirror" type="Control" parent="HotspotDefinitions/room_107_bathroom" unique_id=636231431]
 anchors_preset = 0
-offset_right = 288.0
-offset_bottom = 499.19998
+offset_right = 326.0
+offset_bottom = 471.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_107_bathroom_mirror"
@@ -831,8 +799,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 107 - Bathroom Entry"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_107_bathroom_entry" unique_id=752172395]
@@ -845,7 +813,7 @@ expand_mode = 1
 
 [node name="room_107_left_edge" type="Control" parent="HotspotDefinitions/room_107_bathroom_entry" unique_id=2075006402]
 anchors_preset = 0
-offset_right = 121.6
+offset_right = 166.0
 offset_bottom = 960.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
@@ -855,10 +823,10 @@ target_scene_id = "room_107_bed_nightstand"
 
 [node name="room_107_bathroom_doorway" type="Control" parent="HotspotDefinitions/room_107_bathroom_entry" unique_id=484949801]
 anchors_preset = 0
-offset_left = 646.4
-offset_top = 91.2
+offset_left = 718.0001
+offset_top = 122.000046
 offset_right = 915.2
-offset_bottom = 652.8
+offset_bottom = 609.00006
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_107_bathroom_doorway"
@@ -877,23 +845,12 @@ hotspot_id = "room_107_closet_door"
 hotspot_label = "Closet"
 description_text = "The door beside the bathroom is a closet, not the exit."
 
-[node name="room_107_bed_side" type="Control" parent="HotspotDefinitions/room_107_bathroom_entry" unique_id=840803421]
-anchors_preset = 0
-offset_top = 518.4
-offset_right = 601.6
-offset_bottom = 854.4
-mouse_filter = 2
-script = ExtResource("2_0wfyh")
-hotspot_id = "room_107_bed_side"
-hotspot_label = "Bed"
-description_text = "The bed is half lit by the nightstand lamp."
-
 [node name="room_107_phone" type="Control" parent="HotspotDefinitions/room_107_bathroom_entry" unique_id=2094355939]
 anchors_preset = 0
-offset_left = 364.8
-offset_top = 403.19998
-offset_right = 582.4
-offset_bottom = 580.8
+offset_left = 356.00018
+offset_top = 295.00003
+offset_right = 555.0002
+offset_bottom = 563.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_107_phone"
@@ -912,8 +869,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 107 - Bed / Nightstand"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_107_bed_nightstand" unique_id=1546878903]
@@ -993,8 +950,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 108 - Bathroom"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_108_bathroom" unique_id=1544693006]
@@ -1061,8 +1018,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 108 - Bathroom Entry"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_108_bathroom_entry" unique_id=1446594850]
@@ -1075,7 +1032,7 @@ expand_mode = 1
 
 [node name="room_108_left_edge" type="Control" parent="HotspotDefinitions/room_108_bathroom_entry" unique_id=598072638]
 anchors_preset = 0
-offset_right = 121.6
+offset_right = 195.0
 offset_bottom = 960.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
@@ -1087,7 +1044,7 @@ target_scene_id = "room_108_bed_window"
 anchors_preset = 0
 offset_left = 1062.4
 offset_right = 1280.0
-offset_bottom = 787.2
+offset_bottom = 923.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_108_bathroom_doorway"
@@ -1096,10 +1053,10 @@ target_scene_id = "room_108_bathroom"
 
 [node name="room_108_television" type="Control" parent="HotspotDefinitions/room_108_bathroom_entry" unique_id=118310451]
 anchors_preset = 0
-offset_left = 780.80005
-offset_top = 144.0
-offset_right = 953.60004
-offset_bottom = 369.6
+offset_left = 811.00024
+offset_top = 111.0
+offset_right = 925.00024
+offset_bottom = 264.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_108_television"
@@ -1118,29 +1075,6 @@ hotspot_id = "room_108_dresser"
 hotspot_label = "Dresser"
 description_text = "The dresser blocks most of the path along the right wall."
 
-[node name="room_108_bed_side" type="Control" parent="HotspotDefinitions/room_108_bathroom_entry" unique_id=953681359]
-anchors_preset = 0
-offset_top = 518.4
-offset_right = 601.6
-offset_bottom = 854.4
-mouse_filter = 2
-script = ExtResource("2_0wfyh")
-hotspot_id = "room_108_bed_side"
-hotspot_label = "Bed"
-description_text = "The blanket is loose near the nightstand."
-
-[node name="room_108_phone" type="Control" parent="HotspotDefinitions/room_108_bathroom_entry" unique_id=1352064439]
-anchors_preset = 0
-offset_left = 364.8
-offset_top = 403.19998
-offset_right = 582.4
-offset_bottom = 580.8
-mouse_filter = 2
-script = ExtResource("2_0wfyh")
-hotspot_id = "room_108_phone"
-hotspot_label = "Phone"
-description_text = "The phone rests beside the lamp, pointed toward the bed."
-
 [node name="room_108_bed_window" type="Control" parent="HotspotDefinitions" unique_id=912381143]
 anchors_preset = 0
 offset_left = 4780.0
@@ -1153,8 +1087,8 @@ layout_mode = 0
 offset_top = -42.0
 offset_right = 520.0
 offset_bottom = -6.0
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
 text = "Room 108 - Bed / Window"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_108_bed_window" unique_id=1330862566]
@@ -1167,7 +1101,7 @@ expand_mode = 1
 
 [node name="room_108_exit_edge" type="Control" parent="HotspotDefinitions/room_108_bed_window" unique_id=785759390]
 anchors_preset = 0
-offset_right = 115.200005
+offset_right = 177.0
 offset_bottom = 960.0
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
@@ -1177,7 +1111,7 @@ target_scene_id = "corridor"
 
 [node name="room_108_right_edge" type="Control" parent="HotspotDefinitions/room_108_bed_window" unique_id=1985525545]
 anchors_preset = 0
-offset_left = 1158.3999
+offset_left = 1108.0
 offset_right = 1279.9999
 offset_bottom = 960.0
 mouse_filter = 2
@@ -1186,23 +1120,12 @@ hotspot_id = "room_108_right_edge"
 hotspot_label = "Turn"
 target_scene_id = "room_108_bathroom_entry"
 
-[node name="room_108_bed" type="Control" parent="HotspotDefinitions/room_108_bed_window" unique_id=17337052]
-anchors_preset = 0
-offset_top = 412.80002
-offset_right = 793.6
-offset_bottom = 825.60004
-mouse_filter = 2
-script = ExtResource("2_0wfyh")
-hotspot_id = "room_108_bed"
-hotspot_label = "Bed"
-description_text = "The bed faces the window and catches most of the room's warm light."
-
 [node name="room_108_window" type="Control" parent="HotspotDefinitions/room_108_bed_window" unique_id=1019705727]
 anchors_preset = 0
-offset_left = 710.4
-offset_top = 110.4
-offset_right = 1056.0
-offset_bottom = 499.19998
+offset_left = 647.0001
+offset_top = 38.0001
+offset_right = 1057.6001
+offset_bottom = 414.0001
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_108_window"
@@ -1211,24 +1134,12 @@ description_text = "The opposite wing of the hotel is visible through the window
 
 [node name="room_108_nightstand" type="Control" parent="HotspotDefinitions/room_108_bed_window" unique_id=381253360]
 anchors_preset = 0
-offset_left = 428.80002
-offset_top = 268.8
-offset_right = 582.4
-offset_bottom = 489.59998
+offset_left = 397.0002
+offset_top = 263.00018
+offset_right = 550.6002
+offset_bottom = 483.80017
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_108_nightstand"
 hotspot_label = "Nightstand"
 description_text = "A lamp and a small notepad sit beside the bed."
-
-[node name="room_108_desk" type="Control" parent="HotspotDefinitions/room_108_bed_window" unique_id=1159557209]
-anchors_preset = 0
-offset_left = 1107.2
-offset_top = 412.80002
-offset_right = 1273.6
-offset_bottom = 830.4
-mouse_filter = 2
-script = ExtResource("2_0wfyh")
-hotspot_id = "room_108_desk"
-hotspot_label = "Desk"
-description_text = "The desk is clear except for the coffee set."
