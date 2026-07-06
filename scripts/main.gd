@@ -28,6 +28,9 @@ const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
 const LOBBY_BLUR_SHADER_CODE := "shader_type canvas_item;\nuniform float blur_size = 3.5;\nvoid fragment() {\n\tvec2 px = TEXTURE_PIXEL_SIZE * blur_size;\n\tvec4 color = texture(TEXTURE, UV) * 0.18;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(-px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, -px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, px.y)) * 0.11;\n\tCOLOR = color;\n}\n"
+const TOTAL_DAYS := 5
+const SAVE_VERSION := 1
+const SAVE_PATH := "user://hotel_save.json"
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -686,6 +689,9 @@ var footstep_players: Array[AudioStreamPlayer] = []
 var footstep_timer: Timer
 var footstep_index := 0
 var game_started := false
+var current_day := 1
+var unlocked_days: Array[int] = [1]
+var day_slots: Dictionary = {}
 
 var gameplay_layer: Control
 var photo: TextureRect
@@ -693,6 +699,8 @@ var brightness_overlay: ColorRect
 var hotspot_layer: Control
 var title_panel: PanelContainer
 var title_label: Label
+var day_badge_panel: PanelContainer
+var day_badge_label: Label
 var debug_panel: PanelContainer
 var persistent_dialogue_panel: PanelContainer
 var persistent_dialogue_label: Label
@@ -700,6 +708,7 @@ var transient_dialogue_panel: PanelContainer
 var transient_dialogue_label: Label
 var navigation_panel: PanelContainer
 var nav_bar: HBoxContainer
+var debug_day_bar: HBoxContainer
 var hotspot_toggle: Button
 var chat_toggle: Button
 var navigation_toggle: Button
@@ -710,6 +719,10 @@ var inventory_screen
 var equipment_hud
 var rule_book_screen
 var lobby_overlay: Control
+var lobby_continue_button: Button
+var lobby_day_panel: PanelContainer
+var lobby_day_grid: GridContainer
+var lobby_status_label: Label
 
 
 func _ready() -> void:
@@ -721,6 +734,7 @@ func _ready() -> void:
 	debug_ui_enabled = _is_debug_ui_enabled()
 	get_tree().root.size_changed.connect(_update_layout)
 	_seed_inventory()
+	_load_save_data()
 	_build_ui()
 	_build_audio()
 	_show_lobby()
@@ -802,6 +816,18 @@ func _build_ui() -> void:
 	title_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
 	title_panel.add_child(title_label)
 
+	day_badge_panel = PanelContainer.new()
+	day_badge_panel.visible = false
+	day_badge_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	day_badge_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.10, 0.075, 0.035, 0.78), Color(1.0, 0.72, 0.25, 0.42), 999))
+	gameplay_layer.add_child(day_badge_panel)
+
+	day_badge_label = Label.new()
+	day_badge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	day_badge_label.add_theme_font_size_override("font_size", 14)
+	day_badge_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.58))
+	day_badge_panel.add_child(day_badge_label)
+
 	debug_panel = PanelContainer.new()
 	debug_panel.anchor_left = 1.0
 	debug_panel.anchor_right = 1.0
@@ -863,9 +889,18 @@ func _build_ui() -> void:
 	navigation_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
 	gameplay_layer.add_child(navigation_panel)
 
+	var navigation_layout := VBoxContainer.new()
+	navigation_layout.add_theme_constant_override("separation", 8)
+	navigation_panel.add_child(navigation_layout)
+
 	nav_bar = HBoxContainer.new()
 	nav_bar.add_theme_constant_override("separation", 8)
-	navigation_panel.add_child(nav_bar)
+	navigation_layout.add_child(nav_bar)
+
+	debug_day_bar = HBoxContainer.new()
+	debug_day_bar.add_theme_constant_override("separation", 8)
+	navigation_layout.add_child(debug_day_bar)
+	_build_debug_day_bar()
 
 	equipment_hud = HotelEquipmentHudScript.new()
 	equipment_hud.anchor_left = 0.0
@@ -886,6 +921,7 @@ func _build_ui() -> void:
 	_sync_debug_toggles()
 	_build_menu()
 	_build_lobby()
+	_update_day_display()
 
 
 func _hide_editor_hotspot_definitions() -> void:
@@ -1100,7 +1136,7 @@ func _build_lobby() -> void:
 
 	var panel := PanelContainer.new()
 	panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	panel.custom_minimum_size = Vector2(340.0, 0.0)
+	panel.custom_minimum_size = Vector2(460.0, 0.0)
 	panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.90), Color(1.0, 1.0, 1.0, 0.14), 12))
 	center.add_child(panel)
 
@@ -1108,6 +1144,28 @@ func _build_lobby() -> void:
 	layout.process_mode = Node.PROCESS_MODE_ALWAYS
 	layout.add_theme_constant_override("separation", 14)
 	panel.add_child(layout)
+
+	var title := Label.new()
+	title.text = _ui_text("lobby.title", "Night Shift")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 34)
+	title.add_theme_color_override("font_color", Color(1.0, 0.92, 0.72))
+	layout.add_child(title)
+
+	var subtitle := Label.new()
+	subtitle.text = _ui_text("lobby.subtitle", "Start a new shift or continue from a saved day.")
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	subtitle.add_theme_font_size_override("font_size", 16)
+	subtitle.add_theme_color_override("font_color", Color(0.78, 0.78, 0.78))
+	layout.add_child(subtitle)
+
+	lobby_status_label = Label.new()
+	lobby_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lobby_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lobby_status_label.add_theme_font_size_override("font_size", 14)
+	lobby_status_label.add_theme_color_override("font_color", Color(0.82, 0.75, 0.62))
+	layout.add_child(lobby_status_label)
 
 	var start_button := Button.new()
 	start_button.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -1117,13 +1175,37 @@ func _build_lobby() -> void:
 	start_button.pressed.connect(_start_shift)
 	layout.add_child(start_button)
 
-	var continue_button := Button.new()
-	continue_button.process_mode = Node.PROCESS_MODE_ALWAYS
-	continue_button.text = _ui_text("lobby.continue", "Continue")
-	continue_button.tooltip_text = _ui_text("lobby.continue.disabled", "Save data will be available later.")
-	continue_button.disabled = true
-	continue_button.focus_mode = Control.FOCUS_NONE
-	layout.add_child(continue_button)
+	lobby_continue_button = Button.new()
+	lobby_continue_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	lobby_continue_button.text = _ui_text("lobby.continue", "Continue")
+	lobby_continue_button.focus_mode = Control.FOCUS_NONE
+	lobby_continue_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	lobby_continue_button.pressed.connect(_toggle_lobby_day_panel)
+	layout.add_child(lobby_continue_button)
+
+	lobby_day_panel = PanelContainer.new()
+	lobby_day_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	lobby_day_panel.visible = false
+	lobby_day_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.02, 0.024, 0.028, 0.70), Color(1.0, 1.0, 1.0, 0.08), 10))
+	layout.add_child(lobby_day_panel)
+
+	var day_layout := VBoxContainer.new()
+	day_layout.process_mode = Node.PROCESS_MODE_ALWAYS
+	day_layout.add_theme_constant_override("separation", 10)
+	lobby_day_panel.add_child(day_layout)
+
+	var day_title := Label.new()
+	day_title.text = _ui_text("lobby.choose_day", "Choose Day")
+	day_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	day_title.add_theme_font_size_override("font_size", 16)
+	day_title.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
+	day_layout.add_child(day_title)
+
+	lobby_day_grid = GridContainer.new()
+	lobby_day_grid.process_mode = Node.PROCESS_MODE_ALWAYS
+	lobby_day_grid.columns = TOTAL_DAYS
+	lobby_day_grid.add_theme_constant_override("h_separation", 8)
+	day_layout.add_child(lobby_day_grid)
 
 	var quit_button := Button.new()
 	quit_button.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -1132,6 +1214,8 @@ func _build_lobby() -> void:
 	quit_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	quit_button.pressed.connect(_quit_game)
 	layout.add_child(quit_button)
+
+	_refresh_lobby_continue_state()
 
 
 func _make_lobby_blur_material() -> ShaderMaterial:
@@ -1147,6 +1231,7 @@ func _make_lobby_blur_material() -> ShaderMaterial:
 func _show_lobby() -> void:
 	game_started = false
 	if lobby_overlay != null:
+		_refresh_lobby_continue_state()
 		lobby_overlay.visible = true
 		lobby_overlay.move_to_front()
 
@@ -1154,16 +1239,210 @@ func _show_lobby() -> void:
 
 
 func _start_shift() -> void:
+	day_slots.clear()
+	unlocked_days = [1]
+	current_day = 1
+	laundry_second_washer_open = true
+	game_brightness = DEFAULT_BRIGHTNESS
+	_start_day(1, false, false)
+
+
+func _toggle_lobby_day_panel() -> void:
+	if lobby_day_panel == null or not _has_save_data():
+		return
+
+	lobby_day_panel.visible = not lobby_day_panel.visible
+	_refresh_lobby_day_grid()
+
+
+func _start_saved_day(day: int) -> void:
+	_start_day(day, true, false)
+
+
+func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) -> void:
 	game_started = true
+	current_day = clampi(day, 1, TOTAL_DAYS)
+	_unlock_day(current_day)
+
 	if lobby_overlay != null:
 		lobby_overlay.visible = false
 
 	_set_game_paused(false)
-	show_scene(START_SCENE_ID, false)
+
+	var target_scene_id := START_SCENE_ID
+	if use_saved_state:
+		target_scene_id = _restore_day_state(current_day)
+	else:
+		_reset_day_runtime_state()
+
+	show_scene(target_scene_id, play_transition_sound)
+	_save_current_day()
+	_update_day_display()
 
 
 func _is_lobby_open() -> bool:
 	return lobby_overlay != null and lobby_overlay.visible
+
+
+func _load_save_data() -> void:
+	unlocked_days = [1]
+	day_slots.clear()
+	if not FileAccess.file_exists(SAVE_PATH):
+		return
+
+	var save_file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if save_file == null:
+		push_warning("Failed to open save file: %s" % SAVE_PATH)
+		return
+
+	var parsed = JSON.parse_string(save_file.get_as_text())
+	if not parsed is Dictionary:
+		push_warning("Ignoring invalid save file: %s" % SAVE_PATH)
+		return
+
+	var save_data: Dictionary = parsed
+	unlocked_days.clear()
+	for value in save_data.get("unlocked_days", [1]):
+		_unlock_day(int(value))
+
+	var saved_slots: Dictionary = save_data.get("day_slots", {})
+	for key in saved_slots.keys():
+		var day := clampi(int(key), 1, TOTAL_DAYS)
+		var slot = saved_slots[key]
+		if slot is Dictionary:
+			day_slots[str(day)] = slot
+			_unlock_day(day)
+
+	if unlocked_days.is_empty():
+		unlocked_days = [1]
+
+	current_day = clampi(int(save_data.get("current_day", 1)), 1, TOTAL_DAYS)
+
+
+func _save_current_day() -> void:
+	_store_current_day_state()
+	_write_save_data()
+	_refresh_lobby_continue_state()
+
+
+func _store_current_day_state() -> void:
+	_unlock_day(current_day)
+	day_slots[str(current_day)] = {
+		"day": current_day,
+		"scene_id": current_scene_id,
+		"laundry_second_washer_open": laundry_second_washer_open,
+		"game_brightness": game_brightness,
+	}
+
+
+func _write_save_data() -> void:
+	var save_file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if save_file == null:
+		push_warning("Failed to write save file: %s" % SAVE_PATH)
+		return
+
+	save_file.store_string(JSON.stringify({
+		"version": SAVE_VERSION,
+		"current_day": current_day,
+		"unlocked_days": unlocked_days,
+		"day_slots": day_slots,
+	}, "\t"))
+
+
+func _restore_day_state(day: int) -> String:
+	var slot: Dictionary = day_slots.get(str(day), {})
+	laundry_second_washer_open = bool(slot.get("laundry_second_washer_open", true))
+	game_brightness = float(slot.get("game_brightness", DEFAULT_BRIGHTNESS))
+	if brightness_slider != null:
+		brightness_slider.value = game_brightness
+
+	var saved_scene_id := String(slot.get("scene_id", START_SCENE_ID))
+	if not HOTEL_SCENES.has(saved_scene_id):
+		return START_SCENE_ID
+
+	return saved_scene_id
+
+
+func _reset_day_runtime_state() -> void:
+	laundry_second_washer_open = true
+	game_brightness = DEFAULT_BRIGHTNESS
+	if brightness_slider != null:
+		brightness_slider.value = game_brightness
+
+
+func _change_day(day: int) -> void:
+	var target_day := clampi(day, 1, TOTAL_DAYS)
+	if target_day == current_day:
+		return
+
+	_save_current_day()
+	_start_day(target_day, _has_saved_day(target_day), false)
+
+
+func _unlock_day(day: int) -> void:
+	var safe_day := clampi(day, 1, TOTAL_DAYS)
+	if not unlocked_days.has(safe_day):
+		unlocked_days.append(safe_day)
+		unlocked_days.sort()
+
+
+func _has_save_data() -> bool:
+	return not day_slots.is_empty()
+
+
+func _has_saved_day(day: int) -> bool:
+	return day_slots.has(str(clampi(day, 1, TOTAL_DAYS)))
+
+
+func _day_name(day: int) -> String:
+	return _ui_text("day.label", "Day %d") % day
+
+
+func _refresh_lobby_continue_state() -> void:
+	if lobby_continue_button == null:
+		return
+
+	var has_save := _has_save_data()
+	lobby_continue_button.disabled = not has_save
+	lobby_continue_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if has_save else Control.CURSOR_FORBIDDEN
+	lobby_continue_button.tooltip_text = _ui_text("lobby.continue.available", "Choose a saved day to continue.") if has_save else _ui_text("lobby.continue.disabled", "No saved days yet.")
+
+	if lobby_status_label != null:
+		var latest_day := _latest_saved_day()
+		lobby_status_label.text = _ui_text("lobby.save_status", "Latest saved day: %s") % _day_name(latest_day) if has_save else _ui_text("lobby.no_save_status", "No saved shift yet.")
+
+	if lobby_day_panel != null and not has_save:
+		lobby_day_panel.visible = false
+
+	_refresh_lobby_day_grid()
+
+
+func _refresh_lobby_day_grid() -> void:
+	if lobby_day_grid == null:
+		return
+
+	for child in lobby_day_grid.get_children():
+		child.queue_free()
+
+	for day in range(1, TOTAL_DAYS + 1):
+		var day_button := Button.new()
+		day_button.process_mode = Node.PROCESS_MODE_ALWAYS
+		day_button.custom_minimum_size = Vector2(72.0, 48.0)
+		day_button.text = _day_name(day)
+		day_button.focus_mode = Control.FOCUS_NONE
+		day_button.disabled = not _has_saved_day(day)
+		day_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if not day_button.disabled else Control.CURSOR_FORBIDDEN
+		day_button.tooltip_text = _ui_text("lobby.day.saved", "Start from this saved day.") if not day_button.disabled else _ui_text("lobby.day.locked", "Reach this day first.")
+		day_button.pressed.connect(_start_saved_day.bind(day))
+		lobby_day_grid.add_child(day_button)
+
+
+func _latest_saved_day() -> int:
+	var latest_day := 1
+	for key in day_slots.keys():
+		latest_day = max(latest_day, int(key))
+
+	return latest_day
 
 
 func _build_hotspots(hotspots: Array) -> void:
@@ -1200,6 +1479,34 @@ func _build_navigation(exits: Array) -> void:
 		nav_bar.add_child(button)
 
 	_apply_navigation_display()
+
+
+func _build_debug_day_bar() -> void:
+	if debug_day_bar == null:
+		return
+
+	for child in debug_day_bar.get_children():
+		child.queue_free()
+
+	var title := Label.new()
+	title.text = _ui_text("debug.days.title", "Day")
+	title.custom_minimum_size = Vector2(54.0, 0.0)
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.58))
+	debug_day_bar.add_child(title)
+
+	for day in range(1, TOTAL_DAYS + 1):
+		var day_button := Button.new()
+		day_button.text = str(day)
+		day_button.toggle_mode = true
+		day_button.focus_mode = Control.FOCUS_NONE
+		day_button.custom_minimum_size = Vector2(38.0, 32.0)
+		day_button.tooltip_text = _ui_text("debug.days.tooltip", "Jump to this day and autosave the current day.")
+		day_button.pressed.connect(_change_day.bind(day))
+		debug_day_bar.add_child(day_button)
+
+	_refresh_debug_day_buttons()
 
 
 func _on_navigation_pressed(scene_id: String) -> void:
@@ -1512,6 +1819,8 @@ func _apply_persistent_dialogue_display() -> void:
 
 func _apply_navigation_display() -> void:
 	navigation_panel.visible = show_navigation
+	if debug_day_bar != null:
+		debug_day_bar.visible = debug_ui_enabled and show_navigation
 	_position_bottom_panels()
 	_sync_debug_toggles()
 
@@ -1549,10 +1858,10 @@ func _position_bottom_panels() -> void:
 		navigation_panel.offset_left = 18.0
 		navigation_panel.offset_right = -18.0
 		if show_persistent_dialogue:
-			navigation_panel.offset_top = -210.0
+			navigation_panel.offset_top = -258.0
 			navigation_panel.offset_bottom = -162.0
 		else:
-			navigation_panel.offset_top = -66.0
+			navigation_panel.offset_top = -114.0
 			navigation_panel.offset_bottom = -18.0
 
 
@@ -1578,6 +1887,7 @@ func _update_layout() -> void:
 	_position_title_panel()
 	_position_transient_dialogue()
 	_update_hotspot_layout()
+	_update_day_display()
 
 
 func _update_hotspot_layout() -> void:
@@ -1633,6 +1943,30 @@ func _position_title_panel() -> void:
 
 	title_panel.size = title_panel.get_combined_minimum_size()
 	title_panel.position = Vector2(18.0, 18.0)
+	if day_badge_panel != null:
+		day_badge_panel.size = day_badge_panel.get_combined_minimum_size()
+		day_badge_panel.position = Vector2(18.0, 64.0)
+
+
+func _update_day_display() -> void:
+	if day_badge_panel == null or day_badge_label == null:
+		return
+
+	day_badge_panel.visible = game_started
+	day_badge_label.text = _day_name(current_day)
+	day_badge_panel.size = day_badge_panel.get_combined_minimum_size()
+	_refresh_debug_day_buttons()
+
+
+func _refresh_debug_day_buttons() -> void:
+	if debug_day_bar == null:
+		return
+
+	for child in debug_day_bar.get_children():
+		if child is Button:
+			var day := int(child.text)
+			child.button_pressed = day == current_day
+			_style_debug_button(child, day == current_day)
 
 
 func _make_debug_button(icon: String, tooltip: String, callback: Callable) -> Button:
