@@ -713,6 +713,7 @@ var hotspot_toggle: Button
 var chat_toggle: Button
 var navigation_toggle: Button
 var menu_overlay: ColorRect
+var menu_content_shell: VBoxContainer
 var brightness_slider: HSlider
 var brightness_value_label: Label
 var inventory_tab_button: Button
@@ -1085,15 +1086,15 @@ func _build_menu() -> void:
 	quit_button.pressed.connect(_quit_game)
 	layout.add_child(quit_button)
 
-	var content_shell := VBoxContainer.new()
-	content_shell.process_mode = Node.PROCESS_MODE_ALWAYS
-	content_shell.add_theme_constant_override("separation", 0)
-	shell.add_child(content_shell)
+	menu_content_shell = VBoxContainer.new()
+	menu_content_shell.process_mode = Node.PROCESS_MODE_ALWAYS
+	menu_content_shell.add_theme_constant_override("separation", 0)
+	shell.add_child(menu_content_shell)
 
 	var tab_bar := HBoxContainer.new()
 	tab_bar.process_mode = Node.PROCESS_MODE_ALWAYS
 	tab_bar.add_theme_constant_override("separation", 2)
-	content_shell.add_child(tab_bar)
+	menu_content_shell.add_child(tab_bar)
 
 	inventory_tab_button = Button.new()
 	inventory_tab_button.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -1117,14 +1118,15 @@ func _build_menu() -> void:
 	inventory_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	inventory_screen.custom_minimum_size = Vector2(570.0, 420.0)
 	inventory_screen.setup(inventory_model, localization)
-	content_shell.add_child(inventory_screen)
+	menu_content_shell.add_child(inventory_screen)
 
 	rule_book_screen = HotelRuleBookScreenScript.new()
 	rule_book_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	rule_book_screen.custom_minimum_size = Vector2(570.0, 420.0)
 	rule_book_screen.setup(localization)
 	rule_book_screen.visible = false
-	content_shell.add_child(rule_book_screen)
+	menu_content_shell.add_child(rule_book_screen)
+	_sync_menu_content_width()
 
 	_update_brightness_label()
 
@@ -1657,6 +1659,19 @@ func _sync_menu_tabs(active_tab: String) -> void:
 		var rule_book_active := active_tab == "rule_book"
 		rule_book_tab_button.button_pressed = rule_book_active
 		_style_menu_tab(rule_book_tab_button, rule_book_active)
+
+
+func _sync_menu_content_width() -> void:
+	if inventory_screen == null or rule_book_screen == null:
+		return
+
+	var target_width: float = inventory_screen.get_combined_minimum_size().x
+	var target_height: float = maxf(inventory_screen.get_combined_minimum_size().y, rule_book_screen.get_combined_minimum_size().y)
+	if menu_content_shell != null:
+		menu_content_shell.custom_minimum_size = Vector2(target_width, 0.0)
+
+	inventory_screen.custom_minimum_size = Vector2(target_width, target_height)
+	rule_book_screen.custom_minimum_size = Vector2(target_width, target_height)
 
 
 func _style_menu_tab(button: Button, active: bool) -> void:
