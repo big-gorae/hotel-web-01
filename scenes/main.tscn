@@ -29,15 +29,15 @@ script = ExtResource("1")
 
 [node name="HotspotDefinitions" type="Control" parent="." unique_id=315014814]
 anchors_preset = 0
-offset_right = 4660.0
-offset_bottom = 6060.0
+offset_right = 9380.0
+offset_bottom = 5300.0
 
 [node name="corridor" type="Control" parent="HotspotDefinitions" unique_id=877612333]
 anchors_preset = 0
-offset_left = 80.0
-offset_top = 80.0
-offset_right = 1360.0
-offset_bottom = 933.33325
+offset_left = 3240.0
+offset_top = 1600.0
+offset_right = 4520.0
+offset_bottom = 2453.3333
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/corridor" unique_id=1524728566]
 layout_mode = 0
@@ -46,7 +46,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "corridor"
+text = "Corridor → Rooms"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/corridor" unique_id=1400906785]
 layout_mode = 0
@@ -139,10 +139,10 @@ description_text = "The corridor lamps flicker at uneven intervals."
 
 [node name="exterior_stairs" type="Control" parent="HotspotDefinitions" unique_id=1646956218]
 anchors_preset = 0
-offset_left = 1580.0
-offset_top = 80.0
-offset_right = 2860.0
-offset_bottom = 1040.0
+offset_left = 3240.0
+offset_top = 2900.0
+offset_right = 4520.0
+offset_bottom = 3860.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/exterior_stairs" unique_id=1004010109]
 layout_mode = 0
@@ -151,7 +151,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "exterior_stairs"
+text = "Exterior Stairs ↓ Corridor"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/exterior_stairs" unique_id=1057225404]
 layout_mode = 0
@@ -186,10 +186,10 @@ description_text = "The metal stairs creak under light pressure."
 
 [node name="front_desk" type="Control" parent="HotspotDefinitions" unique_id=213386306]
 anchors_preset = 0
-offset_left = 3080.0
-offset_top = 80.0
-offset_right = 4360.0
-offset_bottom = 933.88916
+offset_left = 1700.0
+offset_top = 1600.0
+offset_right = 2980.0
+offset_bottom = 2453.8892
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/front_desk" unique_id=1386132241]
 layout_mode = 0
@@ -198,7 +198,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "front_desk"
+text = "Front Desk (Center)"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/front_desk" unique_id=1304913496]
 layout_mode = 0
@@ -279,10 +279,10 @@ description_text = "The glass door looks out toward the corridor, but this is no
 
 [node name="laundry_room" type="Control" parent="HotspotDefinitions" unique_id=1240906185]
 anchors_preset = 0
-offset_left = 80.0
-offset_top = 1260.0
-offset_right = 1360.0
-offset_bottom = 2219.7322
+offset_left = 160.0
+offset_top = 1600.0
+offset_right = 1440.0
+offset_bottom = 2559.7322
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/laundry_room" unique_id=1458217885]
 layout_mode = 0
@@ -291,7 +291,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "laundry_room"
+text = "Laundry Room ← Front"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/laundry_room" unique_id=1822524942]
 layout_mode = 0
@@ -350,10 +350,10 @@ description_text = "Detergent bottles sit near the sink, lined up like someone l
 
 [node name="room_105_bathroom" type="Control" parent="HotspotDefinitions" unique_id=160050909]
 anchors_preset = 0
-offset_left = 1580.0
-offset_top = 1260.0
-offset_right = 2860.0
-offset_bottom = 2220.0
+offset_left = 7860.0
+offset_top = 500.0
+offset_right = 9140.0
+offset_bottom = 1460.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_105_bathroom" unique_id=823034638]
 layout_mode = 0
@@ -362,7 +362,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_105_bathroom"
+text = "Room 105 - Bathroom"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_105_bathroom" unique_id=1581431528]
 layout_mode = 0
@@ -418,10 +418,10 @@ description_text = "The shower curtain hangs still. The tub is dry."
 
 [node name="room_105_bathroom_entry" type="Control" parent="HotspotDefinitions" unique_id=2127398305]
 anchors_preset = 0
-offset_left = 3080.0
-offset_top = 1260.0
-offset_right = 4360.0
-offset_bottom = 2113.8892
+offset_left = 6320.0
+offset_top = 500.0
+offset_right = 7600.0
+offset_bottom = 1353.8892
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_105_bathroom_entry" unique_id=1906810402]
 layout_mode = 0
@@ -430,7 +430,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_105_bathroom_entry"
+text = "Room 105 - Bathroom Entry"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_105_bathroom_entry" unique_id=1277202648]
 layout_mode = 0
@@ -511,10 +511,10 @@ description_text = "A phone sits beside the bed. The room card is missing."
 
 [node name="room_105_door_window" type="Control" parent="HotspotDefinitions" unique_id=236787258]
 anchors_preset = 0
-offset_left = 80.0
-offset_top = 2440.0
-offset_right = 1360.0
-offset_bottom = 3400.0
+offset_left = 4780.0
+offset_top = 500.0
+offset_right = 6060.0
+offset_bottom = 1460.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_105_door_window" unique_id=1063620668]
 layout_mode = 0
@@ -523,7 +523,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_105_door_window"
+text = "Room 105 - Door / Window"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_105_door_window" unique_id=1996377809]
 layout_mode = 0
@@ -604,10 +604,10 @@ description_text = "The lamp is warm, making the room feel smaller than it is."
 
 [node name="room_106_bathroom" type="Control" parent="HotspotDefinitions" unique_id=830743699]
 anchors_preset = 0
-offset_left = 1580.0
-offset_top = 2440.0
-offset_right = 2860.0
-offset_bottom = 3400.0
+offset_left = 6320.0
+offset_top = 1700.0
+offset_right = 7600.0
+offset_bottom = 2660.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_106_bathroom" unique_id=625759842]
 layout_mode = 0
@@ -616,7 +616,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_106_bathroom"
+text = "Room 106 - Bathroom"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_106_bathroom" unique_id=936745786]
 layout_mode = 0
@@ -672,10 +672,10 @@ description_text = "The shower curtain hangs still. The tub is dry."
 
 [node name="room_106_bed_bathroom_entry" type="Control" parent="HotspotDefinitions" unique_id=1324623952]
 anchors_preset = 0
-offset_left = 3080.0
-offset_top = 2440.0
-offset_right = 4360.0
-offset_bottom = 3400.0
+offset_left = 4780.0
+offset_top = 1700.0
+offset_right = 6060.0
+offset_bottom = 2660.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_106_bed_bathroom_entry" unique_id=294558251]
 layout_mode = 0
@@ -684,7 +684,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_106_bed_bathroom_entry"
+text = "Room 106 - Bed / Bath"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_106_bed_bathroom_entry" unique_id=1962406258]
 layout_mode = 0
@@ -753,10 +753,10 @@ description_text = "The coffee maker and drawers are within reach of the bathroo
 
 [node name="room_107_bathroom" type="Control" parent="HotspotDefinitions" unique_id=1142376744]
 anchors_preset = 0
-offset_left = 80.0
-offset_top = 3620.0
-offset_right = 1360.0
-offset_bottom = 4580.0
+offset_left = 7860.0
+offset_top = 2900.0
+offset_right = 9140.0
+offset_bottom = 3860.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_107_bathroom" unique_id=1964173560]
 layout_mode = 0
@@ -765,7 +765,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_107_bathroom"
+text = "Room 107 - Bathroom"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_107_bathroom" unique_id=1405236186]
 layout_mode = 0
@@ -821,10 +821,10 @@ description_text = "The shower curtain hangs still. The tub is dry."
 
 [node name="room_107_bathroom_entry" type="Control" parent="HotspotDefinitions" unique_id=1079603965]
 anchors_preset = 0
-offset_left = 1580.0
-offset_top = 3620.0
-offset_right = 2860.0
-offset_bottom = 4580.0
+offset_left = 6320.0
+offset_top = 2900.0
+offset_right = 7600.0
+offset_bottom = 3860.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_107_bathroom_entry" unique_id=422414991]
 layout_mode = 0
@@ -833,7 +833,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_107_bathroom_entry"
+text = "Room 107 - Bathroom Entry"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_107_bathroom_entry" unique_id=752172395]
 layout_mode = 0
@@ -902,10 +902,10 @@ description_text = "The phone is close enough to reach from the pillow."
 
 [node name="room_107_bed_nightstand" type="Control" parent="HotspotDefinitions" unique_id=106256842]
 anchors_preset = 0
-offset_left = 3080.0
-offset_top = 3620.0
-offset_right = 4360.0
-offset_bottom = 4580.0
+offset_left = 4780.0
+offset_top = 2900.0
+offset_right = 6060.0
+offset_bottom = 3860.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_107_bed_nightstand" unique_id=1807996184]
 layout_mode = 0
@@ -914,7 +914,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_107_bed_nightstand"
+text = "Room 107 - Bed / Nightstand"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_107_bed_nightstand" unique_id=1546878903]
 layout_mode = 0
@@ -983,10 +983,10 @@ description_text = "A few papers lie on the carpet near the bed."
 
 [node name="room_108_bathroom" type="Control" parent="HotspotDefinitions" unique_id=817637662]
 anchors_preset = 0
-offset_left = 80.0
-offset_top = 4800.0
-offset_right = 1360.0
-offset_bottom = 5760.0
+offset_left = 7860.0
+offset_top = 4100.0
+offset_right = 9140.0
+offset_bottom = 5060.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_108_bathroom" unique_id=1826179124]
 layout_mode = 0
@@ -995,7 +995,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_108_bathroom"
+text = "Room 108 - Bathroom"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_108_bathroom" unique_id=1544693006]
 layout_mode = 0
@@ -1051,10 +1051,10 @@ description_text = "The shower curtain hangs still. The tub is dry."
 
 [node name="room_108_bathroom_entry" type="Control" parent="HotspotDefinitions" unique_id=1980247480]
 anchors_preset = 0
-offset_left = 1580.0
-offset_top = 4800.0
-offset_right = 2860.0
-offset_bottom = 5760.0
+offset_left = 6320.0
+offset_top = 4100.0
+offset_right = 7600.0
+offset_bottom = 5060.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_108_bathroom_entry" unique_id=304280274]
 layout_mode = 0
@@ -1063,7 +1063,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_108_bathroom_entry"
+text = "Room 108 - Bathroom Entry"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_108_bathroom_entry" unique_id=1446594850]
 layout_mode = 0
@@ -1143,10 +1143,10 @@ description_text = "The phone rests beside the lamp, pointed toward the bed."
 
 [node name="room_108_bed_window" type="Control" parent="HotspotDefinitions" unique_id=912381143]
 anchors_preset = 0
-offset_left = 3080.0
-offset_top = 4800.0
-offset_right = 4360.0
-offset_bottom = 5760.0
+offset_left = 4780.0
+offset_top = 4100.0
+offset_right = 6060.0
+offset_bottom = 5060.0
 
 [node name="SceneLabel" type="Label" parent="HotspotDefinitions/room_108_bed_window" unique_id=55312002]
 layout_mode = 0
@@ -1155,7 +1155,7 @@ offset_right = 520.0
 offset_bottom = -6.0
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
-text = "room_108_bed_window"
+text = "Room 108 - Bed / Window"
 
 [node name="PhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_108_bed_window" unique_id=1330862566]
 layout_mode = 0
