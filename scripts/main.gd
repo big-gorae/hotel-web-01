@@ -28,6 +28,36 @@ const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
 const LOBBY_BLUR_SHADER_CODE := "shader_type canvas_item;\nuniform float blur_size = 3.5;\nvoid fragment() {\n\tvec2 px = TEXTURE_PIXEL_SIZE * blur_size;\n\tvec4 color = texture(TEXTURE, UV) * 0.18;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(-px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, -px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, px.y)) * 0.11;\n\tCOLOR = color;\n}\n"
+const POST_PROCESS_SHADER_CODE := "shader_type canvas_item;\nuniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;\nuniform float saturation = 1.0;\nuniform float contrast = 1.0;\nuniform float brightness = 0.0;\nuniform vec3 tint = vec3(1.0, 1.0, 1.0);\nuniform float tint_strength = 0.0;\nuniform float vignette_strength = 0.0;\nuniform float vignette_softness = 0.5;\nuniform float grain_strength = 0.0;\nuniform float bloom_strength = 0.0;\nuniform float time_seed = 0.0;\nfloat noise(vec2 uv) {\n\treturn fract(sin(dot(uv, vec2(12.9898, 78.233)) + time_seed) * 43758.5453123);\n}\nvoid fragment() {\n\tvec2 uv = SCREEN_UV;\n\tvec4 source = texture(SCREEN_TEXTURE, uv);\n\tvec3 color = source.rgb;\n\tfloat luma = dot(color, vec3(0.299, 0.587, 0.114));\n\tcolor = mix(vec3(luma), color, saturation);\n\tcolor = (color - 0.5) * contrast + 0.5 + brightness;\n\tcolor = mix(color, color * tint, tint_strength);\n\tfloat bright = smoothstep(0.62, 1.0, max(max(color.r, color.g), color.b));\n\tcolor += bright * bloom_strength;\n\tfloat dist = distance(uv, vec2(0.5));\n\tfloat vignette = smoothstep(0.82 - vignette_softness, 0.82, dist);\n\tcolor *= 1.0 - vignette * vignette_strength;\n\tfloat grain = noise(uv / SCREEN_PIXEL_SIZE) - 0.5;\n\tcolor += grain * grain_strength;\n\tCOLOR = vec4(clamp(color, vec3(0.0), vec3(1.0)), source.a);\n}\n"
+const POST_PROCESS_PRESET_NONE := "none"
+const POST_PROCESS_PRESET_DREARY_1 := "dreary_1"
+const DEFAULT_POST_PROCESS_PRESET := POST_PROCESS_PRESET_DREARY_1
+const POST_PROCESS_PRESETS := {
+	POST_PROCESS_PRESET_NONE: {
+		"display_name": "필터 없음",
+		"saturation": 1.0,
+		"contrast": 1.0,
+		"brightness": 0.0,
+		"tint": Vector3(1.0, 1.0, 1.0),
+		"tint_strength": 0.0,
+		"vignette_strength": 0.0,
+		"vignette_softness": 0.5,
+		"grain_strength": 0.0,
+		"bloom_strength": 0.0,
+	},
+	POST_PROCESS_PRESET_DREARY_1: {
+		"display_name": "우중충한 필터 1",
+		"saturation": 0.82,
+		"contrast": 1.08,
+		"brightness": -0.015,
+		"tint": Vector3(1.0, 0.92, 0.72),
+		"tint_strength": 0.12,
+		"vignette_strength": 0.16,
+		"vignette_softness": 0.42,
+		"grain_strength": 0.018,
+		"bloom_strength": 0.025,
+	},
+}
 const TOTAL_DAYS := 5
 const SAVE_VERSION := 1
 const SAVE_PATH := "user://hotel_save.json"
@@ -692,10 +722,14 @@ var game_started := false
 var current_day := 1
 var unlocked_days: Array[int] = [1]
 var day_slots: Dictionary = {}
+var current_post_process_preset := DEFAULT_POST_PROCESS_PRESET
+var post_process_time := 0.0
 
 var gameplay_layer: Control
 var photo: TextureRect
 var brightness_overlay: ColorRect
+var post_process_overlay: ColorRect
+var post_process_material: ShaderMaterial
 var hotspot_layer: Control
 var title_panel: PanelContainer
 var title_label: Label
@@ -741,6 +775,12 @@ func _ready() -> void:
 	_build_ui()
 	_build_audio()
 	_show_lobby()
+
+
+func _process(delta: float) -> void:
+	post_process_time += delta
+	if post_process_material != null:
+		post_process_material.set_shader_parameter("time_seed", post_process_time)
 
 
 func _is_debug_ui_enabled() -> bool:
@@ -802,6 +842,15 @@ func _build_ui() -> void:
 	brightness_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	gameplay_layer.add_child(brightness_overlay)
 	_apply_brightness()
+
+	post_process_overlay = ColorRect.new()
+	post_process_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	post_process_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	post_process_overlay.color = Color.WHITE
+	post_process_material = _make_post_process_material()
+	post_process_overlay.material = post_process_material
+	gameplay_layer.add_child(post_process_overlay)
+	_apply_post_process_preset(current_post_process_preset)
 
 	hotspot_layer = Control.new()
 	hotspot_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1237,6 +1286,43 @@ func _make_lobby_blur_material() -> ShaderMaterial:
 	material.shader = shader
 	material.set_shader_parameter("blur_size", 4.0)
 	return material
+
+
+func _make_post_process_material() -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = POST_PROCESS_SHADER_CODE
+
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	return material
+
+
+func set_post_process_preset(preset_name: String) -> void:
+	_apply_post_process_preset(preset_name)
+
+
+func clear_post_process_filter() -> void:
+	_apply_post_process_preset(POST_PROCESS_PRESET_NONE)
+
+
+func _apply_post_process_preset(preset_name: String) -> void:
+	var safe_preset_name := preset_name if POST_PROCESS_PRESETS.has(preset_name) else POST_PROCESS_PRESET_NONE
+	current_post_process_preset = safe_preset_name
+
+	if post_process_overlay == null or post_process_material == null:
+		return
+
+	var preset: Dictionary = POST_PROCESS_PRESETS[safe_preset_name]
+	post_process_overlay.visible = safe_preset_name != POST_PROCESS_PRESET_NONE
+	post_process_material.set_shader_parameter("saturation", float(preset["saturation"]))
+	post_process_material.set_shader_parameter("contrast", float(preset["contrast"]))
+	post_process_material.set_shader_parameter("brightness", float(preset["brightness"]))
+	post_process_material.set_shader_parameter("tint", preset["tint"])
+	post_process_material.set_shader_parameter("tint_strength", float(preset["tint_strength"]))
+	post_process_material.set_shader_parameter("vignette_strength", float(preset["vignette_strength"]))
+	post_process_material.set_shader_parameter("vignette_softness", float(preset["vignette_softness"]))
+	post_process_material.set_shader_parameter("grain_strength", float(preset["grain_strength"]))
+	post_process_material.set_shader_parameter("bloom_strength", float(preset["bloom_strength"]))
 
 
 func _show_lobby() -> void:
