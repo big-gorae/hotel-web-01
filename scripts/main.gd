@@ -2,6 +2,7 @@ extends Control
 
 const HotelLocalization = preload("res://scripts/localization.gd")
 const HotelItemDefinitionScript = preload("res://scripts/items/item_definition.gd")
+const HotelItemCombinationRuleScript = preload("res://scripts/items/item_combination_rule.gd")
 const HotelInventoryModelScript = preload("res://scripts/items/inventory_model.gd")
 const HotelInventoryScreenScript = preload("res://scripts/ui/inventory_screen.gd")
 const HotelEquipmentHudScript = preload("res://scripts/ui/equipment_hud.gd")
@@ -878,9 +879,28 @@ func _build_ui() -> void:
 
 
 func _seed_inventory() -> void:
-	inventory_model.add_item(_make_inventory_item("room_105_key", "Room 105 Key", "A worn brass key from the front desk drawer.", "🔑"))
-	inventory_model.add_item(_make_inventory_item("small_flashlight", "Flashlight", "A compact flashlight. Useful when the power fails.", "🔦"))
-	inventory_model.add_item(_make_inventory_item("guest_note", "Guest Note", "A folded note with a room number written in pencil.", "📝"))
+	_register_inventory_item("room_105_key", "Room 105 Key", "A worn brass key from the front desk drawer.", "🔑")
+	_register_inventory_item("small_flashlight", "Flashlight", "A compact flashlight. Useful when the power fails.", "🔦")
+	_register_inventory_item("guest_note", "Guest Note", "A folded note with a room number written in pencil.", "📝")
+	_register_inventory_item("revealed_guest_note", "Revealed Note", "The flashlight reveals faint writing under the room number: Do not return it after midnight.", "📄")
+
+	inventory_model.add_item_by_id("room_105_key")
+	inventory_model.add_item_by_id("small_flashlight")
+	inventory_model.add_item_by_id("guest_note")
+	inventory_model.add_combination_rule(_make_combination_rule(
+		"reveal_guest_note",
+		"small_flashlight",
+		"guest_note",
+		["revealed_guest_note"],
+		false,
+		true,
+		"combine.reveal_guest_note",
+		"The flashlight reveals hidden writing on the note.",
+	))
+
+
+func _register_inventory_item(item_id: String, item_name: String, item_description: String, item_icon_text: String, item_can_equip := true) -> void:
+	inventory_model.register_item_definition(_make_inventory_item(item_id, item_name, item_description, item_icon_text, item_can_equip))
 
 
 func _make_inventory_item(item_id: String, item_name: String, item_description: String, item_icon_text: String, item_can_equip := true):
@@ -893,6 +913,19 @@ func _make_inventory_item(item_id: String, item_name: String, item_description: 
 	item.icon_text = item_icon_text
 	item.can_equip = item_can_equip
 	return item
+
+
+func _make_combination_rule(rule_id: String, item_a_id: String, item_b_id: String, result_item_ids: Array[String], consume_item_a := true, consume_item_b := true, message_key := "", fallback_message := ""):
+	var rule = HotelItemCombinationRuleScript.new()
+	rule.id = rule_id
+	rule.item_a_id = item_a_id
+	rule.item_b_id = item_b_id
+	rule.result_item_ids = result_item_ids
+	rule.consume_item_a = consume_item_a
+	rule.consume_item_b = consume_item_b
+	rule.message_key = message_key
+	rule.fallback_message = fallback_message
+	return rule
 
 
 func _build_audio() -> void:

@@ -1,6 +1,8 @@
 class_name HotelInventoryItemButton
 extends Button
 
+signal item_dropped_on_item(source_item, target_item)
+
 const DRAG_KIND := "hotel_inventory_item"
 
 var item = null
@@ -35,3 +37,11 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		"kind": DRAG_KIND,
 		"item": item,
 	}
+
+
+func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+	return data is Dictionary and data.get("kind", "") == DRAG_KIND and data.get("item") != null and data.get("item") != item
+
+
+func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	item_dropped_on_item.emit(data["item"], item)

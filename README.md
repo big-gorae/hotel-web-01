@@ -106,13 +106,22 @@ To move to another scene when clicked, use `target`:
 
 - `scripts/items/inventory_model.gd` owns inventory state and the currently equipped item.
 - `scripts/items/item_definition.gd` is the item data object used by inventory UI and future pickup logic.
+- `scripts/items/item_combination_rule.gd` defines item-to-item drag combination rules.
 - `scripts/ui/inventory_screen.gd` builds the Esc inventory panel and the `Hand` drop slot.
-- `scripts/ui/inventory_item_button.gd` provides drag data for inventory items.
+- `scripts/ui/inventory_item_button.gd` provides drag data for inventory items and accepts item drops for combination.
 - `scripts/ui/equipment_slot.gd` accepts dragged items and equips them through the inventory model.
 - `scripts/ui/equipment_hud.gd` shows the currently equipped item in the lower-left square.
 - `scripts/ui/rule_book_screen.gd` renders the menu Rule Book panel from localized rule keys.
 
-Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment can be verified before pickup gameplay exists.
+Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment and item-to-item combination can be verified before pickup gameplay exists.
+
+## Item Combination
+
+- Drag one inventory item onto another inventory item to attempt a combination.
+- Combination rules live in `HotelInventoryModel` as `HotelItemCombinationRule` objects.
+- Each rule can consume either source item, consume either target item, and create one or more result items.
+- Current sample: `Flashlight + Guest Note` keeps the flashlight, consumes the original note, and creates `Revealed Note`.
+- Combination result text uses `combine.<rule_id>` localization keys.
 
 ## Dialogue
 

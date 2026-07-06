@@ -8,6 +8,7 @@ var inventory_model = null
 var localization = null
 var items_grid: GridContainer
 var empty_label: Label
+var combination_feedback_label: Label
 var hand_slot = null
 
 
@@ -17,6 +18,8 @@ func setup(model, new_localization) -> void:
 	_build()
 	inventory_model.items_changed.connect(_refresh_items)
 	inventory_model.equipped_item_changed.connect(_on_equipped_item_changed)
+	inventory_model.combination_succeeded.connect(_on_combination_succeeded)
+	inventory_model.combination_failed.connect(_on_combination_failed)
 	_refresh_items()
 	_on_equipped_item_changed(inventory_model.equipped_item)
 
@@ -45,7 +48,7 @@ func _build() -> void:
 	inventory_layout.add_child(title)
 
 	var hint := Label.new()
-	hint.text = _text("inventory.hint", "Drag an item to Hand to equip it.")
+	hint.text = _text("inventory.hint", "Drag an item to Hand to equip it. Drop an item onto another item to combine them.")
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.add_theme_font_size_override("font_size", 14)
 	hint.add_theme_color_override("font_color", Color(0.72, 0.72, 0.68))
@@ -68,6 +71,14 @@ func _build() -> void:
 	empty_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.68))
 	inventory_layout.add_child(empty_label)
 
+	combination_feedback_label = Label.new()
+	combination_feedback_label.text = ""
+	combination_feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	combination_feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	combination_feedback_label.add_theme_font_size_override("font_size", 14)
+	combination_feedback_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.28))
+	inventory_layout.add_child(combination_feedback_label)
+
 	hand_slot = EquipmentSlot.new()
 	hand_slot.setup(localization)
 	hand_slot.item_dropped.connect(_on_hand_item_dropped)
@@ -83,6 +94,7 @@ func _refresh_items() -> void:
 	for item in items:
 		var button = InventoryItemButton.new()
 		button.setup(item, localization)
+		button.item_dropped_on_item.connect(_on_item_dropped_on_item)
 		items_grid.add_child(button)
 
 
@@ -90,9 +102,26 @@ func _on_hand_item_dropped(item) -> void:
 	inventory_model.equip_item(item)
 
 
+func _on_item_dropped_on_item(source_item, target_item) -> void:
+	inventory_model.combine_items(source_item, target_item)
+
+
 func _on_equipped_item_changed(item) -> void:
 	if hand_slot != null:
 		hand_slot.set_equipped_item(item)
+
+
+func _set_combination_feedback(message: String) -> void:
+	if combination_feedback_label != null:
+		combination_feedback_label.text = message
+
+
+func _on_combination_succeeded(rule) -> void:
+	_set_combination_feedback(localization.translate(rule.message_key, rule.fallback_message))
+
+
+func _on_combination_failed(_source_item, _target_item) -> void:
+	_set_combination_feedback(_text("inventory.combine.no_match", "Those items do not fit together."))
 
 
 func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBoxFlat:
