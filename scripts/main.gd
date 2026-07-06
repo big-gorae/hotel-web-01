@@ -715,6 +715,8 @@ var navigation_toggle: Button
 var menu_overlay: ColorRect
 var brightness_slider: HSlider
 var brightness_value_label: Label
+var inventory_tab_button: Button
+var rule_book_tab_button: Button
 var inventory_screen
 var equipment_hud
 var rule_book_screen
@@ -1045,17 +1047,11 @@ func _build_menu() -> void:
 	continue_button.pressed.connect(_hide_menu)
 	layout.add_child(continue_button)
 
-	var inventory_button := Button.new()
-	inventory_button.text = _ui_text("menu.inventory", "Inventory")
-	inventory_button.focus_mode = Control.FOCUS_NONE
-	inventory_button.pressed.connect(_show_inventory_menu_panel)
-	layout.add_child(inventory_button)
-
-	var rule_book_button := Button.new()
-	rule_book_button.text = _ui_text("menu.rule_book", "Rule Book")
-	rule_book_button.focus_mode = Control.FOCUS_NONE
-	rule_book_button.pressed.connect(_show_rule_book_menu_panel)
-	layout.add_child(rule_book_button)
+	var main_menu_button := Button.new()
+	main_menu_button.text = _ui_text("menu.main_menu", "Main Menu")
+	main_menu_button.focus_mode = Control.FOCUS_NONE
+	main_menu_button.pressed.connect(_return_to_lobby)
+	layout.add_child(main_menu_button)
 
 	var brightness_label := Label.new()
 	brightness_label.text = _ui_text("menu.brightness", "Brightness")
@@ -1089,18 +1085,46 @@ func _build_menu() -> void:
 	quit_button.pressed.connect(_quit_game)
 	layout.add_child(quit_button)
 
+	var content_shell := VBoxContainer.new()
+	content_shell.process_mode = Node.PROCESS_MODE_ALWAYS
+	content_shell.add_theme_constant_override("separation", 0)
+	shell.add_child(content_shell)
+
+	var tab_bar := HBoxContainer.new()
+	tab_bar.process_mode = Node.PROCESS_MODE_ALWAYS
+	tab_bar.add_theme_constant_override("separation", 2)
+	content_shell.add_child(tab_bar)
+
+	inventory_tab_button = Button.new()
+	inventory_tab_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	inventory_tab_button.text = _ui_text("menu.inventory", "Inventory")
+	inventory_tab_button.toggle_mode = true
+	inventory_tab_button.focus_mode = Control.FOCUS_NONE
+	inventory_tab_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	inventory_tab_button.pressed.connect(_show_inventory_menu_panel)
+	tab_bar.add_child(inventory_tab_button)
+
+	rule_book_tab_button = Button.new()
+	rule_book_tab_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	rule_book_tab_button.text = _ui_text("menu.rule_book", "Rule Book")
+	rule_book_tab_button.toggle_mode = true
+	rule_book_tab_button.focus_mode = Control.FOCUS_NONE
+	rule_book_tab_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	rule_book_tab_button.pressed.connect(_show_rule_book_menu_panel)
+	tab_bar.add_child(rule_book_tab_button)
+
 	inventory_screen = HotelInventoryScreenScript.new()
 	inventory_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	inventory_screen.custom_minimum_size = Vector2(570.0, 420.0)
 	inventory_screen.setup(inventory_model, localization)
-	shell.add_child(inventory_screen)
+	content_shell.add_child(inventory_screen)
 
 	rule_book_screen = HotelRuleBookScreenScript.new()
 	rule_book_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	rule_book_screen.custom_minimum_size = Vector2(570.0, 420.0)
 	rule_book_screen.setup(localization)
 	rule_book_screen.visible = false
-	shell.add_child(rule_book_screen)
+	content_shell.add_child(rule_book_screen)
 
 	_update_brightness_label()
 
@@ -1151,21 +1175,6 @@ func _build_lobby() -> void:
 	title.add_theme_font_size_override("font_size", 34)
 	title.add_theme_color_override("font_color", Color(1.0, 0.92, 0.72))
 	layout.add_child(title)
-
-	var subtitle := Label.new()
-	subtitle.text = _ui_text("lobby.subtitle", "Start a new shift or continue from a saved day.")
-	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	subtitle.add_theme_font_size_override("font_size", 16)
-	subtitle.add_theme_color_override("font_color", Color(0.78, 0.78, 0.78))
-	layout.add_child(subtitle)
-
-	lobby_status_label = Label.new()
-	lobby_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lobby_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lobby_status_label.add_theme_font_size_override("font_size", 14)
-	lobby_status_label.add_theme_color_override("font_color", Color(0.82, 0.75, 0.62))
-	layout.add_child(lobby_status_label)
 
 	var start_button := Button.new()
 	start_button.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -1405,11 +1414,7 @@ func _refresh_lobby_continue_state() -> void:
 	var has_save := _has_save_data()
 	lobby_continue_button.disabled = not has_save
 	lobby_continue_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if has_save else Control.CURSOR_FORBIDDEN
-	lobby_continue_button.tooltip_text = _ui_text("lobby.continue.available", "Choose a saved day to continue.") if has_save else _ui_text("lobby.continue.disabled", "No saved days yet.")
-
-	if lobby_status_label != null:
-		var latest_day := _latest_saved_day()
-		lobby_status_label.text = _ui_text("lobby.save_status", "Latest saved day: %s") % _day_name(latest_day) if has_save else _ui_text("lobby.no_save_status", "No saved shift yet.")
+	lobby_continue_button.tooltip_text = ""
 
 	if lobby_day_panel != null and not has_save:
 		lobby_day_panel.visible = false
@@ -1628,6 +1633,8 @@ func _show_inventory_menu_panel() -> void:
 	if rule_book_screen != null:
 		rule_book_screen.visible = false
 
+	_sync_menu_tabs("inventory")
+
 
 func _show_rule_book_menu_panel() -> void:
 	if inventory_screen != null:
@@ -1636,6 +1643,39 @@ func _show_rule_book_menu_panel() -> void:
 	if rule_book_screen != null:
 		rule_book_screen.visible = true
 		rule_book_screen.refresh_text()
+
+	_sync_menu_tabs("rule_book")
+
+
+func _sync_menu_tabs(active_tab: String) -> void:
+	if inventory_tab_button != null:
+		var inventory_active := active_tab == "inventory"
+		inventory_tab_button.button_pressed = inventory_active
+		_style_menu_tab(inventory_tab_button, inventory_active)
+
+	if rule_book_tab_button != null:
+		var rule_book_active := active_tab == "rule_book"
+		rule_book_tab_button.button_pressed = rule_book_active
+		_style_menu_tab(rule_book_tab_button, rule_book_active)
+
+
+func _style_menu_tab(button: Button, active: bool) -> void:
+	var background := Color(0.09, 0.075, 0.045, 0.98) if active else Color(0.03, 0.035, 0.04, 0.76)
+	var border := Color(1.0, 0.78, 0.32, 0.92) if active else Color(1.0, 1.0, 1.0, 0.12)
+	button.custom_minimum_size = Vector2(138.0, 38.0)
+	button.add_theme_stylebox_override("normal", _make_tab_style(background, border, active))
+	button.add_theme_stylebox_override("hover", _make_tab_style(Color(0.15, 0.12, 0.065, 0.98), Color(1.0, 0.82, 0.28, 0.92), true))
+	button.add_theme_stylebox_override("pressed", _make_tab_style(Color(0.09, 0.075, 0.045, 1.0), Color(1.0, 0.78, 0.32, 1.0), true))
+	button.add_theme_color_override("font_color", Color(1.0, 0.88, 0.58) if active else Color(0.72, 0.72, 0.68))
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.88, 0.58))
+
+
+func _return_to_lobby() -> void:
+	_save_current_day()
+	if menu_overlay != null:
+		menu_overlay.visible = false
+
+	_show_lobby()
 
 
 func _set_game_paused(paused: bool) -> void:
@@ -1999,4 +2039,19 @@ func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBo
 	style.content_margin_right = 12.0
 	style.content_margin_top = 8.0
 	style.content_margin_bottom = 8.0
+	return style
+
+
+func _make_tab_style(background: Color, border: Color, active: bool) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = background
+	style.border_color = border
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(10)
+	style.corner_radius_bottom_left = 0
+	style.corner_radius_bottom_right = 0
+	style.content_margin_left = 16.0
+	style.content_margin_right = 16.0
+	style.content_margin_top = 9.0 if active else 7.0
+	style.content_margin_bottom = 9.0 if active else 7.0
 	return style
