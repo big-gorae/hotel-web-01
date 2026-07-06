@@ -14,8 +14,6 @@ const HotelPostProcessFilterScript = preload("res://scripts/systems/post_process
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
 const PARALLAX_STRENGTH := 18.0
-const CINEMATIC_ASPECT_RATIO := 21.0 / 9.0
-const CINEMATIC_MIN_FRAME_HEIGHT_RATIO := 0.58
 const TITLE_VISIBLE_SECONDS := 2.0
 const TITLE_FADE_SECONDS := 1.0
 const DEBUG_UI_ENV := "HOTEL_DEBUG_UI"
@@ -680,7 +678,6 @@ var debug_ui_enabled := false
 var show_hotspots := false
 var show_persistent_dialogue := false
 var show_navigation := false
-var cinematic_letterbox_enabled := false
 var laundry_second_washer_open := true
 var game_brightness := DEFAULT_BRIGHTNESS
 var current_persistent_dialogue_text := ""
@@ -694,8 +691,6 @@ var footstep_index := 0
 var game_started := false
 
 var gameplay_layer: Control
-var letterbox_top_bar: ColorRect
-var letterbox_bottom_bar: ColorRect
 var photo: TextureRect
 var brightness_overlay: ColorRect
 var post_process_filter
@@ -715,7 +710,6 @@ var debug_day_bar: HBoxContainer
 var hotspot_toggle: Button
 var chat_toggle: Button
 var navigation_toggle: Button
-var cinematic_toggle: Button
 var menu_overlay: ColorRect
 var menu_content_shell: VBoxContainer
 var brightness_slider: HSlider
@@ -796,18 +790,6 @@ func _build_ui() -> void:
 	gameplay_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(gameplay_layer)
 
-	letterbox_top_bar = ColorRect.new()
-	letterbox_top_bar.color = Color.BLACK
-	letterbox_top_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	letterbox_top_bar.visible = false
-	gameplay_layer.add_child(letterbox_top_bar)
-
-	letterbox_bottom_bar = ColorRect.new()
-	letterbox_bottom_bar.color = Color.BLACK
-	letterbox_bottom_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	letterbox_bottom_bar.visible = false
-	gameplay_layer.add_child(letterbox_bottom_bar)
-
 	photo = TextureRect.new()
 	photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
@@ -876,9 +858,6 @@ func _build_ui() -> void:
 
 	navigation_toggle = _make_debug_button("🧭", _ui_text("debug.navigation.show", "Show quick travel buttons"), _toggle_navigation)
 	corner_row.add_child(navigation_toggle)
-
-	cinematic_toggle = _make_debug_button("🎬", _ui_text("debug.cinematic.show", "Show cinematic frame"), _toggle_cinematic_letterbox)
-	corner_row.add_child(cinematic_toggle)
 
 	persistent_dialogue_panel = PanelContainer.new()
 	persistent_dialogue_panel.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -1562,12 +1541,6 @@ func _toggle_navigation() -> void:
 	_apply_navigation_display()
 
 
-func _toggle_cinematic_letterbox() -> void:
-	cinematic_letterbox_enabled = not cinematic_letterbox_enabled
-	_update_layout()
-	_sync_debug_toggles()
-
-
 func _toggle_menu() -> void:
 	if menu_overlay == null:
 		return
@@ -1872,10 +1845,6 @@ func _sync_debug_toggles() -> void:
 	navigation_toggle.tooltip_text = _ui_text("debug.navigation.hide", "Hide quick travel buttons") if show_navigation else _ui_text("debug.navigation.show", "Show quick travel buttons")
 	_style_debug_button(navigation_toggle, show_navigation)
 
-	cinematic_toggle.button_pressed = cinematic_letterbox_enabled
-	cinematic_toggle.tooltip_text = _ui_text("debug.cinematic.hide", "Hide cinematic frame") if cinematic_letterbox_enabled else _ui_text("debug.cinematic.show", "Show cinematic frame")
-	_style_debug_button(cinematic_toggle, cinematic_letterbox_enabled)
-
 
 func _position_bottom_panels() -> void:
 	if persistent_dialogue_panel != null:
@@ -1913,48 +1882,14 @@ func _update_layout() -> void:
 		return
 
 	var viewport_size := get_viewport_rect().size
-	var photo_rect := _get_photo_view_rect(viewport_size)
-	var offset := _get_parallax_offset(photo_rect.size)
-	if cinematic_letterbox_enabled:
-		photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		photo.position = photo_rect.position
-		photo.size = photo_rect.size
-	else:
-		photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		photo.position = photo_rect.position + offset
-		photo.size = photo_rect.size
-
-	_update_letterbox_bars(photo_rect, viewport_size)
+	var offset := _get_parallax_offset(viewport_size)
+	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	photo.position = Vector2(-PARALLAX_PADDING, -PARALLAX_PADDING) + offset
+	photo.size = viewport_size + Vector2(PARALLAX_PADDING * 2.0, PARALLAX_PADDING * 2.0)
 	_position_title_panel()
 	_position_transient_dialogue()
 	_update_hotspot_layout()
 	_update_day_display()
-
-
-func _get_photo_view_rect(viewport_size: Vector2) -> Rect2:
-	if not cinematic_letterbox_enabled:
-		return Rect2(Vector2(-PARALLAX_PADDING, -PARALLAX_PADDING), viewport_size + Vector2(PARALLAX_PADDING * 2.0, PARALLAX_PADDING * 2.0))
-
-	var frame_height := viewport_size.x / CINEMATIC_ASPECT_RATIO
-	var minimum_height := viewport_size.y * CINEMATIC_MIN_FRAME_HEIGHT_RATIO
-	frame_height = clampf(frame_height, minimum_height, viewport_size.y)
-	var frame_position := Vector2(0.0, (viewport_size.y - frame_height) * 0.5)
-	return Rect2(frame_position, Vector2(viewport_size.x, frame_height))
-
-
-func _update_letterbox_bars(photo_rect: Rect2, viewport_size: Vector2) -> void:
-	if letterbox_top_bar == null or letterbox_bottom_bar == null:
-		return
-
-	letterbox_top_bar.visible = cinematic_letterbox_enabled
-	letterbox_bottom_bar.visible = cinematic_letterbox_enabled
-	if not cinematic_letterbox_enabled:
-		return
-
-	letterbox_top_bar.position = Vector2.ZERO
-	letterbox_top_bar.size = Vector2(viewport_size.x, maxf(photo_rect.position.y, 0.0))
-	letterbox_bottom_bar.position = Vector2(0.0, photo_rect.position.y + photo_rect.size.y)
-	letterbox_bottom_bar.size = Vector2(viewport_size.x, maxf(viewport_size.y - letterbox_bottom_bar.position.y, 0.0))
 
 
 func _update_hotspot_layout() -> void:
@@ -1971,11 +1906,7 @@ func _update_hotspot_layout() -> void:
 
 func _get_photo_draw_rect() -> Rect2:
 	var texture_size: Vector2 = current_texture.get_size()
-	var scale: float
-	if cinematic_letterbox_enabled:
-		scale = minf(photo.size.x / texture_size.x, photo.size.y / texture_size.y)
-	else:
-		scale = maxf(photo.size.x / texture_size.x, photo.size.y / texture_size.y)
+	var scale: float = maxf(photo.size.x / texture_size.x, photo.size.y / texture_size.y)
 	var draw_size: Vector2 = texture_size * scale
 	var draw_position: Vector2 = photo.position + (photo.size - draw_size) * 0.5
 	return Rect2(draw_position, draw_size)
