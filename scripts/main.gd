@@ -8,6 +8,8 @@ const HotelInventoryScreenScript = preload("res://scripts/ui/inventory_screen.gd
 const HotelEquipmentHudScript = preload("res://scripts/ui/equipment_hud.gd")
 const HotelRuleBookScreenScript = preload("res://scripts/ui/rule_book_screen.gd")
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
+const HotelDaySaveManagerScript = preload("res://scripts/systems/day_save_manager.gd")
+const HotelPostProcessFilterScript = preload("res://scripts/systems/post_process_filter.gd")
 
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
@@ -28,39 +30,6 @@ const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
 const LOBBY_BLUR_SHADER_CODE := "shader_type canvas_item;\nuniform float blur_size = 3.5;\nvoid fragment() {\n\tvec2 px = TEXTURE_PIXEL_SIZE * blur_size;\n\tvec4 color = texture(TEXTURE, UV) * 0.18;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(-px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, -px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, px.y)) * 0.11;\n\tCOLOR = color;\n}\n"
-const POST_PROCESS_SHADER_CODE := "shader_type canvas_item;\nuniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;\nuniform float saturation = 1.0;\nuniform float contrast = 1.0;\nuniform float brightness = 0.0;\nuniform vec3 tint = vec3(1.0, 1.0, 1.0);\nuniform float tint_strength = 0.0;\nuniform float vignette_strength = 0.0;\nuniform float vignette_softness = 0.5;\nuniform float grain_strength = 0.0;\nuniform float bloom_strength = 0.0;\nuniform float time_seed = 0.0;\nfloat noise(vec2 uv) {\n\treturn fract(sin(dot(uv, vec2(12.9898, 78.233)) + time_seed) * 43758.5453123);\n}\nvoid fragment() {\n\tvec2 uv = SCREEN_UV;\n\tvec4 source = texture(SCREEN_TEXTURE, uv);\n\tvec3 color = source.rgb;\n\tfloat luma = dot(color, vec3(0.299, 0.587, 0.114));\n\tcolor = mix(vec3(luma), color, saturation);\n\tcolor = (color - 0.5) * contrast + 0.5 + brightness;\n\tcolor = mix(color, color * tint, tint_strength);\n\tfloat bright = smoothstep(0.62, 1.0, max(max(color.r, color.g), color.b));\n\tcolor += bright * bloom_strength;\n\tfloat dist = distance(uv, vec2(0.5));\n\tfloat vignette = smoothstep(0.82 - vignette_softness, 0.82, dist);\n\tcolor *= 1.0 - vignette * vignette_strength;\n\tfloat grain = noise(uv / SCREEN_PIXEL_SIZE) - 0.5;\n\tcolor += grain * grain_strength;\n\tCOLOR = vec4(clamp(color, vec3(0.0), vec3(1.0)), source.a);\n}\n"
-const POST_PROCESS_PRESET_NONE := "none"
-const POST_PROCESS_PRESET_DREARY_1 := "dreary_1"
-const DEFAULT_POST_PROCESS_PRESET := POST_PROCESS_PRESET_DREARY_1
-const POST_PROCESS_PRESETS := {
-	POST_PROCESS_PRESET_NONE: {
-		"display_name": "필터 없음",
-		"saturation": 1.0,
-		"contrast": 1.0,
-		"brightness": 0.0,
-		"tint": Vector3(1.0, 1.0, 1.0),
-		"tint_strength": 0.0,
-		"vignette_strength": 0.0,
-		"vignette_softness": 0.5,
-		"grain_strength": 0.0,
-		"bloom_strength": 0.0,
-	},
-	POST_PROCESS_PRESET_DREARY_1: {
-		"display_name": "우중충한 필터 1",
-		"saturation": 0.82,
-		"contrast": 1.08,
-		"brightness": -0.015,
-		"tint": Vector3(1.0, 0.92, 0.72),
-		"tint_strength": 0.12,
-		"vignette_strength": 0.16,
-		"vignette_softness": 0.42,
-		"grain_strength": 0.018,
-		"bloom_strength": 0.025,
-	},
-}
-const TOTAL_DAYS := 5
-const SAVE_VERSION := 1
-const SAVE_PATH := "user://hotel_save.json"
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -701,6 +670,7 @@ const HOTEL_SCENES := {
 var localization := HotelLocalization.new()
 var inventory_model = null
 var playback_pause_manager = null
+var day_save_manager = null
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
@@ -719,17 +689,11 @@ var footstep_players: Array[AudioStreamPlayer] = []
 var footstep_timer: Timer
 var footstep_index := 0
 var game_started := false
-var current_day := 1
-var unlocked_days: Array[int] = [1]
-var day_slots: Dictionary = {}
-var current_post_process_preset := DEFAULT_POST_PROCESS_PRESET
-var post_process_time := 0.0
 
 var gameplay_layer: Control
 var photo: TextureRect
 var brightness_overlay: ColorRect
-var post_process_overlay: ColorRect
-var post_process_material: ShaderMaterial
+var post_process_filter
 var hotspot_layer: Control
 var title_panel: PanelContainer
 var title_label: Label
@@ -768,19 +732,14 @@ func _ready() -> void:
 	_hide_editor_hotspot_definitions()
 	inventory_model = HotelInventoryModelScript.new()
 	playback_pause_manager = HotelPlaybackPauseManagerScript.new()
+	day_save_manager = HotelDaySaveManagerScript.new()
 	debug_ui_enabled = _is_debug_ui_enabled()
 	get_tree().root.size_changed.connect(_update_layout)
 	_seed_inventory()
-	_load_save_data()
+	day_save_manager.load_save_data()
 	_build_ui()
 	_build_audio()
 	_show_lobby()
-
-
-func _process(delta: float) -> void:
-	post_process_time += delta
-	if post_process_material != null:
-		post_process_material.set_shader_parameter("time_seed", post_process_time)
 
 
 func _is_debug_ui_enabled() -> bool:
@@ -843,14 +802,8 @@ func _build_ui() -> void:
 	gameplay_layer.add_child(brightness_overlay)
 	_apply_brightness()
 
-	post_process_overlay = ColorRect.new()
-	post_process_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	post_process_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	post_process_overlay.color = Color.WHITE
-	post_process_material = _make_post_process_material()
-	post_process_overlay.material = post_process_material
-	gameplay_layer.add_child(post_process_overlay)
-	_apply_post_process_preset(current_post_process_preset)
+	post_process_filter = HotelPostProcessFilterScript.new()
+	gameplay_layer.add_child(post_process_filter)
 
 	hotspot_layer = Control.new()
 	hotspot_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1263,7 +1216,7 @@ func _build_lobby() -> void:
 
 	lobby_day_grid = GridContainer.new()
 	lobby_day_grid.process_mode = Node.PROCESS_MODE_ALWAYS
-	lobby_day_grid.columns = TOTAL_DAYS
+	lobby_day_grid.columns = HotelDaySaveManagerScript.TOTAL_DAYS
 	lobby_day_grid.add_theme_constant_override("h_separation", 8)
 	day_layout.add_child(lobby_day_grid)
 
@@ -1288,41 +1241,14 @@ func _make_lobby_blur_material() -> ShaderMaterial:
 	return material
 
 
-func _make_post_process_material() -> ShaderMaterial:
-	var shader := Shader.new()
-	shader.code = POST_PROCESS_SHADER_CODE
-
-	var material := ShaderMaterial.new()
-	material.shader = shader
-	return material
-
-
 func set_post_process_preset(preset_name: String) -> void:
-	_apply_post_process_preset(preset_name)
+	if post_process_filter != null:
+		post_process_filter.apply_preset(preset_name)
 
 
 func clear_post_process_filter() -> void:
-	_apply_post_process_preset(POST_PROCESS_PRESET_NONE)
-
-
-func _apply_post_process_preset(preset_name: String) -> void:
-	var safe_preset_name := preset_name if POST_PROCESS_PRESETS.has(preset_name) else POST_PROCESS_PRESET_NONE
-	current_post_process_preset = safe_preset_name
-
-	if post_process_overlay == null or post_process_material == null:
-		return
-
-	var preset: Dictionary = POST_PROCESS_PRESETS[safe_preset_name]
-	post_process_overlay.visible = safe_preset_name != POST_PROCESS_PRESET_NONE
-	post_process_material.set_shader_parameter("saturation", float(preset["saturation"]))
-	post_process_material.set_shader_parameter("contrast", float(preset["contrast"]))
-	post_process_material.set_shader_parameter("brightness", float(preset["brightness"]))
-	post_process_material.set_shader_parameter("tint", preset["tint"])
-	post_process_material.set_shader_parameter("tint_strength", float(preset["tint_strength"]))
-	post_process_material.set_shader_parameter("vignette_strength", float(preset["vignette_strength"]))
-	post_process_material.set_shader_parameter("vignette_softness", float(preset["vignette_softness"]))
-	post_process_material.set_shader_parameter("grain_strength", float(preset["grain_strength"]))
-	post_process_material.set_shader_parameter("bloom_strength", float(preset["bloom_strength"]))
+	if post_process_filter != null:
+		post_process_filter.clear_filter()
 
 
 func _show_lobby() -> void:
@@ -1336,9 +1262,7 @@ func _show_lobby() -> void:
 
 
 func _start_shift() -> void:
-	day_slots.clear()
-	unlocked_days = [1]
-	current_day = 1
+	day_save_manager.start_new_shift()
 	laundry_second_washer_open = true
 	game_brightness = DEFAULT_BRIGHTNESS
 	_start_day(1, false, false)
@@ -1358,8 +1282,7 @@ func _start_saved_day(day: int) -> void:
 
 func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) -> void:
 	game_started = true
-	current_day = clampi(day, 1, TOTAL_DAYS)
-	_unlock_day(current_day)
+	day_save_manager.set_current_day(day)
 
 	if lobby_overlay != null:
 		lobby_overlay.visible = false
@@ -1368,7 +1291,7 @@ func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) ->
 
 	var target_scene_id := START_SCENE_ID
 	if use_saved_state:
-		target_scene_id = _restore_day_state(current_day)
+		target_scene_id = _restore_day_state(day_save_manager.current_day)
 	else:
 		_reset_day_runtime_state()
 
@@ -1381,73 +1304,21 @@ func _is_lobby_open() -> bool:
 	return lobby_overlay != null and lobby_overlay.visible
 
 
-func _load_save_data() -> void:
-	unlocked_days = [1]
-	day_slots.clear()
-	if not FileAccess.file_exists(SAVE_PATH):
-		return
-
-	var save_file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if save_file == null:
-		push_warning("Failed to open save file: %s" % SAVE_PATH)
-		return
-
-	var parsed = JSON.parse_string(save_file.get_as_text())
-	if not parsed is Dictionary:
-		push_warning("Ignoring invalid save file: %s" % SAVE_PATH)
-		return
-
-	var save_data: Dictionary = parsed
-	unlocked_days.clear()
-	for value in save_data.get("unlocked_days", [1]):
-		_unlock_day(int(value))
-
-	var saved_slots: Dictionary = save_data.get("day_slots", {})
-	for key in saved_slots.keys():
-		var day := clampi(int(key), 1, TOTAL_DAYS)
-		var slot = saved_slots[key]
-		if slot is Dictionary:
-			day_slots[str(day)] = slot
-			_unlock_day(day)
-
-	if unlocked_days.is_empty():
-		unlocked_days = [1]
-
-	current_day = clampi(int(save_data.get("current_day", 1)), 1, TOTAL_DAYS)
-
-
 func _save_current_day() -> void:
-	_store_current_day_state()
-	_write_save_data()
+	day_save_manager.save_current_state(_capture_day_state())
 	_refresh_lobby_continue_state()
 
 
-func _store_current_day_state() -> void:
-	_unlock_day(current_day)
-	day_slots[str(current_day)] = {
-		"day": current_day,
+func _capture_day_state() -> Dictionary:
+	return {
 		"scene_id": current_scene_id,
 		"laundry_second_washer_open": laundry_second_washer_open,
 		"game_brightness": game_brightness,
 	}
 
 
-func _write_save_data() -> void:
-	var save_file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if save_file == null:
-		push_warning("Failed to write save file: %s" % SAVE_PATH)
-		return
-
-	save_file.store_string(JSON.stringify({
-		"version": SAVE_VERSION,
-		"current_day": current_day,
-		"unlocked_days": unlocked_days,
-		"day_slots": day_slots,
-	}, "\t"))
-
-
 func _restore_day_state(day: int) -> String:
-	var slot: Dictionary = day_slots.get(str(day), {})
+	var slot: Dictionary = day_save_manager.get_day_state(day)
 	laundry_second_washer_open = bool(slot.get("laundry_second_washer_open", true))
 	game_brightness = float(slot.get("game_brightness", DEFAULT_BRIGHTNESS))
 	if brightness_slider != null:
@@ -1468,27 +1339,20 @@ func _reset_day_runtime_state() -> void:
 
 
 func _change_day(day: int) -> void:
-	var target_day := clampi(day, 1, TOTAL_DAYS)
-	if target_day == current_day:
+	var target_day: int = day_save_manager.clamp_day(day)
+	if target_day == day_save_manager.current_day:
 		return
 
 	_save_current_day()
-	_start_day(target_day, _has_saved_day(target_day), false)
-
-
-func _unlock_day(day: int) -> void:
-	var safe_day := clampi(day, 1, TOTAL_DAYS)
-	if not unlocked_days.has(safe_day):
-		unlocked_days.append(safe_day)
-		unlocked_days.sort()
+	_start_day(target_day, day_save_manager.has_saved_day(target_day), false)
 
 
 func _has_save_data() -> bool:
-	return not day_slots.is_empty()
+	return day_save_manager.has_save_data()
 
 
 func _has_saved_day(day: int) -> bool:
-	return day_slots.has(str(clampi(day, 1, TOTAL_DAYS)))
+	return day_save_manager.has_saved_day(day)
 
 
 func _day_name(day: int) -> String:
@@ -1517,7 +1381,7 @@ func _refresh_lobby_day_grid() -> void:
 	for child in lobby_day_grid.get_children():
 		child.queue_free()
 
-	for day in range(1, TOTAL_DAYS + 1):
+	for day in range(1, HotelDaySaveManagerScript.TOTAL_DAYS + 1):
 		var day_button := Button.new()
 		day_button.process_mode = Node.PROCESS_MODE_ALWAYS
 		day_button.custom_minimum_size = Vector2(72.0, 48.0)
@@ -1531,11 +1395,7 @@ func _refresh_lobby_day_grid() -> void:
 
 
 func _latest_saved_day() -> int:
-	var latest_day := 1
-	for key in day_slots.keys():
-		latest_day = max(latest_day, int(key))
-
-	return latest_day
+	return day_save_manager.latest_saved_day()
 
 
 func _build_hotspots(hotspots: Array) -> void:
@@ -1589,7 +1449,7 @@ func _build_debug_day_bar() -> void:
 	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.58))
 	debug_day_bar.add_child(title)
 
-	for day in range(1, TOTAL_DAYS + 1):
+	for day in range(1, HotelDaySaveManagerScript.TOTAL_DAYS + 1):
 		var day_button := Button.new()
 		day_button.text = str(day)
 		day_button.toggle_mode = true
@@ -2094,7 +1954,7 @@ func _update_day_display() -> void:
 		return
 
 	day_badge_panel.visible = game_started
-	day_badge_label.text = _day_name(current_day)
+	day_badge_label.text = _day_name(day_save_manager.current_day)
 	day_badge_panel.size = day_badge_panel.get_combined_minimum_size()
 	_refresh_debug_day_buttons()
 
@@ -2106,8 +1966,8 @@ func _refresh_debug_day_buttons() -> void:
 	for child in debug_day_bar.get_children():
 		if child is Button:
 			var day := int(child.text)
-			child.button_pressed = day == current_day
-			_style_debug_button(child, day == current_day)
+			child.button_pressed = day == day_save_manager.current_day
+			_style_debug_button(child, day == day_save_manager.current_day)
 
 
 func _make_debug_button(icon: String, tooltip: String, callback: Callable) -> Button:
