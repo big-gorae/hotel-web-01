@@ -10,6 +10,8 @@ const HotelRuleBookScreenScript = preload("res://scripts/ui/rule_book_screen.gd"
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 const HotelDaySaveManagerScript = preload("res://scripts/systems/day_save_manager.gd")
 const HotelPostProcessFilterScript = preload("res://scripts/systems/post_process_filter.gd")
+const HotelHorrorEventManagerScript = preload("res://scripts/horror/horror_event_manager.gd")
+const HotelJumpscareControllerScript = preload("res://scripts/horror/jumpscare_controller.gd")
 
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
@@ -671,6 +673,7 @@ var localization := HotelLocalization.new()
 var inventory_model = null
 var playback_pause_manager = null
 var day_save_manager = null
+var horror_event_manager = null
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
@@ -719,11 +722,13 @@ var rule_book_tab_button: Button
 var inventory_screen
 var equipment_hud
 var rule_book_screen
+var jumpscare_controller
 var lobby_overlay: Control
 var lobby_continue_button: Button
 var lobby_day_panel: PanelContainer
 var lobby_day_grid: GridContainer
 var lobby_status_label: Label
+var lobby_horror_summary_label: Label
 
 
 func _ready() -> void:
@@ -733,6 +738,10 @@ func _ready() -> void:
 	inventory_model = HotelInventoryModelScript.new()
 	playback_pause_manager = HotelPlaybackPauseManagerScript.new()
 	day_save_manager = HotelDaySaveManagerScript.new()
+	horror_event_manager = HotelHorrorEventManagerScript.new()
+	horror_event_manager.setup_default_catalog()
+	horror_event_manager.jumpscare_started.connect(_on_jumpscare_started)
+	horror_event_manager.jumpscare_finished.connect(_on_jumpscare_finished)
 	debug_ui_enabled = _is_debug_ui_enabled()
 	get_tree().root.size_changed.connect(_update_layout)
 	_seed_inventory()
@@ -742,6 +751,11 @@ func _ready() -> void:
 	_show_lobby()
 
 
+func _process(delta: float) -> void:
+	if game_started and not _is_lobby_open() and not _is_menu_open():
+		horror_event_manager.tick_scene_view(current_scene_id, delta)
+
+
 func _is_debug_ui_enabled() -> bool:
 	var value := OS.get_environment(DEBUG_UI_ENV).strip_edges().to_lower()
 	return DEBUG_UI_ENABLED_VALUES.has(value) or OS.has_feature("editor")
@@ -749,6 +763,10 @@ func _is_debug_ui_enabled() -> bool:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		if horror_event_manager.is_jumpscare_active():
+			get_viewport().set_input_as_handled()
+			return
+
 		if _is_lobby_open():
 			get_viewport().set_input_as_handled()
 			return
@@ -777,6 +795,7 @@ func show_scene(scene_id: String, play_transition_sound := true) -> void:
 	title_label.text = _scene_text(scene_id, scene_data, "title")
 	_show_title_banner()
 	_set_persistent_dialogue(_scene_text(scene_id, scene_data, "intro"))
+	horror_event_manager.enter_scene(scene_id)
 	_build_hotspots(_scene_hotspots(scene_id, scene_data))
 	_build_navigation(scene_data["exits"])
 	_apply_brightness()
@@ -1132,6 +1151,10 @@ func _build_menu() -> void:
 
 	_update_brightness_label()
 
+	jumpscare_controller = HotelJumpscareControllerScript.new()
+	jumpscare_controller.finished.connect(_on_jumpscare_controller_finished)
+	add_child(jumpscare_controller)
+
 
 func _build_lobby() -> void:
 	lobby_overlay = Control.new()
@@ -1179,6 +1202,12 @@ func _build_lobby() -> void:
 	title.add_theme_font_size_override("font_size", 34)
 	title.add_theme_color_override("font_color", Color(1.0, 0.92, 0.72))
 	layout.add_child(title)
+
+	lobby_horror_summary_label = Label.new()
+	lobby_horror_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lobby_horror_summary_label.add_theme_font_size_override("font_size", 14)
+	lobby_horror_summary_label.add_theme_color_override("font_color", Color(0.82, 0.75, 0.62))
+	layout.add_child(lobby_horror_summary_label)
 
 	var start_button := Button.new()
 	start_button.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -1255,6 +1284,7 @@ func _show_lobby() -> void:
 	game_started = false
 	if lobby_overlay != null:
 		_refresh_lobby_continue_state()
+		_refresh_lobby_horror_summary()
 		lobby_overlay.visible = true
 		lobby_overlay.move_to_front()
 
@@ -1263,6 +1293,7 @@ func _show_lobby() -> void:
 
 func _start_shift() -> void:
 	day_save_manager.start_new_shift()
+	horror_event_manager.start_new_run()
 	laundry_second_washer_open = true
 	game_brightness = DEFAULT_BRIGHTNESS
 	_start_day(1, false, false)
@@ -1314,6 +1345,7 @@ func _capture_day_state() -> Dictionary:
 		"scene_id": current_scene_id,
 		"laundry_second_washer_open": laundry_second_washer_open,
 		"game_brightness": game_brightness,
+		"horror": horror_event_manager.export_state(),
 	}
 
 
@@ -1324,6 +1356,7 @@ func _restore_day_state(day: int) -> String:
 	if brightness_slider != null:
 		brightness_slider.value = game_brightness
 
+	horror_event_manager.import_state(slot.get("horror", {}))
 	var saved_scene_id := String(slot.get("scene_id", START_SCENE_ID))
 	if not HOTEL_SCENES.has(saved_scene_id):
 		return START_SCENE_ID
@@ -1334,6 +1367,7 @@ func _restore_day_state(day: int) -> String:
 func _reset_day_runtime_state() -> void:
 	laundry_second_washer_open = true
 	game_brightness = DEFAULT_BRIGHTNESS
+	horror_event_manager.start_new_run()
 	if brightness_slider != null:
 		brightness_slider.value = game_brightness
 
@@ -1372,6 +1406,13 @@ func _refresh_lobby_continue_state() -> void:
 		lobby_day_panel.visible = false
 
 	_refresh_lobby_day_grid()
+
+
+func _refresh_lobby_horror_summary() -> void:
+	if lobby_horror_summary_label == null:
+		return
+
+	lobby_horror_summary_label.text = _ui_text("lobby.horror_summary", "%s") % horror_event_manager.get_lobby_summary_text()
 
 
 func _refresh_lobby_day_grid() -> void:
@@ -1480,6 +1521,18 @@ func _on_hotspot_pressed(hotspot: Dictionary) -> void:
 
 
 func _run_hotspot_action(action: String) -> void:
+	if action.begins_with("resolve_horror_event:"):
+		var event_id := action.substr("resolve_horror_event:".length())
+		horror_event_manager.resolve_event(event_id)
+		_build_hotspots(_scene_hotspots(current_scene_id, HOTEL_SCENES[current_scene_id]))
+		_update_layout()
+		_show_transient_dialogue("The anomaly fades from the room.")
+		return
+
+	if action.begins_with("trigger_jumpscare:"):
+		horror_event_manager.trigger_jumpscare(action.substr("trigger_jumpscare:".length()))
+		return
+
 	match action:
 		"toggle_laundry_washer":
 			_toggle_laundry_washer()
@@ -1639,6 +1692,21 @@ func _return_to_lobby() -> void:
 	_show_lobby()
 
 
+func _on_jumpscare_started(definition) -> void:
+	if jumpscare_controller != null:
+		jumpscare_controller.play(definition)
+
+
+func _on_jumpscare_controller_finished() -> void:
+	horror_event_manager.finish_jumpscare()
+
+
+func _on_jumpscare_finished(_definition, outcome: String) -> void:
+	_save_current_day()
+	if outcome == "game_over":
+		_show_lobby()
+
+
 func _set_game_paused(paused: bool) -> void:
 	if paused:
 		playback_pause_manager.pause_tree(get_tree(), gameplay_layer)
@@ -1738,10 +1806,12 @@ func _scene_photo(scene_id: String, scene_data: Dictionary) -> String:
 
 func _scene_hotspots(scene_id: String, scene_data: Dictionary) -> Array:
 	var editor_hotspots := _editor_hotspots_for_scene(scene_id)
-	if not editor_hotspots.is_empty():
-		return editor_hotspots
+	var base_hotspots: Array = editor_hotspots if not editor_hotspots.is_empty() else scene_data["hotspots"]
+	var hotspots := base_hotspots.duplicate(true)
+	for horror_hotspot in horror_event_manager.get_revealed_hotspots(scene_id):
+		hotspots.append(horror_hotspot)
 
-	return scene_data["hotspots"]
+	return hotspots
 
 
 func _editor_hotspots_for_scene(scene_id: String) -> Array:
