@@ -45,8 +45,8 @@ Click areas are now editable in the Godot scene editor.
 
 1. Open `scenes/main.tscn`.
 2. In the Scene tree, open `Main > HotspotDefinitions`.
-3. Turn on visibility for the scene group you want to edit, such as `front_desk`, and turn off other scene groups to avoid overlap.
-4. Select a hotspot child node and drag or resize its rectangle in the 2D viewport.
+3. The scene groups are laid out in a grid on the 2D canvas, so pan/zoom to the scene you want, such as `front_desk` or `laundry_room`.
+4. Select a hotspot child node under that scene group and drag or resize its rectangle in the 2D viewport.
 5. Edit its Inspector fields:
    - `hotspot_id`: stable id for localization and saved logic
    - `hotspot_label`: debug label shown when click areas are visible
@@ -55,6 +55,8 @@ Click areas are now editable in the Godot scene editor.
    - `action`: special action such as `toggle_laundry_washer`
 
 Each scene group includes a `PhotoPreview` node so the rectangles can be positioned over the actual photo. `PhotoPreview` is ignored at runtime.
+
+Moving an entire scene group is only an editor organization change. Runtime uses hotspot positions relative to that group, so moving the group around the 2D canvas does not change gameplay. Moving or resizing a hotspot child node does change gameplay.
 
 The legacy code data in `scripts/main.gd` still exists as fallback. Runtime reads editor-authored nodes first; if a scene has no nodes under `HotspotDefinitions/<scene_id>`, it falls back to `HOTEL_SCENES[scene_id]["hotspots"]`.
 
