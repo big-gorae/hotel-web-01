@@ -23,6 +23,9 @@ static func _make_room_105_shadow_anomaly():
 	definition.view_seconds_to_discover = 1.25
 	definition.fallback_title = "Shadow Stain"
 	definition.fallback_description = "A damp shadow has appeared where the wall was clean before."
+	definition.required_rule_id = "compare_corridor_room_numbers"
+	definition.blocked_text_key = "horror_event.room_105_shadow_stain.blocked"
+	definition.fallback_blocked_text = "The stain does not react. Check the Rule Book before deciding what this is."
 	definition.reveal_hotspots = [
 		{
 			"id": "anomaly_room_105_shadow_stain",

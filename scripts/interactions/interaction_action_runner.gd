@@ -177,6 +177,11 @@ func _resolve_horror_event(event_id: String, result) -> void:
 	if horror_event_manager == null or event_id.is_empty():
 		return
 
+	var definition = horror_event_manager.get_definition(event_id)
+	if definition != null and not _can_resolve_horror_event(definition):
+		result.set_blocked(_horror_blocked_key(definition), _horror_blocked_text(definition))
+		return
+
 	horror_event_manager.resolve_event(event_id)
 	result.should_refresh_hotspots = true
 	result.should_save = true
@@ -198,6 +203,41 @@ func _set_flag(flag_id: String, value, result) -> void:
 	flag_store.set_value(flag_id, value)
 	result.should_save = true
 	result.consumed = true
+
+
+func _can_resolve_horror_event(definition) -> bool:
+	if definition == null:
+		return false
+
+	if not String(definition.required_item_id).is_empty():
+		if inventory_model == null or inventory_model.equipped_item == null:
+			return false
+		if String(inventory_model.equipped_item.id) != String(definition.required_item_id):
+			return false
+
+	if not String(definition.required_rule_id).is_empty():
+		if rule_book_manager == null or not rule_book_manager.has_read_rule(String(definition.required_rule_id)):
+			return false
+
+	if not String(definition.required_task_id).is_empty():
+		if task_manager == null or task_manager.get_task_state(String(definition.required_task_id)) != "done":
+			return false
+
+	return true
+
+
+func _horror_blocked_key(definition) -> String:
+	if definition != null and not String(definition.blocked_text_key).is_empty():
+		return String(definition.blocked_text_key)
+
+	return "horror_event.%s.blocked" % String(definition.id)
+
+
+func _horror_blocked_text(definition) -> String:
+	if definition != null and not String(definition.fallback_blocked_text).is_empty():
+		return String(definition.fallback_blocked_text)
+
+	return "Something is missing. Check the Rule Book and your hand before trying again."
 
 
 func _toggle_laundry_washer(result) -> void:

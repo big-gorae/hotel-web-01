@@ -21,6 +21,11 @@ var jumpscare_duration := 1.2
 var jumpscare_outcome := OUTCOME_CONTINUE
 var fallback_title := ""
 var fallback_description := ""
+var required_item_id := ""
+var required_rule_id := ""
+var required_task_id := ""
+var blocked_text_key := ""
+var fallback_blocked_text := ""
 
 
 func applies_to_scene(scene_id: String) -> bool:
@@ -44,4 +49,9 @@ func copy():
 	definition.jumpscare_outcome = jumpscare_outcome
 	definition.fallback_title = fallback_title
 	definition.fallback_description = fallback_description
+	definition.required_item_id = required_item_id
+	definition.required_rule_id = required_rule_id
+	definition.required_task_id = required_task_id
+	definition.blocked_text_key = blocked_text_key
+	definition.fallback_blocked_text = fallback_blocked_text
 	return definition

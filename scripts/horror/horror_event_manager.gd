@@ -45,6 +45,10 @@ func register_definition(definition) -> void:
 	definitions_by_id[definition.id] = definition.copy()
 
 
+func get_definition(event_id: String):
+	return definitions_by_id.get(event_id)
+
+
 func enter_scene(scene_id: String) -> void:
 	if is_jumpscare_active():
 		return
