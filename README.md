@@ -136,6 +136,11 @@ To move to another scene when clicked, use `target`:
 
 Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment and item-to-item combination can be verified before pickup gameplay exists.
 
+## Gameplay Systems Plan
+
+- `docs/gameplay-systems-design.md` defines the planned interaction runner, hotel task system, item-to-hotspot use, rule-book data model, anomaly resolution conditions, and save-state boundaries.
+- New hotel duties and anomaly fixes should follow that plan instead of adding more one-off action branches to `scripts/main.gd`.
+
 ## Item Combination
 
 - Drag one inventory item onto another inventory item to attempt a combination.
