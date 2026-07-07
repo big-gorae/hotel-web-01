@@ -504,3 +504,27 @@ The first implementation slice should be:
 5. Convert one simple hotspot to dictionary action as proof.
 
 This gives a safe base before adding chores, item-to-hotspot use, and rule-driven anomaly fixes.
+
+## Implementation Status
+
+Implemented foundation:
+
+- `HotelInteractionActionRunner` executes legacy string actions and new dictionary actions.
+- `HotelFlagStore` stores small persistent state, including `laundry.second_washer.open`.
+- `HotelTaskDefinition`, `HotelTaskCatalog`, and `HotelTaskManager` support ordinary hotel duties.
+- `HotelRuleDefinition`, `HotelRuleBookCatalog`, and `HotelRuleBookManager` provide structured Rule Book ids and read state.
+- `HotelInventoryModel` can export/import inventory state.
+- `scripts/main.gd` now routes hotspot clicks through the interaction runner and saves `flags`, `inventory`, `tasks`, `horror`, and `rules`.
+
+Current sample duties:
+
+- Room 105 bedding can be folded by clicking the bedding task hotspot.
+- Room 105 bathroom sink stain requires the equipped `cleaning_cloth`.
+- Room 107 loose papers can be collected and create `collected_trash`.
+
+Still intentionally open for later content work:
+
+- More room-specific task catalogs.
+- Rule-specific anomaly resolution conditions.
+- Visual photo variants for completed chores.
+- Godot editor exports for structured action arrays and item action arrays.

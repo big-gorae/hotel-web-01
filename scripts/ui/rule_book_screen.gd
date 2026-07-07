@@ -4,13 +4,15 @@ extends PanelContainer
 const RULE_COUNT := 7
 
 var localization = null
+var rule_book_manager = null
 var title_label: Label
 var subtitle_label: Label
 var rules_box: VBoxContainer
 
 
-func setup(new_localization) -> void:
+func setup(new_localization, new_rule_book_manager = null) -> void:
 	localization = new_localization
+	rule_book_manager = new_rule_book_manager
 	_build()
 	refresh_text()
 
@@ -26,20 +28,22 @@ func refresh_text() -> void:
 		rules_box.remove_child(child)
 		child.free()
 
-	for index in range(1, RULE_COUNT + 1):
+	var visible_rules := _visible_rules()
+	for index in range(0, visible_rules.size()):
+		var rule_data: Dictionary = visible_rules[index]
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
 		rules_box.add_child(row)
 
 		var number := Label.new()
-		number.text = "%02d" % index
+		number.text = "%02d" % int(rule_data.get("order", index + 1))
 		number.custom_minimum_size = Vector2(38.0, 0.0)
 		number.add_theme_font_size_override("font_size", 15)
 		number.add_theme_color_override("font_color", Color(1.0, 0.82, 0.28))
 		row.add_child(number)
 
 		var rule := Label.new()
-		rule.text = _text("rule_book.rule.%d" % index, "")
+		rule.text = _translate(String(rule_data.get("text_key", "")), String(rule_data.get("fallback_text", "")))
 		rule.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		rule.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		rule.add_theme_font_size_override("font_size", 16)
@@ -81,10 +85,35 @@ func _build() -> void:
 
 
 func _text(key: String, fallback: String) -> String:
+	return _translate("ui.%s" % key, fallback)
+
+
+func _translate(key: String, fallback: String) -> String:
 	if localization == null:
 		return fallback
 
-	return localization.translate("ui.%s" % key, fallback)
+	return localization.translate(key, fallback)
+
+
+func _visible_rules() -> Array:
+	if rule_book_manager != null:
+		var rules := []
+		for definition in rule_book_manager.get_visible_rules():
+			rules.append({
+				"order": definition.order,
+				"text_key": definition.text_key,
+				"fallback_text": definition.fallback_text,
+			})
+		return rules
+
+	var rules := []
+	for index in range(1, RULE_COUNT + 1):
+		rules.append({
+			"order": index,
+			"text_key": "ui.rule_book.rule.%d" % index,
+			"fallback_text": "",
+		})
+	return rules
 
 
 func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBoxFlat:

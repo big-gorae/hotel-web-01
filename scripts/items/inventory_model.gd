@@ -56,6 +56,37 @@ func get_items() -> Array:
 	return items.duplicate()
 
 
+func export_state() -> Dictionary:
+	var item_ids := []
+	for item in items:
+		item_ids.append(String(item.id))
+
+	return {
+		"item_ids": item_ids,
+		"equipped_item_id": String(equipped_item.id) if equipped_item != null else "",
+	}
+
+
+func import_state(state: Dictionary) -> void:
+	items.clear()
+	equipped_item = null
+
+	for item_id in state.get("item_ids", []):
+		var item = create_item(String(item_id))
+		if item != null:
+			items.append(item)
+
+	var equipped_item_id := String(state.get("equipped_item_id", ""))
+	if not equipped_item_id.is_empty():
+		for item in items:
+			if item.id == equipped_item_id:
+				equipped_item = item
+				break
+
+	items_changed.emit()
+	equipped_item_changed.emit(equipped_item)
+
+
 func equip_item(item) -> bool:
 	if item == null or not item.can_equip or not items.has(item):
 		return false

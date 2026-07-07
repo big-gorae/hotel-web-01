@@ -10,9 +10,14 @@ const HotelRuleBookScreenScript = preload("res://scripts/ui/rule_book_screen.gd"
 const HotelAnomalyCollectionPanelScript = preload("res://scripts/ui/anomaly_collection_panel.gd")
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 const HotelDaySaveManagerScript = preload("res://scripts/systems/day_save_manager.gd")
+const HotelFlagStoreScript = preload("res://scripts/systems/flag_store.gd")
 const HotelPostProcessFilterScript = preload("res://scripts/systems/post_process_filter.gd")
 const HotelHorrorEventManagerScript = preload("res://scripts/horror/horror_event_manager.gd")
 const HotelJumpscareControllerScript = preload("res://scripts/horror/jumpscare_controller.gd")
+const HotelTaskManagerScript = preload("res://scripts/tasks/task_manager.gd")
+const HotelRuleBookManagerScript = preload("res://scripts/rules/rule_book_manager.gd")
+const HotelInteractionContextScript = preload("res://scripts/interactions/interaction_context.gd")
+const HotelInteractionActionRunnerScript = preload("res://scripts/interactions/interaction_action_runner.gd")
 
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
@@ -674,7 +679,11 @@ var localization := HotelLocalization.new()
 var inventory_model = null
 var playback_pause_manager = null
 var day_save_manager = null
+var flag_store = null
+var task_manager = null
 var horror_event_manager = null
+var rule_book_manager = null
+var interaction_runner = null
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
@@ -740,10 +749,18 @@ func _ready() -> void:
 	inventory_model = HotelInventoryModelScript.new()
 	playback_pause_manager = HotelPlaybackPauseManagerScript.new()
 	day_save_manager = HotelDaySaveManagerScript.new()
+	flag_store = HotelFlagStoreScript.new()
+	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
+	task_manager = HotelTaskManagerScript.new()
+	task_manager.setup_default_catalog()
 	horror_event_manager = HotelHorrorEventManagerScript.new()
 	horror_event_manager.setup_default_catalog()
 	horror_event_manager.jumpscare_started.connect(_on_jumpscare_started)
 	horror_event_manager.jumpscare_finished.connect(_on_jumpscare_finished)
+	rule_book_manager = HotelRuleBookManagerScript.new()
+	rule_book_manager.setup_default_catalog()
+	interaction_runner = HotelInteractionActionRunnerScript.new()
+	interaction_runner.setup(flag_store, inventory_model, task_manager, horror_event_manager, rule_book_manager)
 	debug_ui_enabled = _is_debug_ui_enabled()
 	get_tree().root.size_changed.connect(_update_layout)
 	_seed_inventory()
@@ -961,10 +978,13 @@ func _seed_inventory() -> void:
 	_register_inventory_item("small_flashlight", "Flashlight", "A compact flashlight. Useful when the power fails.", "🔦")
 	_register_inventory_item("guest_note", "Guest Note", "A folded note with a room number written in pencil.", "📝")
 	_register_inventory_item("revealed_guest_note", "Revealed Note", "The flashlight reveals faint writing under the room number: Do not return it after midnight.", "📄")
+	_register_inventory_item("cleaning_cloth", "Cleaning Cloth", "A rough cloth for wiping sinks, floors, and anything that should not be touched directly.", "🧽")
+	_register_inventory_item("collected_trash", "Collected Trash", "Loose papers and trash gathered during room work.", "🗑", false)
 
 	inventory_model.add_item_by_id("room_105_key")
 	inventory_model.add_item_by_id("small_flashlight")
 	inventory_model.add_item_by_id("guest_note")
+	inventory_model.add_item_by_id("cleaning_cloth")
 	inventory_model.add_combination_rule(_make_combination_rule(
 		"reveal_guest_note",
 		"small_flashlight",
@@ -1146,7 +1166,7 @@ func _build_menu() -> void:
 	rule_book_screen = HotelRuleBookScreenScript.new()
 	rule_book_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	rule_book_screen.custom_minimum_size = Vector2(570.0, 420.0)
-	rule_book_screen.setup(localization)
+	rule_book_screen.setup(localization, rule_book_manager)
 	rule_book_screen.visible = false
 	menu_content_shell.add_child(rule_book_screen)
 	_sync_menu_content_width()
@@ -1311,7 +1331,11 @@ func _show_lobby() -> void:
 func _start_shift() -> void:
 	day_save_manager.start_new_shift()
 	horror_event_manager.start_new_run()
-	laundry_second_washer_open = true
+	task_manager.start_new_run()
+	rule_book_manager.import_state({})
+	flag_store.clear()
+	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
+	laundry_second_washer_open = _is_laundry_second_washer_open()
 	game_brightness = DEFAULT_BRIGHTNESS
 	_start_day(1, false, false)
 
@@ -1358,22 +1382,36 @@ func _save_current_day() -> void:
 
 
 func _capture_day_state() -> Dictionary:
+	laundry_second_washer_open = _is_laundry_second_washer_open()
 	return {
 		"scene_id": current_scene_id,
 		"laundry_second_washer_open": laundry_second_washer_open,
 		"game_brightness": game_brightness,
+		"flags": flag_store.export_state(),
+		"inventory": inventory_model.export_state(),
+		"tasks": task_manager.export_state(),
 		"horror": horror_event_manager.export_state(),
+		"rules": rule_book_manager.export_state(),
 	}
 
 
 func _restore_day_state(day: int) -> String:
 	var slot: Dictionary = day_save_manager.get_day_state(day)
-	laundry_second_washer_open = bool(slot.get("laundry_second_washer_open", true))
+	if slot.has("flags"):
+		flag_store.import_state(slot.get("flags", {}))
+	else:
+		flag_store.clear()
+		flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, bool(slot.get("laundry_second_washer_open", true)))
+	laundry_second_washer_open = _is_laundry_second_washer_open()
 	game_brightness = float(slot.get("game_brightness", DEFAULT_BRIGHTNESS))
 	if brightness_slider != null:
 		brightness_slider.value = game_brightness
 
+	if slot.has("inventory"):
+		inventory_model.import_state(slot.get("inventory", {}))
+	task_manager.import_state(slot.get("tasks", {}))
 	horror_event_manager.import_state(slot.get("horror", {}))
+	rule_book_manager.import_state(slot.get("rules", {}))
 	var saved_scene_id := String(slot.get("scene_id", START_SCENE_ID))
 	if not HOTEL_SCENES.has(saved_scene_id):
 		return START_SCENE_ID
@@ -1382,9 +1420,13 @@ func _restore_day_state(day: int) -> String:
 
 
 func _reset_day_runtime_state() -> void:
-	laundry_second_washer_open = true
+	flag_store.clear()
+	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
+	laundry_second_washer_open = _is_laundry_second_washer_open()
 	game_brightness = DEFAULT_BRIGHTNESS
+	task_manager.start_new_run()
 	horror_event_manager.start_new_run()
+	rule_book_manager.import_state({})
 	if brightness_slider != null:
 		brightness_slider.value = game_brightness
 
@@ -1540,36 +1582,45 @@ func _on_navigation_pressed(scene_id: String) -> void:
 
 
 func _on_hotspot_pressed(hotspot: Dictionary) -> void:
-	if hotspot.has("action"):
-		_run_hotspot_action(hotspot["action"])
-		return
-
-	if hotspot.has("target"):
-		show_scene(hotspot["target"])
-		return
-
-	var label := _hotspot_text(hotspot, "label")
-	_show_transient_dialogue(_hotspot_tooltip(hotspot, label))
+	_apply_interaction_result(interaction_runner.execute_hotspot(hotspot, _make_interaction_context(hotspot)))
 
 
 func _run_hotspot_action(action: String) -> void:
-	if action.begins_with("resolve_horror_event:"):
-		var event_id := action.substr("resolve_horror_event:".length())
-		horror_event_manager.resolve_event(event_id)
+	_apply_interaction_result(interaction_runner.execute_action(action, _make_interaction_context({})))
+
+
+func _make_interaction_context(hotspot: Dictionary):
+	var context = HotelInteractionContextScript.new()
+	context.scene_id = current_scene_id
+	context.room_id = horror_event_manager.room_registry.get_room_id(current_scene_id)
+	context.hotspot_id = String(hotspot.get("id", ""))
+	context.day = day_save_manager.current_day
+	if inventory_model.equipped_item != null:
+		context.equipped_item_id = String(inventory_model.equipped_item.id)
+	if hotspot.has("horror_event_id"):
+		context.horror_event_id = String(hotspot["horror_event_id"])
+	return context
+
+
+func _apply_interaction_result(result) -> void:
+	if result == null:
+		return
+
+	if not result.changed_scene_id.is_empty():
+		show_scene(result.changed_scene_id)
+
+	if result.should_refresh_photo:
+		_refresh_current_scene_photo()
+
+	if result.should_refresh_hotspots and HOTEL_SCENES.has(current_scene_id):
 		_build_hotspots(_scene_hotspots(current_scene_id, HOTEL_SCENES[current_scene_id]))
 		_update_layout()
-		_show_transient_dialogue("The anomaly fades from the room.")
-		return
 
-	if action.begins_with("trigger_jumpscare:"):
-		horror_event_manager.trigger_jumpscare(action.substr("trigger_jumpscare:".length()))
-		return
+	if result.has_dialogue():
+		_show_transient_dialogue(localization.translate(result.dialogue_key, result.fallback_dialogue))
 
-	match action:
-		"toggle_laundry_washer":
-			_toggle_laundry_washer()
-		_:
-			push_warning("Unknown hotspot action: %s" % action)
+	if result.should_save:
+		_save_current_day()
 
 
 func _play_transition_footsteps() -> void:
@@ -1598,17 +1649,32 @@ func _play_next_footstep() -> void:
 
 
 func _toggle_laundry_washer() -> void:
-	laundry_second_washer_open = not laundry_second_washer_open
+	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, not _is_laundry_second_washer_open())
+	laundry_second_washer_open = _is_laundry_second_washer_open()
 	if current_scene_id == "laundry_room":
-		var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
-		current_texture = load(_scene_photo(current_scene_id, scene_data)) as Texture2D
-		photo.texture = current_texture
-		_apply_brightness()
-		_update_layout()
+		_refresh_current_scene_photo()
 
 	var state_key := "opened" if laundry_second_washer_open else "closed"
 	var message := "The second washer door is open." if laundry_second_washer_open else "The second washer door is closed."
 	_show_transient_dialogue(localization.translate("hotspot.laundry_room.laundry_second_washer.%s" % state_key, message))
+
+
+func _refresh_current_scene_photo() -> void:
+	if not HOTEL_SCENES.has(current_scene_id):
+		return
+
+	var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
+	current_texture = load(_scene_photo(current_scene_id, scene_data)) as Texture2D
+	photo.texture = current_texture
+	_apply_brightness()
+	_update_layout()
+
+
+func _is_laundry_second_washer_open() -> bool:
+	if flag_store != null:
+		return flag_store.get_bool(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
+
+	return laundry_second_washer_open
 
 
 func _toggle_hotspots() -> void:
@@ -1674,8 +1740,10 @@ func _show_rule_book_menu_panel() -> void:
 		inventory_screen.visible = false
 
 	if rule_book_screen != null:
+		rule_book_manager.mark_all_visible_read()
 		rule_book_screen.visible = true
 		rule_book_screen.refresh_text()
+		_save_current_day()
 
 	_sync_menu_tabs("rule_book")
 
@@ -1830,7 +1898,7 @@ func _scene_text(scene_id: String, scene_data: Dictionary, field: String) -> Str
 
 
 func _scene_photo(scene_id: String, scene_data: Dictionary) -> String:
-	if scene_id == "laundry_room" and not laundry_second_washer_open:
+	if scene_id == "laundry_room" and not _is_laundry_second_washer_open():
 		return localization.translate_scene_photo(scene_id, LAUNDRY_CLOSED_PHOTO, "closed")
 
 	return localization.translate_scene_photo(scene_id, scene_data["photo"])
@@ -1840,6 +1908,8 @@ func _scene_hotspots(scene_id: String, scene_data: Dictionary) -> Array:
 	var editor_hotspots := _editor_hotspots_for_scene(scene_id)
 	var base_hotspots: Array = editor_hotspots if not editor_hotspots.is_empty() else scene_data["hotspots"]
 	var hotspots := base_hotspots.duplicate(true)
+	for task_hotspot in task_manager.get_hotspots_for_scene(scene_id):
+		hotspots.append(task_hotspot)
 	for horror_hotspot in horror_event_manager.get_revealed_hotspots(scene_id):
 		hotspots.append(horror_hotspot)
 
@@ -1869,6 +1939,10 @@ func _editor_hotspots_for_scene(scene_id: String) -> Array:
 
 func _hotspot_text(hotspot: Dictionary, field: String) -> String:
 	var hotspot_id: String = hotspot.get("id", "unknown")
+	var direct_key := String(hotspot.get("%s_key" % field, ""))
+	if not direct_key.is_empty():
+		return localization.translate(direct_key, hotspot.get(field, ""))
+
 	return localization.translate("hotspot.%s.%s.%s" % [current_scene_id, hotspot_id, field], hotspot.get(field, ""))
 
 

@@ -140,6 +140,10 @@ Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment and
 
 - `docs/gameplay-systems-design.md` defines the planned interaction runner, hotel task system, item-to-hotspot use, rule-book data model, anomaly resolution conditions, and save-state boundaries.
 - New hotel duties and anomaly fixes should follow that plan instead of adding more one-off action branches to `scripts/main.gd`.
+- `scripts/interactions/interaction_action_runner.gd` now handles hotspot action execution, including legacy action strings and new dictionary actions.
+- `scripts/tasks/task_manager.gd` owns hotel duty state. Current sample duties are Room 105 bedding, Room 105 bathroom sink cleaning, and Room 107 loose paper collection.
+- `scripts/systems/flag_store.gd` owns small persistent flags such as the laundry washer door state.
+- `scripts/rules/rule_book_manager.gd` gives Rule Book entries stable rule ids and read-state tracking.
 
 ## Item Combination
 
