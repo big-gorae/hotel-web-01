@@ -7,6 +7,7 @@ const HotelInventoryModelScript = preload("res://scripts/items/inventory_model.g
 const HotelInventoryScreenScript = preload("res://scripts/ui/inventory_screen.gd")
 const HotelEquipmentHudScript = preload("res://scripts/ui/equipment_hud.gd")
 const HotelRuleBookScreenScript = preload("res://scripts/ui/rule_book_screen.gd")
+const HotelAnomalyCollectionPanelScript = preload("res://scripts/ui/anomaly_collection_panel.gd")
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 const HotelDaySaveManagerScript = preload("res://scripts/systems/day_save_manager.gd")
 const HotelPostProcessFilterScript = preload("res://scripts/systems/post_process_filter.gd")
@@ -729,6 +730,7 @@ var lobby_day_panel: PanelContainer
 var lobby_day_grid: GridContainer
 var lobby_status_label: Label
 var lobby_horror_summary_label: Label
+var anomaly_collection_panel
 
 
 func _ready() -> void:
@@ -1209,6 +1211,21 @@ func _build_lobby() -> void:
 	lobby_horror_summary_label.add_theme_color_override("font_color", Color(0.82, 0.75, 0.62))
 	layout.add_child(lobby_horror_summary_label)
 
+	var anomaly_collection_button := Button.new()
+	anomaly_collection_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	anomaly_collection_button.text = _ui_text("lobby.anomaly_collection", "Anomaly Collection")
+	anomaly_collection_button.focus_mode = Control.FOCUS_NONE
+	anomaly_collection_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	anomaly_collection_button.pressed.connect(_toggle_anomaly_collection_panel)
+	layout.add_child(anomaly_collection_button)
+
+	anomaly_collection_panel = HotelAnomalyCollectionPanelScript.new()
+	anomaly_collection_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	anomaly_collection_panel.visible = false
+	anomaly_collection_panel.setup(horror_event_manager, localization)
+	anomaly_collection_panel.close_requested.connect(_hide_anomaly_collection_panel)
+	layout.add_child(anomaly_collection_panel)
+
 	var start_button := Button.new()
 	start_button.process_mode = Node.PROCESS_MODE_ALWAYS
 	start_button.text = _ui_text("lobby.start_shift", "Start Shift")
@@ -1413,6 +1430,21 @@ func _refresh_lobby_horror_summary() -> void:
 		return
 
 	lobby_horror_summary_label.text = _ui_text("lobby.horror_summary", "%s") % horror_event_manager.get_lobby_summary_text()
+	if anomaly_collection_panel != null:
+		anomaly_collection_panel.refresh()
+
+
+func _toggle_anomaly_collection_panel() -> void:
+	if anomaly_collection_panel == null:
+		return
+
+	anomaly_collection_panel.refresh()
+	anomaly_collection_panel.visible = not anomaly_collection_panel.visible
+
+
+func _hide_anomaly_collection_panel() -> void:
+	if anomaly_collection_panel != null:
+		anomaly_collection_panel.visible = false
 
 
 func _refresh_lobby_day_grid() -> void:

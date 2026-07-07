@@ -141,6 +141,29 @@ func get_discovered_kind_counts() -> Dictionary:
 	return discovered_kind_counts.duplicate(true)
 
 
+func get_discovered_entries() -> Array:
+	var entries := []
+	for event_id in discovered_event_ids:
+		if not definitions_by_id.has(event_id):
+			continue
+
+		var definition = definitions_by_id[event_id]
+		entries.append({
+			"id": definition.id,
+			"event_type": definition.event_type,
+			"discovery_kind": definition.discovery_kind,
+			"room_id": definition.room_id,
+			"room_name": room_registry.get_room_display_name(definition.room_id),
+			"title_key": "horror_event.%s.title" % definition.id,
+			"description_key": "horror_event.%s.description" % definition.id,
+			"fallback_title": definition.fallback_title,
+			"fallback_description": definition.fallback_description,
+			"resolved": resolved_event_ids.has(definition.id),
+		})
+
+	return entries
+
+
 func get_lobby_summary_text() -> String:
 	var total_count := get_discovered_count()
 	if total_count == 0:
