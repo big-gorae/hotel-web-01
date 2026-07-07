@@ -1211,21 +1211,6 @@ func _build_lobby() -> void:
 	lobby_horror_summary_label.add_theme_color_override("font_color", Color(0.82, 0.75, 0.62))
 	layout.add_child(lobby_horror_summary_label)
 
-	var anomaly_collection_button := Button.new()
-	anomaly_collection_button.process_mode = Node.PROCESS_MODE_ALWAYS
-	anomaly_collection_button.text = _ui_text("lobby.anomaly_collection", "Anomaly Collection")
-	anomaly_collection_button.focus_mode = Control.FOCUS_NONE
-	anomaly_collection_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	anomaly_collection_button.pressed.connect(_toggle_anomaly_collection_panel)
-	layout.add_child(anomaly_collection_button)
-
-	anomaly_collection_panel = HotelAnomalyCollectionPanelScript.new()
-	anomaly_collection_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	anomaly_collection_panel.visible = false
-	anomaly_collection_panel.setup(horror_event_manager, localization)
-	anomaly_collection_panel.close_requested.connect(_hide_anomaly_collection_panel)
-	layout.add_child(anomaly_collection_panel)
-
 	var start_button := Button.new()
 	start_button.process_mode = Node.PROCESS_MODE_ALWAYS
 	start_button.text = _ui_text("lobby.start_shift", "Start Shift")
@@ -1265,6 +1250,21 @@ func _build_lobby() -> void:
 	lobby_day_grid.columns = HotelDaySaveManagerScript.TOTAL_DAYS
 	lobby_day_grid.add_theme_constant_override("h_separation", 8)
 	day_layout.add_child(lobby_day_grid)
+
+	var anomaly_collection_button := Button.new()
+	anomaly_collection_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	anomaly_collection_button.text = _ui_text("lobby.anomaly_collection", "Anomaly Collection")
+	anomaly_collection_button.focus_mode = Control.FOCUS_NONE
+	anomaly_collection_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	anomaly_collection_button.pressed.connect(_toggle_anomaly_collection_panel)
+	layout.add_child(anomaly_collection_button)
+
+	anomaly_collection_panel = HotelAnomalyCollectionPanelScript.new()
+	anomaly_collection_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	anomaly_collection_panel.visible = false
+	anomaly_collection_panel.setup(horror_event_manager, localization)
+	anomaly_collection_panel.close_requested.connect(_hide_anomaly_collection_panel)
+	layout.add_child(anomaly_collection_panel)
 
 	var quit_button := Button.new()
 	quit_button.process_mode = Node.PROCESS_MODE_ALWAYS
