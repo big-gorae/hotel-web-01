@@ -1,0 +1,43 @@
+name: Godot Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    name: GdUnit4 and smoke tests
+    runs-on: ubuntu-latest
+    env:
+      GODOT_VERSION: 4.7-stable
+      GODOT_BIN: /tmp/godot/Godot_v4.7-stable_linux.x86_64
+      GDUNIT_REPORT_DIR: res://reports
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/godot
+          curl -L --fail \
+            "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip" \
+            -o /tmp/godot/godot.zip
+          unzip -q /tmp/godot/godot.zip -d /tmp/godot
+          chmod +x "$GODOT_BIN"
+          "$GODOT_BIN" --version
+
+      - name: Run GdUnit4 unit tests
+        run: tools/run_unit_tests.sh
+
+      - name: Run headless smoke tests
+        run: tools/run_smoke_tests.sh
+
+      - name: Upload GdUnit4 reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gdunit4-reports
+          path: reports
+          if-no-files-found: ignore

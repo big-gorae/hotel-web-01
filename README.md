@@ -194,3 +194,36 @@ HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
 ## Web Build
 
 The project already uses the GL Compatibility renderer and a scalable canvas setup, which are appropriate for a web export. In Godot, use `Project > Export > Add... > Web`.
+
+## Test Harness
+
+This project uses a two-layer Godot test harness:
+
+- `GdUnit4 6.1.3` for fast unit tests under `tests/unit/`.
+- Headless Godot smoke scripts under `tests/smoke/` for full `scenes/main.tscn` gameplay flow checks.
+
+Run everything locally:
+
+```sh
+tools/test_all.sh
+```
+
+Run only unit tests:
+
+```sh
+tools/run_unit_tests.sh
+```
+
+Run only smoke tests:
+
+```sh
+tools/run_smoke_tests.sh
+```
+
+If Godot is not installed at `/Applications/Godot.app/Contents/MacOS/Godot`, set `GODOT_BIN`:
+
+```sh
+GODOT_BIN=/path/to/Godot tools/test_all.sh
+```
+
+GdUnit4 reports are written to `reports/`, which is ignored by git.
