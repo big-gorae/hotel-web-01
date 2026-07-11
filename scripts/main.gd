@@ -8,6 +8,7 @@ const HotelInventoryScreenScript = preload("res://scripts/ui/inventory_screen.gd
 const HotelEquipmentHudScript = preload("res://scripts/ui/equipment_hud.gd")
 const HotelRuleBookScreenScript = preload("res://scripts/ui/rule_book_screen.gd")
 const HotelAnomalyCollectionPanelScript = preload("res://scripts/ui/anomaly_collection_panel.gd")
+const HotelFilterSelectorPanelScript = preload("res://scripts/ui/filter_selector_panel.gd")
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 const HotelDaySaveManagerScript = preload("res://scripts/systems/day_save_manager.gd")
 const HotelFlagStoreScript = preload("res://scripts/systems/flag_store.gd")
@@ -721,7 +722,7 @@ var transient_dialogue_label: Label
 var navigation_panel: PanelContainer
 var nav_bar: HBoxContainer
 var debug_day_bar: HBoxContainer
-var filter_bar: HBoxContainer
+var filter_bar
 var hotspot_toggle: Button
 var chat_toggle: Button
 var navigation_toggle: Button
@@ -951,10 +952,10 @@ func _build_ui() -> void:
 	navigation_layout.add_child(debug_day_bar)
 	_build_debug_day_bar()
 
-	filter_bar = HBoxContainer.new()
-	filter_bar.add_theme_constant_override("separation", 8)
+	filter_bar = HotelFilterSelectorPanelScript.new()
+	filter_bar.setup(post_process_filter, _ui_text("debug.filters.title", "Filter"), _ui_text("debug.filters.tooltip", "Apply this screen filter."))
+	filter_bar.preset_selected.connect(_on_filter_preset_selected)
 	navigation_layout.add_child(filter_bar)
-	_build_filter_bar()
 
 	equipment_hud = HotelEquipmentHudScript.new()
 	equipment_hud.anchor_left = 0.0
@@ -1321,13 +1322,15 @@ func _make_lobby_blur_material() -> ShaderMaterial:
 func set_post_process_preset(preset_name: String) -> void:
 	if post_process_filter != null:
 		post_process_filter.apply_preset(preset_name)
-	_refresh_filter_buttons()
+	if filter_bar != null:
+		filter_bar.sync_selected_preset()
 
 
 func clear_post_process_filter() -> void:
 	if post_process_filter != null:
 		post_process_filter.clear_filter()
-	_refresh_filter_buttons()
+	if filter_bar != null:
+		filter_bar.sync_selected_preset()
 
 
 func _show_lobby() -> void:
@@ -1590,40 +1593,11 @@ func _build_debug_day_bar() -> void:
 	_refresh_debug_day_buttons()
 
 
-func _build_filter_bar() -> void:
-	if filter_bar == null or post_process_filter == null:
-		return
-
-	for child in filter_bar.get_children():
-		child.queue_free()
-
-	var title := Label.new()
-	title.text = _ui_text("debug.filters.title", "Filter")
-	title.custom_minimum_size = Vector2(54.0, 0.0)
-	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 14)
-	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.58))
-	filter_bar.add_child(title)
-
-	for preset_name in post_process_filter.get_available_presets():
-		var button := Button.new()
-		button.text = post_process_filter.get_preset_display_name(String(preset_name))
-		button.toggle_mode = true
-		button.focus_mode = Control.FOCUS_NONE
-		button.custom_minimum_size = Vector2(120.0, 32.0)
-		button.tooltip_text = _ui_text("debug.filters.tooltip", "Apply this screen filter.")
-		button.set_meta("filter_preset", String(preset_name))
-		button.pressed.connect(_on_filter_preset_pressed.bind(String(preset_name)))
-		filter_bar.add_child(button)
-
-	_refresh_filter_buttons()
-
-
 func _on_navigation_pressed(scene_id: String) -> void:
 	show_scene(scene_id)
 
 
-func _on_filter_preset_pressed(preset_name: String) -> void:
+func _on_filter_preset_selected(preset_name: String) -> void:
 	set_post_process_preset(preset_name)
 
 
@@ -2081,19 +2055,8 @@ func _sync_debug_toggles() -> void:
 	filter_toggle.tooltip_text = _ui_text("debug.filters.hide", "Hide filter selector") if show_filter_selector else _ui_text("debug.filters.show", "Show filter selector")
 	_style_debug_button(filter_toggle, show_filter_selector)
 
-	_refresh_filter_buttons()
-
-
-func _refresh_filter_buttons() -> void:
-	if filter_bar == null or post_process_filter == null:
-		return
-
-	for child in filter_bar.get_children():
-		if child is Button:
-			var preset_name := String(child.get_meta("filter_preset", ""))
-			var is_current: bool = preset_name == post_process_filter.current_preset
-			child.button_pressed = is_current
-			_style_debug_button(child, is_current)
+	if filter_bar != null:
+		filter_bar.sync_selected_preset()
 
 
 func _position_bottom_panels() -> void:
