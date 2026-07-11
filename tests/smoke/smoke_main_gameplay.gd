@@ -44,6 +44,10 @@ func _run() -> void:
 	if main.post_process_filter.current_preset != "subtle_grain":
 		_fail("grain filter preset did not apply")
 		return
+	main.filter_bar._on_intensity_slider_changed(1.5)
+	if main.post_process_filter.get_filter_intensity() != 1.5:
+		_fail("filter intensity slider did not update the filter")
+		return
 	if main.filter_bar.get_filter_button_count() != 3:
 		_fail("unexpected number of filter preset buttons")
 		return

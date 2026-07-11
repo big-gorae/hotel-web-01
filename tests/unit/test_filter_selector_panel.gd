@@ -11,6 +11,7 @@ func test_filter_selector_builds_buttons_from_filter_presets() -> void:
 	selector.setup(post_process_filter)
 
 	assert_that(selector.get_filter_button_count()).is_equal(3)
+	assert_that(selector.intensity_slider).is_not_null()
 
 
 func test_filter_selector_syncs_current_preset() -> void:
@@ -36,6 +37,18 @@ func test_filter_selector_emits_selected_preset() -> void:
 	selector._on_preset_button_pressed(PostProcessFilter.PRESET_NONE)
 
 	assert_that(selected_presets).is_equal([PostProcessFilter.PRESET_NONE])
+
+
+func test_filter_selector_updates_bound_filter_intensity() -> void:
+	var post_process_filter = auto_free(PostProcessFilter.new())
+	var selector = auto_free(FilterSelectorPanel.new())
+	selector.setup(post_process_filter)
+
+	selector._on_intensity_slider_changed(1.65)
+
+	assert_that(post_process_filter.get_filter_intensity()).is_equal(1.65)
+	assert_that(selector.get_filter_intensity_value()).is_equal(1.65)
+	assert_that(selector.intensity_value_label.text).is_equal("165%")
 
 
 func _find_selected_filter_button(selector) -> Button:

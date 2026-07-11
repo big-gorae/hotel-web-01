@@ -953,7 +953,13 @@ func _build_ui() -> void:
 	_build_debug_day_bar()
 
 	filter_bar = HotelFilterSelectorPanelScript.new()
-	filter_bar.setup(post_process_filter, _ui_text("debug.filters.title", "Filter"), _ui_text("debug.filters.tooltip", "Apply this screen filter."))
+	filter_bar.setup(
+		post_process_filter,
+		_ui_text("debug.filters.title", "Filter"),
+		_ui_text("debug.filters.tooltip", "Apply this screen filter."),
+		_ui_text("debug.filters.intensity", "Intensity"),
+		_ui_text("debug.filters.intensity_tooltip", "Filter intensity.")
+	)
 	filter_bar.preset_selected.connect(_on_filter_preset_selected)
 	navigation_layout.add_child(filter_bar)
 
