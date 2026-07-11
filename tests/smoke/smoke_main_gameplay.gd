@@ -54,6 +54,20 @@ func _run() -> void:
 
 	main._start_shift()
 	await process_frame
+	main.show_scene("corridor")
+	if not main.scene_transition_fader.is_transitioning():
+		_fail("scene transition fader did not start")
+		return
+	await create_timer(0.4).timeout
+	await process_frame
+	if main.current_scene_id != "corridor":
+		_fail("scene transition did not change scenes")
+		return
+	if main.scene_transition_fader.visible:
+		_fail("scene transition fader did not hide after transition")
+		return
+	_stop_transition_audio(main)
+
 	main.show_scene("room_105_door_window", false)
 	await process_frame
 
@@ -101,6 +115,8 @@ func _run() -> void:
 			_fail("save state missing %s" % key)
 			return
 
+	main.queue_free()
+	await process_frame
 	_restore_save()
 	print("smoke main gameplay passed")
 	quit(0)
@@ -119,6 +135,13 @@ func _find_inventory_item(main, item_id: String):
 		if item.id == item_id:
 			return item
 	return null
+
+
+func _stop_transition_audio(main) -> void:
+	if main.footstep_timer != null:
+		main.footstep_timer.stop()
+	for player in main.footstep_players:
+		player.stop()
 
 
 func _preserve_save() -> void:

@@ -9,6 +9,7 @@ const HotelEquipmentHudScript = preload("res://scripts/ui/equipment_hud.gd")
 const HotelRuleBookScreenScript = preload("res://scripts/ui/rule_book_screen.gd")
 const HotelAnomalyCollectionPanelScript = preload("res://scripts/ui/anomaly_collection_panel.gd")
 const HotelFilterSelectorPanelScript = preload("res://scripts/ui/filter_selector_panel.gd")
+const HotelSceneTransitionFaderScript = preload("res://scripts/ui/scene_transition_fader.gd")
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 const HotelDaySaveManagerScript = preload("res://scripts/systems/day_save_manager.gd")
 const HotelFlagStoreScript = preload("res://scripts/systems/flag_store.gd")
@@ -737,6 +738,7 @@ var inventory_screen
 var equipment_hud
 var rule_book_screen
 var jumpscare_controller
+var scene_transition_fader
 var lobby_overlay: Control
 var lobby_continue_button: Button
 var lobby_day_panel: PanelContainer
@@ -808,6 +810,18 @@ func show_scene(scene_id: String, play_transition_sound := true) -> void:
 		push_warning("Unknown hotel scene: %s" % scene_id)
 		return
 
+	if _should_use_scene_transition(scene_id, play_transition_sound):
+		scene_transition_fader.play_scene_change(_apply_scene_change.bind(scene_id, play_transition_sound))
+		return
+
+	_apply_scene_change(scene_id, play_transition_sound)
+
+
+func _should_use_scene_transition(scene_id: String, play_transition_sound: bool) -> bool:
+	return play_transition_sound and current_scene_id != scene_id and scene_transition_fader != null and not scene_transition_fader.is_transitioning()
+
+
+func _apply_scene_change(scene_id: String, play_transition_sound := true) -> void:
 	if play_transition_sound and current_scene_id != scene_id:
 		_play_transition_footsteps()
 
@@ -975,6 +989,9 @@ func _build_ui() -> void:
 	gameplay_layer.add_child(equipment_hud)
 	equipment_hud.bind_inventory(inventory_model, localization)
 	equipment_hud.activated.connect(_show_menu)
+
+	scene_transition_fader = HotelSceneTransitionFaderScript.new()
+	gameplay_layer.add_child(scene_transition_fader)
 
 	_position_bottom_panels()
 	_apply_persistent_dialogue_display()
