@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bfj6w2khhsk7u"
-path="res://.godot/imported/dripping_gaze.glb-8961dd0baa41d4a0033d37baaae48fcc.scn"
+path="res://.godot/imported/dripping_gaze.glb-a4da4b0c9112d537192ab33f3d217ebc.scn"
 
 [deps]
 
-source_file="res://resource/models/dripping_gaze.glb"
-dest_files=["res://.godot/imported/dripping_gaze.glb-8961dd0baa41d4a0033d37baaae48fcc.scn"]
+source_file="res://resource/3d_models/dripping_gaze/dripping_gaze.glb"
+dest_files=["res://.godot/imported/dripping_gaze.glb-a4da4b0c9112d537192ab33f3d217ebc.scn"]
 
 [params]
 

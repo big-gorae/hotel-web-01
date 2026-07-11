@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://n2x6wj55tm6y"
-path="res://.godot/imported/dripping_gaze_2.jpg-67659997bd9ebf046af2039a16d37085.ctex"
+uid="uid://dlorct84cjb65"
+path="res://.godot/imported/dripping_gaze_1.jpg-c973d918e22c40f710aba6338a406b2c.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "2fa7afda21b051a4a3d9e77663d46922"
+"md5": "a3c6db059258ef02cd663b1bccc1c8ef"
 }
 
 [deps]
 
-source_file="res://resource/models/dripping_gaze_2.jpg"
-dest_files=["res://.godot/imported/dripping_gaze_2.jpg-67659997bd9ebf046af2039a16d37085.ctex"]
+source_file="res://resource/3d_models/dripping_gaze/dripping_gaze_1.jpg"
+dest_files=["res://.godot/imported/dripping_gaze_1.jpg-c973d918e22c40f710aba6338a406b2c.ctex"]
 
 [params]
 

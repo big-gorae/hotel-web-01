@@ -7,7 +7,7 @@ static func build_definitions() -> Array[Dictionary]:
 		{
 			"id": "room_105_bathtub_dripping_gaze",
 			"scene_id": "room_105_bathroom",
-			"model_path": "res://resource/models/dripping_gaze.glb",
+			"model_path": "res://resource/3d_models/dripping_gaze/dripping_gaze.glb",
 			"camera_size": 4.0,
 			"model_position": Vector3(2.05, -0.58, 0.0),
 			"model_rotation_degrees": Vector3(-7.0, -24.0, 0.0),
