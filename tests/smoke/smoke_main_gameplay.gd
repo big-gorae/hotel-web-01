@@ -82,6 +82,10 @@ func _run() -> void:
 
 	main.show_scene("room_105_bathroom", false)
 	await process_frame
+	if main.scene_3d_overlay == null or not main.scene_3d_overlay.visible or main.scene_3d_overlay.get_model_count() != 1:
+		_fail("room 105 bathroom 3D overlay missing")
+		return
+
 	var sink_hotspot := _find_task_hotspot(main, "room_105_bathroom", "room_105_clean_sink")
 	if sink_hotspot.is_empty():
 		_fail("clean sink task hotspot missing")
@@ -98,6 +102,9 @@ func _run() -> void:
 
 	main.show_scene("laundry_room", false)
 	await process_frame
+	if main.scene_3d_overlay.visible:
+		_fail("3D overlay should be hidden outside configured bathroom scene")
+		return
 	var before_open: bool = main._is_laundry_second_washer_open()
 	main._run_hotspot_action("toggle_laundry_washer")
 	if main._is_laundry_second_washer_open() == before_open:

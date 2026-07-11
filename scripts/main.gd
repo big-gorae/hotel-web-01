@@ -9,6 +9,7 @@ const HotelEquipmentHudScript = preload("res://scripts/ui/equipment_hud.gd")
 const HotelRuleBookScreenScript = preload("res://scripts/ui/rule_book_screen.gd")
 const HotelAnomalyCollectionPanelScript = preload("res://scripts/ui/anomaly_collection_panel.gd")
 const HotelFilterSelectorPanelScript = preload("res://scripts/ui/filter_selector_panel.gd")
+const HotelScene3DOverlayScript = preload("res://scripts/ui/scene_3d_overlay.gd")
 const HotelSceneTransitionFaderScript = preload("res://scripts/ui/scene_transition_fader.gd")
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 const HotelDaySaveManagerScript = preload("res://scripts/systems/day_save_manager.gd")
@@ -708,6 +709,7 @@ var game_started := false
 
 var gameplay_layer: Control
 var photo: TextureRect
+var scene_3d_overlay
 var brightness_overlay: ColorRect
 var post_process_filter
 var hotspot_layer: Control
@@ -829,6 +831,8 @@ func _apply_scene_change(scene_id: String, play_transition_sound := true) -> voi
 	var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
 	current_texture = load(_scene_photo(scene_id, scene_data)) as Texture2D
 	photo.texture = current_texture
+	if scene_3d_overlay != null:
+		scene_3d_overlay.show_scene_overlay(scene_id)
 	title_label.text = _scene_text(scene_id, scene_data, "title")
 	_show_title_banner()
 	_set_persistent_dialogue(_scene_text(scene_id, scene_data, "intro"))
@@ -851,6 +855,9 @@ func _build_ui() -> void:
 	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	photo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	gameplay_layer.add_child(photo)
+
+	scene_3d_overlay = HotelScene3DOverlayScript.new()
+	gameplay_layer.add_child(scene_3d_overlay)
 
 	brightness_overlay = ColorRect.new()
 	brightness_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
