@@ -4,7 +4,9 @@ extends ColorRect
 const SHADER_CODE := "shader_type canvas_item;\nuniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;\nuniform float saturation = 1.0;\nuniform float contrast = 1.0;\nuniform float brightness = 0.0;\nuniform vec3 tint = vec3(1.0, 1.0, 1.0);\nuniform float tint_strength = 0.0;\nuniform float vignette_strength = 0.0;\nuniform float vignette_softness = 0.5;\nuniform float grain_strength = 0.0;\nuniform float bloom_strength = 0.0;\nuniform float time_seed = 0.0;\nfloat noise(vec2 uv) {\n\treturn fract(sin(dot(uv, vec2(12.9898, 78.233)) + time_seed) * 43758.5453123);\n}\nvoid fragment() {\n\tvec2 uv = SCREEN_UV;\n\tvec4 source = texture(SCREEN_TEXTURE, uv);\n\tvec3 color = source.rgb;\n\tfloat luma = dot(color, vec3(0.299, 0.587, 0.114));\n\tcolor = mix(vec3(luma), color, saturation);\n\tcolor = (color - 0.5) * contrast + 0.5 + brightness;\n\tcolor = mix(color, color * tint, tint_strength);\n\tfloat bright = smoothstep(0.62, 1.0, max(max(color.r, color.g), color.b));\n\tcolor += bright * bloom_strength;\n\tfloat dist = distance(uv, vec2(0.5));\n\tfloat vignette = smoothstep(0.82 - vignette_softness, 0.82, dist);\n\tcolor *= 1.0 - vignette * vignette_strength;\n\tfloat grain = noise(uv / SCREEN_PIXEL_SIZE) - 0.5;\n\tcolor += grain * grain_strength;\n\tCOLOR = vec4(clamp(color, vec3(0.0), vec3(1.0)), source.a);\n}\n"
 const PRESET_NONE := "none"
 const PRESET_DREARY_1 := "dreary_1"
+const PRESET_SUBTLE_GRAIN := "subtle_grain"
 const DEFAULT_PRESET := PRESET_DREARY_1
+const PRESET_ORDER := [PRESET_NONE, PRESET_DREARY_1, PRESET_SUBTLE_GRAIN]
 const PRESETS := {
 	PRESET_NONE: {
 		"display_name": "필터 없음",
@@ -29,6 +31,18 @@ const PRESETS := {
 		"vignette_softness": 0.40,
 		"grain_strength": 0.026,
 		"bloom_strength": 0.035,
+	},
+	PRESET_SUBTLE_GRAIN: {
+		"display_name": "자글자글 필터",
+		"saturation": 0.92,
+		"contrast": 1.04,
+		"brightness": 0.0,
+		"tint": Vector3(1.0, 1.0, 1.0),
+		"tint_strength": 0.0,
+		"vignette_strength": 0.06,
+		"vignette_softness": 0.48,
+		"grain_strength": 0.085,
+		"bloom_strength": 0.0,
 	},
 }
 
@@ -74,6 +88,15 @@ func apply_preset(preset_name: String) -> void:
 
 func clear_filter() -> void:
 	apply_preset(PRESET_NONE)
+
+
+func get_available_presets() -> Array:
+	return PRESET_ORDER.duplicate()
+
+
+func get_preset_display_name(preset_name: String) -> String:
+	var safe_preset_name := preset_name if PRESETS.has(preset_name) else PRESET_NONE
+	return String(PRESETS[safe_preset_name].get("display_name", safe_preset_name))
 
 
 func _make_material() -> ShaderMaterial:

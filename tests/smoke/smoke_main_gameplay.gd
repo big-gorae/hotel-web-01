@@ -28,6 +28,26 @@ func _run() -> void:
 		_fail("gameplay systems were not initialized")
 		return
 
+	main.debug_ui_enabled = true
+	main._apply_navigation_display()
+	if main.filter_toggle == null or main.filter_bar == null:
+		_fail("filter debug controls were not initialized")
+		return
+	if main.filter_bar.visible:
+		_fail("filter selector should start hidden")
+		return
+	main._toggle_filter_selector()
+	if not main.show_filter_selector or not main.filter_bar.visible:
+		_fail("filter selector did not become visible")
+		return
+	main._on_filter_preset_pressed("subtle_grain")
+	if main.post_process_filter.current_preset != "subtle_grain":
+		_fail("grain filter preset did not apply")
+		return
+	if _count_filter_buttons(main) != 3:
+		_fail("unexpected number of filter preset buttons")
+		return
+
 	main._start_shift()
 	await process_frame
 	main.show_scene("room_105_door_window", false)
@@ -95,6 +115,14 @@ func _find_inventory_item(main, item_id: String):
 		if item.id == item_id:
 			return item
 	return null
+
+
+func _count_filter_buttons(main) -> int:
+	var count := 0
+	for child in main.filter_bar.get_children():
+		if child is Button:
+			count += 1
+	return count
 
 
 func _preserve_save() -> void:

@@ -691,6 +691,7 @@ var debug_ui_enabled := false
 var show_hotspots := false
 var show_persistent_dialogue := false
 var show_navigation := false
+var show_filter_selector := false
 var laundry_second_washer_open := true
 var game_brightness := DEFAULT_BRIGHTNESS
 var current_persistent_dialogue_text := ""
@@ -720,9 +721,11 @@ var transient_dialogue_label: Label
 var navigation_panel: PanelContainer
 var nav_bar: HBoxContainer
 var debug_day_bar: HBoxContainer
+var filter_bar: HBoxContainer
 var hotspot_toggle: Button
 var chat_toggle: Button
 var navigation_toggle: Button
+var filter_toggle: Button
 var menu_overlay: ColorRect
 var menu_content_shell: VBoxContainer
 var brightness_slider: HSlider
@@ -876,7 +879,7 @@ func _build_ui() -> void:
 	debug_panel.anchor_right = 1.0
 	debug_panel.anchor_top = 0.0
 	debug_panel.anchor_bottom = 0.0
-	debug_panel.offset_left = -232.0
+	debug_panel.offset_left = -280.0
 	debug_panel.offset_top = 18.0
 	debug_panel.offset_right = -18.0
 	debug_panel.offset_bottom = 66.0
@@ -896,6 +899,9 @@ func _build_ui() -> void:
 
 	navigation_toggle = _make_debug_button("🧭", _ui_text("debug.navigation.show", "Show quick travel buttons"), _toggle_navigation)
 	corner_row.add_child(navigation_toggle)
+
+	filter_toggle = _make_debug_button("🎛", _ui_text("debug.filters.show", "Show filter selector"), _toggle_filter_selector)
+	corner_row.add_child(filter_toggle)
 
 	persistent_dialogue_panel = PanelContainer.new()
 	persistent_dialogue_panel.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -944,6 +950,11 @@ func _build_ui() -> void:
 	debug_day_bar.add_theme_constant_override("separation", 8)
 	navigation_layout.add_child(debug_day_bar)
 	_build_debug_day_bar()
+
+	filter_bar = HBoxContainer.new()
+	filter_bar.add_theme_constant_override("separation", 8)
+	navigation_layout.add_child(filter_bar)
+	_build_filter_bar()
 
 	equipment_hud = HotelEquipmentHudScript.new()
 	equipment_hud.anchor_left = 0.0
@@ -1310,11 +1321,13 @@ func _make_lobby_blur_material() -> ShaderMaterial:
 func set_post_process_preset(preset_name: String) -> void:
 	if post_process_filter != null:
 		post_process_filter.apply_preset(preset_name)
+	_refresh_filter_buttons()
 
 
 func clear_post_process_filter() -> void:
 	if post_process_filter != null:
 		post_process_filter.clear_filter()
+	_refresh_filter_buttons()
 
 
 func _show_lobby() -> void:
@@ -1577,8 +1590,41 @@ func _build_debug_day_bar() -> void:
 	_refresh_debug_day_buttons()
 
 
+func _build_filter_bar() -> void:
+	if filter_bar == null or post_process_filter == null:
+		return
+
+	for child in filter_bar.get_children():
+		child.queue_free()
+
+	var title := Label.new()
+	title.text = _ui_text("debug.filters.title", "Filter")
+	title.custom_minimum_size = Vector2(54.0, 0.0)
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.58))
+	filter_bar.add_child(title)
+
+	for preset_name in post_process_filter.get_available_presets():
+		var button := Button.new()
+		button.text = post_process_filter.get_preset_display_name(String(preset_name))
+		button.toggle_mode = true
+		button.focus_mode = Control.FOCUS_NONE
+		button.custom_minimum_size = Vector2(120.0, 32.0)
+		button.tooltip_text = _ui_text("debug.filters.tooltip", "Apply this screen filter.")
+		button.set_meta("filter_preset", String(preset_name))
+		button.pressed.connect(_on_filter_preset_pressed.bind(String(preset_name)))
+		filter_bar.add_child(button)
+
+	_refresh_filter_buttons()
+
+
 func _on_navigation_pressed(scene_id: String) -> void:
 	show_scene(scene_id)
+
+
+func _on_filter_preset_pressed(preset_name: String) -> void:
+	set_post_process_preset(preset_name)
 
 
 func _on_hotspot_pressed(hotspot: Dictionary) -> void:
@@ -1689,6 +1735,11 @@ func _toggle_chat() -> void:
 
 func _toggle_navigation() -> void:
 	show_navigation = not show_navigation
+	_apply_navigation_display()
+
+
+func _toggle_filter_selector() -> void:
+	show_filter_selector = not show_filter_selector
 	_apply_navigation_display()
 
 
@@ -1995,9 +2046,14 @@ func _apply_persistent_dialogue_display() -> void:
 
 
 func _apply_navigation_display() -> void:
-	navigation_panel.visible = show_navigation
+	var effective_filter_selector := debug_ui_enabled and show_filter_selector
+	navigation_panel.visible = show_navigation or effective_filter_selector
+	if nav_bar != null:
+		nav_bar.visible = show_navigation
 	if debug_day_bar != null:
 		debug_day_bar.visible = debug_ui_enabled and show_navigation
+	if filter_bar != null:
+		filter_bar.visible = effective_filter_selector
 	_position_bottom_panels()
 	_sync_debug_toggles()
 
@@ -2021,6 +2077,24 @@ func _sync_debug_toggles() -> void:
 	navigation_toggle.tooltip_text = _ui_text("debug.navigation.hide", "Hide quick travel buttons") if show_navigation else _ui_text("debug.navigation.show", "Show quick travel buttons")
 	_style_debug_button(navigation_toggle, show_navigation)
 
+	filter_toggle.button_pressed = show_filter_selector
+	filter_toggle.tooltip_text = _ui_text("debug.filters.hide", "Hide filter selector") if show_filter_selector else _ui_text("debug.filters.show", "Show filter selector")
+	_style_debug_button(filter_toggle, show_filter_selector)
+
+	_refresh_filter_buttons()
+
+
+func _refresh_filter_buttons() -> void:
+	if filter_bar == null or post_process_filter == null:
+		return
+
+	for child in filter_bar.get_children():
+		if child is Button:
+			var preset_name := String(child.get_meta("filter_preset", ""))
+			var is_current: bool = preset_name == post_process_filter.current_preset
+			child.button_pressed = is_current
+			_style_debug_button(child, is_current)
+
 
 func _position_bottom_panels() -> void:
 	if persistent_dialogue_panel != null:
@@ -2034,12 +2108,17 @@ func _position_bottom_panels() -> void:
 		navigation_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 		navigation_panel.offset_left = 18.0
 		navigation_panel.offset_right = -18.0
+		var visible_rows := 0
+		visible_rows += 1 if show_navigation else 0
+		visible_rows += 1 if debug_ui_enabled and show_navigation else 0
+		visible_rows += 1 if debug_ui_enabled and show_filter_selector else 0
+		var panel_height := maxf(56.0, 24.0 + visible_rows * 32.0 + max(visible_rows - 1, 0) * 8.0)
 		if show_persistent_dialogue:
-			navigation_panel.offset_top = -258.0
 			navigation_panel.offset_bottom = -162.0
+			navigation_panel.offset_top = navigation_panel.offset_bottom - panel_height
 		else:
-			navigation_panel.offset_top = -114.0
 			navigation_panel.offset_bottom = -18.0
+			navigation_panel.offset_top = navigation_panel.offset_bottom - panel_height
 
 
 func _set_persistent_dialogue(message: String) -> void:
