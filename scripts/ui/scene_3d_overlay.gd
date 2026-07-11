@@ -11,6 +11,8 @@ var camera: Camera3D
 var key_light: DirectionalLight3D
 var fill_light: OmniLight3D
 var model_parent: Node3D
+var parallax_padding := 0.0
+var parallax_offset := Vector2.ZERO
 
 
 func _init() -> void:
@@ -50,6 +52,13 @@ func get_model_count() -> int:
 		return 0
 
 	return model_parent.get_child_count()
+
+
+func apply_photo_parallax(offset: Vector2, padding: float) -> void:
+	parallax_offset = offset
+	parallax_padding = padding
+	position = Vector2(-parallax_padding, -parallax_padding) + parallax_offset
+	size = get_viewport_rect().size + Vector2(parallax_padding * 2.0, parallax_padding * 2.0)
 
 
 func _load_default_catalog() -> void:

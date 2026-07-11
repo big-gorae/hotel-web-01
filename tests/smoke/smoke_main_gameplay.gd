@@ -85,6 +85,14 @@ func _run() -> void:
 	if main.scene_3d_overlay == null or not main.scene_3d_overlay.visible or main.scene_3d_overlay.get_model_count() != 1:
 		_fail("room 105 bathroom 3D overlay missing")
 		return
+	main.mouse_position = Vector2(1280.0, 720.0)
+	main._update_layout()
+	if main.scene_3d_overlay.position != main.photo.position:
+		_fail("3D overlay parallax did not match photo position")
+		return
+	if main.scene_3d_overlay.size != main.photo.size:
+		_fail("3D overlay parallax did not match photo size")
+		return
 
 	var sink_hotspot := _find_task_hotspot(main, "room_105_bathroom", "room_105_clean_sink")
 	if sink_hotspot.is_empty():

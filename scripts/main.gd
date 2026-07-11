@@ -2134,6 +2134,8 @@ func _update_layout() -> void:
 	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	photo.position = Vector2(-PARALLAX_PADDING, -PARALLAX_PADDING) + offset
 	photo.size = viewport_size + Vector2(PARALLAX_PADDING * 2.0, PARALLAX_PADDING * 2.0)
+	if scene_3d_overlay != null:
+		scene_3d_overlay.apply_photo_parallax(offset, PARALLAX_PADDING)
 	_position_title_panel()
 	_position_transient_dialogue()
 	_update_hotspot_layout()
