@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://resource/3d_models/dripping_gaze/dripping_gaze.glb" id="1_dripping_gaze"]
+
+[node name="Room105Bathroom3DOverlay" type="Node3D"]
+
+[node name="room_105_bathtub_dripping_gaze" type="Node3D" parent="."]
+transform = Transform3D(1.05619, 0, 0, 0, 1.05619, 0, 0, 0, 1.05619, 2.05, -0.58, 0)
+
+[node name="DrippingGaze" parent="room_105_bathtub_dripping_gaze" instance=ExtResource("1_dripping_gaze")]

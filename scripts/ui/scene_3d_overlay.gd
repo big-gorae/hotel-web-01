@@ -106,6 +106,34 @@ func _build_viewport() -> void:
 
 
 func _apply_definition(definition: Dictionary) -> void:
+	var overlay_scene_path := String(definition.get("overlay_scene_path", ""))
+	if not overlay_scene_path.is_empty():
+		_apply_overlay_scene_definition(definition, overlay_scene_path)
+		return
+
+	_apply_legacy_model_definition(definition)
+
+
+func _apply_overlay_scene_definition(definition: Dictionary, overlay_scene_path: String) -> void:
+	var packed_scene := load(overlay_scene_path) as PackedScene
+	if packed_scene == null:
+		push_warning("Missing 3D overlay scene: %s" % overlay_scene_path)
+		clear_overlay()
+		return
+
+	camera.size = float(definition.get("camera_size", 4.0))
+	key_light.light_energy = float(definition.get("light_energy", 1.0))
+
+	var overlay_scene := packed_scene.instantiate()
+	if overlay_scene == null:
+		push_warning("Failed to instantiate 3D overlay scene: %s" % overlay_scene_path)
+		clear_overlay()
+		return
+
+	model_parent.add_child(overlay_scene)
+
+
+func _apply_legacy_model_definition(definition: Dictionary) -> void:
 	var model_path := String(definition.get("model_path", ""))
 	var packed_scene := load(model_path) as PackedScene
 	if packed_scene == null:
