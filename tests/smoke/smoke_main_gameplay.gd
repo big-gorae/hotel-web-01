@@ -1,9 +1,9 @@
 extends SceneTree
 
 const SAVE_PATH := "user://hotel_save.json"
+const META_SAVE_PATH := "user://hotel_meta.json"
 
-var original_save_exists := false
-var original_save_text := ""
+var preserved_files: Dictionary = {}
 
 
 func _init() -> void:
@@ -27,6 +27,13 @@ func _run() -> void:
 	if main.flag_store == null or main.task_manager == null or main.interaction_runner == null:
 		_fail("gameplay systems were not initialized")
 		return
+	for scene_id in main.HOTEL_SCENES.keys():
+		if main.HOTEL_SCENES[scene_id].has("hotspots"):
+			_fail("scene catalog still duplicates authored hotspots: %s" % scene_id)
+			return
+		if main._editor_hotspots_for_scene(scene_id).is_empty():
+			_fail("scene has no GUI-authored hotspots: %s" % scene_id)
+			return
 
 	main.debug_ui_enabled = true
 	main._apply_navigation_display()
@@ -79,6 +86,9 @@ func _run() -> void:
 	if main.task_manager.get_task_state("room_105_fold_bedding") != "done":
 		_fail("fold bedding task did not complete")
 		return
+	if not main.flag_store.get_bool("task.room_105.bedding.folded"):
+		_fail("fold bedding behavior did not set its completion flag")
+		return
 
 	main.show_scene("room_105_bathroom", false)
 	await process_frame
@@ -107,6 +117,9 @@ func _run() -> void:
 	if main.task_manager.get_task_state("room_105_clean_sink") != "done":
 		_fail("clean sink task did not complete")
 		return
+	if not main.flag_store.get_bool("task.room_105.sink.cleaned"):
+		_fail("clean sink behavior did not set its completion flag")
+		return
 
 	main.show_scene("laundry_room", false)
 	await process_frame
@@ -124,13 +137,62 @@ func _run() -> void:
 		_fail("rule book read state missing")
 		return
 
+	main.localization.set_language(main.localization.Language.KOREAN)
+	if not main.horror_event_manager.trigger_jumpscare("room_107_phone_jumpscare"):
+		_fail("jumpscare did not start")
+		return
+	await process_frame
+	if not main.jumpscare_controller.active:
+		_fail("jumpscare controller did not lock the screen")
+		return
+	if main.jumpscare_controller.current_presentation.title_label.text != "전화벨":
+		_fail("jumpscare presentation did not use localization")
+		return
+	var escape_event := InputEventKey.new()
+	escape_event.keycode = KEY_ESCAPE
+	escape_event.pressed = true
+	main._input(escape_event)
+	if main._is_menu_open():
+		_fail("escape opened the menu during a jumpscare")
+		return
+	main.jumpscare_controller.current_presentation._finish()
+	await process_frame
+	if main.horror_event_manager.is_jumpscare_active():
+		_fail("jumpscare did not finish through its presentation")
+		return
+	main.localization.set_language(main.localization.Language.ENGLISH)
+
 	var state: Dictionary = main._capture_day_state()
 	for key in ["flags", "inventory", "tasks", "horror", "rules"]:
 		if not state.has(key):
 			_fail("save state missing %s" % key)
 			return
 
+	main.inventory_model.add_item_by_id("collected_trash")
+	main.horror_event_manager.mark_event_seen("room_107_phone_jumpscare")
+	main._start_shift()
+	await process_frame
+	if _find_inventory_item(main, "collected_trash") != null:
+		_fail("new shift retained an item from the previous run")
+		return
+	for initial_item_id in ["room_105_key", "small_flashlight", "guest_note", "cleaning_cloth"]:
+		if _find_inventory_item(main, initial_item_id) == null:
+			_fail("new shift did not restore initial item %s" % initial_item_id)
+			return
+	if main.horror_event_manager.get_discovered_count() != 1:
+		_fail("new shift cleared the permanent horror collection")
+		return
+
 	main.queue_free()
+	await process_frame
+	var restored_main = packed.instantiate()
+	root.add_child(restored_main)
+	await process_frame
+	await process_frame
+	if restored_main.horror_event_manager.get_discovered_count() != 1:
+		_fail("permanent horror collection did not survive an app restart")
+		return
+	restored_main.queue_free()
 	await process_frame
 	_restore_save()
 	print("smoke main gameplay passed")
@@ -160,24 +222,26 @@ func _stop_transition_audio(main) -> void:
 
 
 func _preserve_save() -> void:
-	original_save_exists = FileAccess.file_exists(SAVE_PATH)
-	if original_save_exists:
-		var save_file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-		original_save_text = save_file.get_as_text() if save_file != null else ""
+	for path in [SAVE_PATH, META_SAVE_PATH]:
+		if FileAccess.file_exists(path):
+			var save_file := FileAccess.open(path, FileAccess.READ)
+			preserved_files[path] = save_file.get_as_text() if save_file != null else ""
 
 
 func _clear_save() -> void:
-	if FileAccess.file_exists(SAVE_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
+	for path in [SAVE_PATH, META_SAVE_PATH]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func _restore_save() -> void:
-	if original_save_exists:
-		var save_file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-		if save_file != null:
-			save_file.store_string(original_save_text)
-	elif FileAccess.file_exists(SAVE_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
+	for path in [SAVE_PATH, META_SAVE_PATH]:
+		if preserved_files.has(path):
+			var save_file := FileAccess.open(path, FileAccess.WRITE)
+			if save_file != null:
+				save_file.store_string(String(preserved_files[path]))
+		elif FileAccess.file_exists(path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func _fail(message: String) -> void:

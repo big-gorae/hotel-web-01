@@ -49,6 +49,9 @@ static func _make_room_107_phone_jumpscare():
 	definition.spawn_chance = 0.0
 	definition.jumpscare_duration = 1.4
 	definition.jumpscare_outcome = HorrorEventDefinition.OUTCOME_CONTINUE
+	definition.presentation_scene_path = "res://scenes/horror/default_jumpscare_presentation.tscn"
+	definition.title_key = "horror_event.room_107_phone_jumpscare.title"
+	definition.description_key = "horror_event.room_107_phone_jumpscare.description"
 	definition.fallback_title = "Phone Ring"
 	definition.fallback_description = "The phone rings once, impossibly close."
 	return definition

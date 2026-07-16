@@ -48,6 +48,7 @@ func test_equipped_item_completes_item_gated_task() -> void:
 	var result = runner.execute_hotspot(hotspot, _context("room_105_bathroom", "task_room_105_clean_sink", "cleaning_cloth"))
 
 	assert_that(tasks.get_task_state("room_105_clean_sink")).is_equal("done")
+	assert_that(flags.get_bool("task.room_105.sink.cleaned")).is_true()
 	assert_that(result.should_refresh_hotspots).is_true()
 	assert_that(result.should_save).is_true()
 

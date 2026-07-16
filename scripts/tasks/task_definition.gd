@@ -12,6 +12,7 @@ var task_type := ""
 var rect := Rect2()
 var required_item_id := ""
 var reward_item_id := ""
+var completion_flag_id := ""
 var label_key := ""
 var text_key := ""
 var done_text_key := ""
@@ -36,6 +37,7 @@ func copy():
 	definition.rect = rect
 	definition.required_item_id = required_item_id
 	definition.reward_item_id = reward_item_id
+	definition.completion_flag_id = completion_flag_id
 	definition.label_key = label_key
 	definition.text_key = text_key
 	definition.done_text_key = done_text_key

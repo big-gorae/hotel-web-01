@@ -3,10 +3,10 @@ extends Control
 
 signal finished
 
-var title_label: Label
-var description_label: Label
-var timer: Timer
+const DEFAULT_PRESENTATION_SCENE := "res://scenes/horror/default_jumpscare_presentation.tscn"
+
 var active := false
+var current_presentation: Control
 
 
 func _ready() -> void:
@@ -14,59 +14,52 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	visible = false
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_build()
 
 
-func play(definition) -> void:
+func play(definition, localization = null) -> void:
+	stop()
+	var scene_path := String(definition.presentation_scene_path)
+	if scene_path.is_empty():
+		scene_path = DEFAULT_PRESENTATION_SCENE
+
+	var packed_scene := load(scene_path) as PackedScene
+	if packed_scene == null:
+		push_warning("Missing jumpscare presentation: %s" % scene_path)
+		packed_scene = load(DEFAULT_PRESENTATION_SCENE) as PackedScene
+	if packed_scene == null:
+		finished.emit()
+		return
+
+	current_presentation = packed_scene.instantiate() as Control
+	if current_presentation == null:
+		push_warning("Jumpscare presentation root must be a Control: %s" % scene_path)
+		finished.emit()
+		return
+
 	active = true
 	visible = true
 	move_to_front()
-	title_label.text = definition.fallback_title
-	description_label.text = definition.fallback_description
-	timer.wait_time = maxf(definition.jumpscare_duration, 0.1)
-	timer.start()
+	add_child(current_presentation)
+	current_presentation.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if current_presentation.has_signal("finished"):
+		current_presentation.finished.connect(_on_presentation_finished, CONNECT_ONE_SHOT)
+	if current_presentation.has_method("play"):
+		current_presentation.play(definition, localization)
+	else:
+		push_warning("Jumpscare presentation has no play method: %s" % scene_path)
+		_on_presentation_finished()
 
 
 func stop() -> void:
-	timer.stop()
+	if current_presentation != null:
+		if current_presentation.has_method("stop"):
+			current_presentation.stop()
+		current_presentation.queue_free()
+		current_presentation = null
 	active = false
 	visible = false
 
 
-func _build() -> void:
-	var shade := ColorRect.new()
-	shade.color = Color(0.0, 0.0, 0.0, 0.92)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(shade)
-
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
-
-	var layout := VBoxContainer.new()
-	layout.add_theme_constant_override("separation", 12)
-	center.add_child(layout)
-
-	title_label = Label.new()
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 40)
-	title_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.28))
-	layout.add_child(title_label)
-
-	description_label = Label.new()
-	description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	description_label.add_theme_font_size_override("font_size", 18)
-	description_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
-	layout.add_child(description_label)
-
-	timer = Timer.new()
-	timer.process_mode = Node.PROCESS_MODE_ALWAYS
-	timer.one_shot = true
-	timer.timeout.connect(_on_timer_timeout)
-	add_child(timer)
-
-
-func _on_timer_timeout() -> void:
+func _on_presentation_finished() -> void:
 	stop()
 	finished.emit()

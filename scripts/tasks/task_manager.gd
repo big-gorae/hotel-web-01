@@ -5,9 +5,11 @@ signal task_completed(definition)
 
 const TaskDefinition := preload("res://scripts/tasks/task_definition.gd")
 const TaskCatalog := preload("res://scripts/tasks/task_catalog.gd")
+const TaskBehaviorRegistry := preload("res://scripts/tasks/task_behavior_registry.gd")
 
 var definitions_by_id: Dictionary = {}
 var completed_task_ids: Array[String] = []
+var behavior_registry = TaskBehaviorRegistry.new()
 
 
 func setup_default_catalog() -> void:
@@ -54,7 +56,22 @@ func can_use_item(task_id: String, item_id: String) -> bool:
 	if definition == null:
 		return false
 
-	return not definition.required_item_id.is_empty() and definition.required_item_id == item_id
+	var context := {"equipped_item_id": item_id}
+	return behavior_registry.get_behavior(String(definition.task_type)).can_perform(definition, context)
+
+
+func perform_task(task_id: String, context) -> Dictionary:
+	var definition = definitions_by_id.get(task_id)
+	if definition == null or completed_task_ids.has(task_id):
+		return {"success": false}
+
+	var behavior = behavior_registry.get_behavior(String(definition.task_type))
+	var outcome: Dictionary = behavior.perform(definition, context)
+	if not bool(outcome.get("success", false)):
+		return outcome
+
+	complete_task(task_id)
+	return outcome
 
 
 func get_hotspots_for_scene(scene_id: String) -> Array:

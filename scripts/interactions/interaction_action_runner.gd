@@ -89,7 +89,7 @@ func execute_action(action, context):
 			if action.has("fallback_text") or action.has("text_key"):
 				result.set_dialogue(String(action.get("text_key", "")), String(action.get("fallback_text", "")))
 		"complete_task":
-			_complete_task(String(action.get("task_id", "")), result)
+			_complete_task(String(action.get("task_id", "")), context, result)
 		"use_equipped_item_on_task":
 			_use_equipped_item_on_task(String(action.get("task_id", "")), context, result)
 		"resolve_horror_event":
@@ -145,14 +145,21 @@ func _add_item(item_id: String) -> void:
 	inventory_model.add_item_by_id(item_id)
 
 
-func _complete_task(task_id: String, result) -> void:
+func _complete_task(task_id: String, context, result) -> void:
 	if task_manager == null or task_id.is_empty():
 		return
 
-	if task_manager.complete_task(task_id):
-		var definition = task_manager.get_definition(task_id)
-		if definition != null and not String(definition.reward_item_id).is_empty():
-			_add_item(definition.reward_item_id)
+	var outcome: Dictionary = task_manager.perform_task(task_id, context)
+	if not bool(outcome.get("success", false)):
+		var blocked_dialogue: Dictionary = task_manager.get_blocked_dialogue(task_id)
+		result.set_blocked(String(blocked_dialogue.get("key", "")), String(blocked_dialogue.get("fallback", "That item does not work here.")))
+		return
+
+	for item_id in outcome.get("reward_item_ids", []):
+		_add_item(String(item_id))
+	for flag_id in outcome.get("flag_updates", {}).keys():
+		if flag_store != null:
+			flag_store.set_value(String(flag_id), outcome["flag_updates"][flag_id])
 
 	result.should_refresh_hotspots = true
 	result.should_save = true
@@ -166,7 +173,7 @@ func _use_equipped_item_on_task(task_id: String, context, result) -> void:
 		return
 
 	if task_manager.can_use_item(task_id, String(context.equipped_item_id)):
-		_complete_task(task_id, result)
+		_complete_task(task_id, context, result)
 		return
 
 	var dialogue: Dictionary = task_manager.get_blocked_dialogue(task_id)

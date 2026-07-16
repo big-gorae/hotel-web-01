@@ -1,18 +1,17 @@
 extends Control
 
 const HotelLocalization = preload("res://scripts/localization.gd")
-const HotelItemDefinitionScript = preload("res://scripts/items/item_definition.gd")
-const HotelItemCombinationRuleScript = preload("res://scripts/items/item_combination_rule.gd")
 const HotelInventoryModelScript = preload("res://scripts/items/inventory_model.gd")
-const HotelInventoryScreenScript = preload("res://scripts/ui/inventory_screen.gd")
+const HotelItemCatalogScript = preload("res://scripts/items/item_catalog.gd")
 const HotelEquipmentHudScript = preload("res://scripts/ui/equipment_hud.gd")
-const HotelRuleBookScreenScript = preload("res://scripts/ui/rule_book_screen.gd")
-const HotelAnomalyCollectionPanelScript = preload("res://scripts/ui/anomaly_collection_panel.gd")
+const HotelPauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
+const HotelLobbyScreenScript = preload("res://scripts/ui/lobby_screen.gd")
 const HotelFilterSelectorPanelScript = preload("res://scripts/ui/filter_selector_panel.gd")
 const HotelScene3DOverlayScript = preload("res://scripts/ui/scene_3d_overlay.gd")
 const HotelSceneTransitionFaderScript = preload("res://scripts/ui/scene_transition_fader.gd")
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 const HotelDaySaveManagerScript = preload("res://scripts/systems/day_save_manager.gd")
+const HotelMetaProgressSaveManagerScript = preload("res://scripts/systems/meta_progress_save_manager.gd")
 const HotelFlagStoreScript = preload("res://scripts/systems/flag_store.gd")
 const HotelPostProcessFilterScript = preload("res://scripts/systems/post_process_filter.gd")
 const HotelHorrorEventManagerScript = preload("res://scripts/horror/horror_event_manager.gd")
@@ -21,6 +20,7 @@ const HotelTaskManagerScript = preload("res://scripts/tasks/task_manager.gd")
 const HotelRuleBookManagerScript = preload("res://scripts/rules/rule_book_manager.gd")
 const HotelInteractionContextScript = preload("res://scripts/interactions/interaction_context.gd")
 const HotelInteractionActionRunnerScript = preload("res://scripts/interactions/interaction_action_runner.gd")
+const HotelSceneCatalogScript = preload("res://scripts/scenes/hotel_scene_catalog.gd")
 
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
@@ -40,7 +40,6 @@ const FOOTSTEP_INTERVAL_SECONDS := 0.22
 const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
-const LOBBY_BLUR_SHADER_CODE := "shader_type canvas_item;\nuniform float blur_size = 3.5;\nvoid fragment() {\n\tvec2 px = TEXTURE_PIXEL_SIZE * blur_size;\n\tvec4 color = texture(TEXTURE, UV) * 0.18;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(-px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, -px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, px.y)) * 0.11;\n\tfloat luma = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n\tcolor.rgb = mix(vec3(luma), color.rgb, 0.74);\n\tcolor.rgb = (color.rgb - 0.5) * 1.10 + 0.5 - 0.02;\n\tcolor.rgb = mix(color.rgb, color.rgb * vec3(1.0, 0.91, 0.70), 0.18);\n\tfloat dist = distance(UV, vec2(0.5));\n\tfloat vignette = smoothstep(0.35, 0.82, dist);\n\tcolor.rgb *= 1.0 - vignette * 0.22;\n\tCOLOR = vec4(clamp(color.rgb, vec3(0.0), vec3(1.0)), color.a);\n}\n"
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -59,629 +58,13 @@ const HIDDEN_STYLE := {
 	"border": Color(1.0, 1.0, 1.0, 0.0),
 }
 
-const HOTEL_SCENES := {
-	"front_desk": {
-		"title": "Front Desk",
-		"photo": "res://resource/images/front_desk.png",
-		"intro": "The night clerk's counter is quiet. Notes, a phone, and the logbook are ready for clues.",
-		"exits": [
-			{"label": "Corridor", "target": "corridor"},
-			{"label": "Laundry Room", "target": "laundry_room"},
-			{"label": "Room 105", "target": "room_105_door_window"},
-			{"label": "Room 106", "target": "room_106_bed_bathroom_entry"},
-			{"label": "Room 107", "target": "room_107_bed_nightstand"},
-			{"label": "Room 108", "target": "room_108_bed_window"},
-		],
-		"hotspots": [
-			{
-				"id": "front_left_edge",
-				"label": "Laundry",
-				"rect": Rect2(0.000, 0.000, 0.075, 1.000),
-				"target": "laundry_room",
-			},
-			{
-				"id": "front_right_edge",
-				"label": "Corridor",
-				"rect": Rect2(0.925, 0.000, 0.075, 1.000),
-				"target": "corridor",
-			},
-			{
-				"id": "desk_bell",
-				"label": "Bell",
-				"rect": Rect2(0.407, 0.407, 0.075, 0.095),
-				"text": "The bell gives a thin ring that hangs in the lobby for a second.",
-			},
-			{
-				"id": "phone",
-				"label": "Phone",
-				"rect": Rect2(0.020, 0.690, 0.180, 0.260),
-				"text": "The desk phone still works. The last extension dialed was 105.",
-			},
-			{
-				"id": "logbook",
-				"label": "Logbook",
-				"rect": Rect2(0.390, 0.745, 0.245, 0.190),
-				"text": "Guest names, room numbers, and a few rushed pencil marks fill the page.",
-			},
-			{
-				"id": "front_door",
-				"label": "Exit Door",
-				"rect": Rect2(0.330, 0.020, 0.235, 0.500),
-				"text": "The glass door looks out toward the corridor, but this is not the way you leave the desk.",
-			},
-		],
-	},
-	"corridor": {
-		"title": "Corridor",
-		"photo": "res://resource/images/corridor.png",
-		"intro": "The outside corridor is damp and dim. Each numbered door could hide a different lead.",
-		"exits": [
-			{"label": "Front Desk", "target": "front_desk"},
-			{"label": "Exterior Stairs", "target": "exterior_stairs"},
-			{"label": "Room 105", "target": "room_105_door_window"},
-			{"label": "Room 106", "target": "room_106_bed_bathroom_entry"},
-			{"label": "Room 107", "target": "room_107_bed_nightstand"},
-			{"label": "Room 108", "target": "room_108_bed_window"},
-		],
-		"hotspots": [
-			{
-				"id": "corridor_left_edge",
-				"label": "Front Desk",
-				"rect": Rect2(0.000, 0.000, 0.075, 1.000),
-				"target": "front_desk",
-			},
-			{
-				"id": "corridor_bottom_edge",
-				"label": "Stairs",
-				"rect": Rect2(0.000, 0.860, 1.000, 0.140),
-				"target": "exterior_stairs",
-			},
-			{
-				"id": "room_105",
-				"label": "Room 105",
-				"rect": Rect2(0.080, 0.135, 0.145, 0.475),
-				"target": "room_105_door_window",
-			},
-			{
-				"id": "room_106",
-				"label": "Room 106",
-				"rect": Rect2(0.302, 0.155, 0.102, 0.395),
-				"target": "room_106_bed_bathroom_entry",
-			},
-			{
-				"id": "room_107",
-				"label": "Room 107",
-				"rect": Rect2(0.490, 0.175, 0.080, 0.330),
-				"target": "room_107_bed_nightstand",
-			},
-			{
-				"id": "room_108",
-				"label": "Room 108",
-				"rect": Rect2(0.630, 0.205, 0.060, 0.275),
-				"target": "room_108_bed_window",
-			},
-			{
-				"id": "walkway_lights",
-				"label": "Lights",
-				"rect": Rect2(0.245, 0.155, 0.085, 0.170),
-				"text": "The corridor lamps flicker at uneven intervals.",
-			},
-			],
-		},
-		"room_106_bed_bathroom_entry": {
-			"title": "Room 106",
-			"photo": "res://resource/images/room_106_bed_bathroom_entry.png",
-			"intro": "Room 106 has a clear view of the bed, window, bathroom entry, and dresser.",
-			"exits": [
-				{"label": "Room 106 Bathroom", "target": "room_106_bathroom"},
-				{"label": "Corridor", "target": "corridor"},
-			],
-			"hotspots": [
-				{
-					"id": "room_106_exit_edge",
-					"label": "Corridor",
-					"rect": Rect2(0.000, 0.000, 0.095, 1.000),
-					"target": "corridor",
-				},
-				{
-					"id": "room_106_bed",
-					"label": "Bed",
-					"rect": Rect2(0.320, 0.560, 0.680, 0.390),
-					"text": "The bedspread is pulled into place, but the room still feels recently used.",
-				},
-				{
-					"id": "room_106_window",
-					"label": "Window",
-					"rect": Rect2(0.425, 0.170, 0.205, 0.310),
-					"text": "The curtains leave a narrow view of the outside lights.",
-				},
-				{
-					"id": "room_106_bathroom_entry",
-					"label": "Bathroom",
-					"rect": Rect2(0.095, 0.150, 0.170, 0.440),
-					"target": "room_106_bathroom",
-				},
-				{
-					"id": "room_106_dresser",
-					"label": "Dresser",
-					"rect": Rect2(0.000, 0.500, 0.180, 0.455),
-					"text": "The coffee maker and drawers are within reach of the bathroom door.",
-				},
-			],
-		},
-		"room_107_bed_nightstand": {
-			"title": "Room 107",
-			"photo": "res://resource/images/room_107_bed_nightstand.png",
-			"intro": "Room 107 shows the nightstand, phone, and a messier bed.",
-			"exits": [
-				{"label": "Room 107 Bathroom Entry", "target": "room_107_bathroom_entry"},
-				{"label": "Corridor", "target": "corridor"},
-			],
-			"hotspots": [
-				{
-					"id": "room_107_turn_edge",
-					"label": "Turn",
-					"rect": Rect2(0.900, 0.000, 0.100, 1.000),
-					"target": "room_107_bathroom_entry",
-				},
-				{
-					"id": "room_107_door",
-					"label": "Door",
-					"rect": Rect2(0.000, 0.000, 0.090, 1.000),
-					"target": "corridor",
-				},
-				{
-					"id": "room_107_nightstand",
-					"label": "Nightstand",
-					"rect": Rect2(0.750, 0.610, 0.205, 0.250),
-					"text": "The room phone sits beside a loose note and a warm lamp.",
-				},
-				{
-					"id": "room_107_window_view",
-					"label": "Window",
-					"rect": Rect2(0.175, 0.115, 0.245, 0.345),
-					"text": "A parked car is visible through the window.",
-				},
-				{
-					"id": "room_107_loose_papers",
-					"label": "Papers",
-					"rect": Rect2(0.760, 0.850, 0.135, 0.085),
-					"text": "A few papers lie on the carpet near the bed.",
-				},
-			],
-		},
-		"room_107_bathroom_entry": {
-			"title": "Room 107",
-			"photo": "res://resource/images/room_107_bathroom_entry.png",
-			"intro": "Room 107's second angle shows the bathroom entry and the closet door.",
-			"exits": [
-				{"label": "Room 107", "target": "room_107_bed_nightstand"},
-				{"label": "Room 107 Bathroom", "target": "room_107_bathroom"},
-				{"label": "Corridor", "target": "corridor"},
-			],
-			"hotspots": [
-				{
-					"id": "room_107_left_edge",
-					"label": "Turn",
-					"rect": Rect2(0.000, 0.000, 0.095, 1.000),
-					"target": "room_107_bed_nightstand",
-				},
-				{
-					"id": "room_107_bathroom_doorway",
-					"label": "Bathroom",
-					"rect": Rect2(0.505, 0.095, 0.210, 0.585),
-					"target": "room_107_bathroom",
-				},
-				{
-					"id": "room_107_closet_door",
-					"label": "Closet",
-					"rect": Rect2(0.755, 0.140, 0.165, 0.620),
-					"text": "The door beside the bathroom is a closet, not the exit.",
-				},
-				{
-					"id": "room_107_bed_side",
-					"label": "Bed",
-					"rect": Rect2(0.000, 0.540, 0.470, 0.350),
-					"text": "The bed is half lit by the nightstand lamp.",
-				},
-				{
-					"id": "room_107_phone",
-					"label": "Phone",
-					"rect": Rect2(0.285, 0.420, 0.170, 0.185),
-					"text": "The phone is close enough to reach from the pillow.",
-				},
-			],
-		},
-		"room_108_bed_window": {
-			"title": "Room 108",
-			"photo": "res://resource/images/room_108_bed_window.png",
-			"intro": "Room 108 opens on the bed, window, and desk side of the room.",
-			"exits": [
-				{"label": "Room 108 Bathroom Entry", "target": "room_108_bathroom_entry"},
-				{"label": "Corridor", "target": "corridor"},
-			],
-			"hotspots": [
-				{
-					"id": "room_108_exit_edge",
-					"label": "Corridor",
-					"rect": Rect2(0.000, 0.000, 0.090, 1.000),
-					"target": "corridor",
-				},
-				{
-					"id": "room_108_right_edge",
-					"label": "Turn",
-					"rect": Rect2(0.905, 0.000, 0.095, 1.000),
-					"target": "room_108_bathroom_entry",
-				},
-				{
-					"id": "room_108_bed",
-					"label": "Bed",
-					"rect": Rect2(0.000, 0.430, 0.620, 0.430),
-					"text": "The bed faces the window and catches most of the room's warm light.",
-				},
-				{
-					"id": "room_108_window",
-					"label": "Window",
-					"rect": Rect2(0.555, 0.115, 0.270, 0.405),
-					"text": "The opposite wing of the hotel is visible through the window.",
-				},
-				{
-					"id": "room_108_nightstand",
-					"label": "Nightstand",
-					"rect": Rect2(0.335, 0.280, 0.120, 0.230),
-					"text": "A lamp and a small notepad sit beside the bed.",
-				},
-				{
-					"id": "room_108_desk",
-					"label": "Desk",
-					"rect": Rect2(0.865, 0.430, 0.130, 0.435),
-					"text": "The desk is clear except for the coffee set.",
-				},
-			],
-		},
-		"room_108_bathroom_entry": {
-			"title": "Room 108",
-			"photo": "res://resource/images/room_108_bathroom_entry.png",
-			"intro": "From this angle, the bathroom entry, dresser, television, and bed are all visible.",
-			"exits": [
-				{"label": "Room 108", "target": "room_108_bed_window"},
-				{"label": "Room 108 Bathroom", "target": "room_108_bathroom"},
-				{"label": "Corridor", "target": "corridor"},
-			],
-			"hotspots": [
-				{
-					"id": "room_108_left_edge",
-					"label": "Turn",
-					"rect": Rect2(0.000, 0.000, 0.095, 1.000),
-					"target": "room_108_bed_window",
-				},
-				{
-					"id": "room_108_bathroom_doorway",
-					"label": "Bathroom",
-					"rect": Rect2(0.830, 0.000, 0.170, 0.820),
-					"target": "room_108_bathroom",
-				},
-				{
-					"id": "room_108_television",
-					"label": "TV",
-					"rect": Rect2(0.610, 0.150, 0.135, 0.235),
-					"text": "The television is mounted high on the wall beside the bathroom entry.",
-				},
-				{
-					"id": "room_108_dresser",
-					"label": "Dresser",
-					"rect": Rect2(0.660, 0.475, 0.235, 0.420),
-					"text": "The dresser blocks most of the path along the right wall.",
-				},
-				{
-					"id": "room_108_bed_side",
-					"label": "Bed",
-					"rect": Rect2(0.000, 0.540, 0.470, 0.350),
-					"text": "The blanket is loose near the nightstand.",
-				},
-				{
-					"id": "room_108_phone",
-					"label": "Phone",
-					"rect": Rect2(0.285, 0.420, 0.170, 0.185),
-					"text": "The phone rests beside the lamp, pointed toward the bed.",
-				},
-			],
-		},
-		"room_105_door_window": {
-			"title": "Room 105",
-			"photo": "res://resource/images/room_105_door_window.png",
-			"intro": "A modest room with the curtains half closed. The bed, window, and door are the main points of interest.",
-			"exits": [
-				{"label": "Corridor", "target": "corridor"},
-				{"label": "Room 105 Bathroom Entry", "target": "room_105_bathroom_entry"},
-				{"label": "Front Desk", "target": "front_desk"},
-			],
-		"hotspots": [
-			{
-				"id": "room_left_edge",
-				"label": "Turn",
-				"rect": Rect2(0.000, 0.680, 0.105, 0.240),
-				"target": "room_105_bathroom_entry",
-			},
-			{
-				"id": "room_right_edge",
-				"label": "Turn",
-				"rect": Rect2(0.905, 0.000, 0.095, 1.000),
-				"target": "room_105_bathroom_entry",
-			},
-			{
-				"id": "room_door",
-				"label": "Door",
-				"rect": Rect2(0.000, 0.090, 0.135, 0.540),
-				"target": "corridor",
-			},
-			{
-				"id": "window",
-				"label": "Window",
-				"rect": Rect2(0.222, 0.147, 0.205, 0.350),
-				"text": "The window faces the motel exterior. The glass is cold to the touch.",
-			},
-			{
-				"id": "bed",
-				"label": "Bed",
-				"rect": Rect2(0.308, 0.465, 0.660, 0.390),
-				"text": "The bedspread has been pulled tight, but one corner is slightly tucked under.",
-			},
-			{
-				"id": "lamp",
-				"label": "Lamp",
-				"rect": Rect2(0.610, 0.335, 0.120, 0.230),
-				"text": "The lamp is warm, making the room feel smaller than it is.",
-			},
-		],
-	},
-	"room_105_bathroom_entry": {
-		"title": "Room 105",
-		"photo": "res://resource/images/room_105_bathroom_entry.png",
-		"intro": "From this angle the bathroom, closet door, television, and bed are all within reach.",
-		"exits": [
-			{"label": "Room 105", "target": "room_105_door_window"},
-			{"label": "Room 105 Bathroom", "target": "room_105_bathroom"},
-			{"label": "Corridor", "target": "corridor"},
-		],
-		"hotspots": [
-			{
-				"id": "bathroom_left_edge",
-				"label": "Turn",
-				"rect": Rect2(0.000, 0.000, 0.095, 1.000),
-				"target": "room_105_door_window",
-			},
-			{
-				"id": "bathroom_right_edge",
-				"label": "Turn",
-				"rect": Rect2(0.925, 0.000, 0.075, 1.000),
-				"target": "room_105_door_window",
-			},
-			{
-				"id": "bathroom_sink",
-				"label": "Bathroom",
-				"rect": Rect2(0.458, 0.260, 0.220, 0.325),
-				"target": "room_105_bathroom",
-			},
-			{
-				"id": "closet_door",
-				"label": "Closet",
-				"rect": Rect2(0.640, 0.220, 0.126, 0.500),
-				"text": "The closet door is closed, but the knob is polished from frequent use.",
-			},
-			{
-				"id": "television",
-				"label": "TV",
-				"rect": Rect2(0.795, 0.435, 0.170, 0.240),
-				"text": "The television reflects the room back at you in a warped curve.",
-			},
-			{
-				"id": "nightstand",
-				"label": "Nightstand",
-				"rect": Rect2(0.270, 0.585, 0.145, 0.170),
-				"text": "A phone sits beside the bed. The room card is missing.",
-			},
-			],
-		},
-		"room_105_bathroom": {
-			"title": "Room 105",
-			"photo": "res://resource/images/room_105_bathroom.png",
-			"intro": "The bathroom is cramped and bright. The mirror, sink, tub, and door are all close together.",
-			"exits": [
-				{"label": "Room 105 Bathroom Entry", "target": "room_105_bathroom_entry"},
-				{"label": "Room 105", "target": "room_105_door_window"},
-			],
-			"hotspots": [
-				{
-					"id": "bathroom_door",
-					"label": "Door",
-					"rect": Rect2(0.835, 0.000, 0.165, 1.000),
-					"target": "room_105_bathroom_entry",
-				},
-				{
-					"id": "bathroom_mirror",
-					"label": "Mirror",
-					"rect": Rect2(0.000, 0.000, 0.225, 0.520),
-					"text": "The mirror is worn at the edges, blurring the room behind you.",
-				},
-				{
-					"id": "bathroom_sink",
-					"label": "Sink",
-					"rect": Rect2(0.000, 0.560, 0.395, 0.280),
-					"text": "A small tube rests near the sink. The counter is stained from years of use.",
-				},
-				{
-					"id": "bathroom_tub",
-					"label": "Tub",
-					"rect": Rect2(0.455, 0.120, 0.340, 0.760),
-					"text": "The shower curtain hangs still. The tub is dry.",
-				},
-			],
-		},
-		"room_106_bathroom": {
-			"title": "Room 106",
-			"photo": "res://resource/images/room_106_bathroom.png",
-			"intro": "Room 106 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
-			"exits": [
-				{"label": "Room 106", "target": "room_106_bed_bathroom_entry"},
-			],
-			"hotspots": [
-				{
-					"id": "room_106_bathroom_door",
-					"label": "Door",
-					"rect": Rect2(0.835, 0.000, 0.165, 1.000),
-					"target": "room_106_bed_bathroom_entry",
-				},
-				{
-					"id": "room_106_bathroom_mirror",
-					"label": "Mirror",
-					"rect": Rect2(0.000, 0.000, 0.225, 0.520),
-					"text": "The mirror is worn at the edges, blurring the room behind you.",
-				},
-				{
-					"id": "room_106_bathroom_sink",
-					"label": "Sink",
-					"rect": Rect2(0.000, 0.560, 0.395, 0.280),
-					"text": "A small tube rests near the sink. The counter is stained from years of use.",
-				},
-				{
-					"id": "room_106_bathroom_tub",
-					"label": "Tub",
-					"rect": Rect2(0.455, 0.120, 0.340, 0.760),
-					"text": "The shower curtain hangs still. The tub is dry.",
-				},
-			],
-		},
-		"room_107_bathroom": {
-			"title": "Room 107",
-			"photo": "res://resource/images/room_107_bathroom.png",
-			"intro": "Room 107 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
-			"exits": [
-				{"label": "Room 107 Bathroom Entry", "target": "room_107_bathroom_entry"},
-			],
-			"hotspots": [
-				{
-					"id": "room_107_bathroom_door",
-					"label": "Door",
-					"rect": Rect2(0.835, 0.000, 0.165, 1.000),
-					"target": "room_107_bathroom_entry",
-				},
-				{
-					"id": "room_107_bathroom_mirror",
-					"label": "Mirror",
-					"rect": Rect2(0.000, 0.000, 0.225, 0.520),
-					"text": "The mirror is worn at the edges, blurring the room behind you.",
-				},
-				{
-					"id": "room_107_bathroom_sink",
-					"label": "Sink",
-					"rect": Rect2(0.000, 0.560, 0.395, 0.280),
-					"text": "A small tube rests near the sink. The counter is stained from years of use.",
-				},
-				{
-					"id": "room_107_bathroom_tub",
-					"label": "Tub",
-					"rect": Rect2(0.455, 0.120, 0.340, 0.760),
-					"text": "The shower curtain hangs still. The tub is dry.",
-				},
-			],
-		},
-		"room_108_bathroom": {
-			"title": "Room 108",
-			"photo": "res://resource/images/room_108_bathroom.png",
-			"intro": "Room 108 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
-			"exits": [
-				{"label": "Room 108 Bathroom Entry", "target": "room_108_bathroom_entry"},
-			],
-			"hotspots": [
-				{
-					"id": "room_108_bathroom_door",
-					"label": "Door",
-					"rect": Rect2(0.835, 0.000, 0.165, 1.000),
-					"target": "room_108_bathroom_entry",
-				},
-				{
-					"id": "room_108_bathroom_mirror",
-					"label": "Mirror",
-					"rect": Rect2(0.000, 0.000, 0.225, 0.520),
-					"text": "The mirror is worn at the edges, blurring the room behind you.",
-				},
-				{
-					"id": "room_108_bathroom_sink",
-					"label": "Sink",
-					"rect": Rect2(0.000, 0.560, 0.395, 0.280),
-					"text": "A small tube rests near the sink. The counter is stained from years of use.",
-				},
-				{
-					"id": "room_108_bathroom_tub",
-					"label": "Tub",
-					"rect": Rect2(0.455, 0.120, 0.340, 0.760),
-					"text": "The shower curtain hangs still. The tub is dry.",
-				},
-			],
-		},
-		"laundry_room": {
-			"title": "Laundry Room",
-			"photo": "res://resource/images/laundry_room.png",
-			"intro": "The laundry room hums under fluorescent light. Machines line the walls and the exit is behind you.",
-			"exits": [
-				{"label": "Front Desk", "target": "front_desk"},
-			],
-			"hotspots": [
-				{
-					"id": "laundry_bottom_edge",
-					"label": "Exit",
-					"rect": Rect2(0.000, 0.740, 1.000, 0.135),
-					"target": "front_desk",
-				},
-				{
-					"id": "laundry_second_washer",
-					"label": "Washer",
-					"rect": Rect2(0.585, 0.440, 0.130, 0.335),
-					"action": "toggle_laundry_washer",
-				},
-				{
-					"id": "laundry_rules",
-					"label": "Rules",
-					"rect": Rect2(0.505, 0.260, 0.100, 0.150),
-					"text": "Laundry rules are posted beside the window in small print.",
-				},
-				{
-					"id": "detergent",
-					"label": "Detergent",
-					"rect": Rect2(0.175, 0.465, 0.185, 0.130),
-					"text": "Detergent bottles sit near the sink, lined up like someone left in a hurry.",
-				},
-			],
-		},
-		"exterior_stairs": {
-			"title": "Exterior Stairs",
-			"photo": "res://resource/images/exterior_stairs.png",
-			"intro": "The exterior stairs cut across the motel wall. Wet asphalt spreads out below.",
-			"exits": [
-				{"label": "Corridor", "target": "corridor"},
-			],
-			"hotspots": [
-				{
-					"id": "stairs_right_edge",
-					"label": "Corridor",
-					"rect": Rect2(0.900, 0.000, 0.100, 1.000),
-					"target": "corridor",
-				},
-				{
-					"id": "metal_stairs",
-					"label": "Stairs",
-					"rect": Rect2(0.295, 0.085, 0.440, 0.815),
-					"text": "The metal stairs creak under light pressure.",
-				},
-			],
-		},
-	}
+const HOTEL_SCENES := HotelSceneCatalogScript.SCENES
 
 var localization := HotelLocalization.new()
 var inventory_model = null
 var playback_pause_manager = null
 var day_save_manager = null
+var meta_progress_save_manager = null
 var flag_store = null
 var task_manager = null
 var horror_event_manager = null
@@ -731,48 +114,44 @@ var chat_toggle: Button
 var navigation_toggle: Button
 var filter_toggle: Button
 var menu_overlay: ColorRect
-var menu_content_shell: VBoxContainer
 var brightness_slider: HSlider
 var brightness_value_label: Label
-var inventory_tab_button: Button
-var rule_book_tab_button: Button
-var inventory_screen
 var equipment_hud
-var rule_book_screen
 var jumpscare_controller
 var scene_transition_fader
 var lobby_overlay: Control
-var lobby_continue_button: Button
-var lobby_day_panel: PanelContainer
-var lobby_day_grid: GridContainer
-var lobby_status_label: Label
-var lobby_horror_summary_label: Label
-var anomaly_collection_panel
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_hide_editor_hotspot_definitions()
+	_validate_scene_authoring()
 	inventory_model = HotelInventoryModelScript.new()
 	playback_pause_manager = HotelPlaybackPauseManagerScript.new()
 	day_save_manager = HotelDaySaveManagerScript.new()
+	meta_progress_save_manager = HotelMetaProgressSaveManagerScript.new()
 	flag_store = HotelFlagStoreScript.new()
 	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
 	task_manager = HotelTaskManagerScript.new()
 	task_manager.setup_default_catalog()
 	horror_event_manager = HotelHorrorEventManagerScript.new()
-	horror_event_manager.setup_default_catalog()
+	horror_event_manager.setup_default_catalog(flag_store)
 	horror_event_manager.jumpscare_started.connect(_on_jumpscare_started)
 	horror_event_manager.jumpscare_finished.connect(_on_jumpscare_finished)
+	horror_event_manager.event_seen.connect(_on_horror_collection_changed)
+	horror_event_manager.event_resolved.connect(_on_horror_collection_changed)
 	rule_book_manager = HotelRuleBookManagerScript.new()
 	rule_book_manager.setup_default_catalog()
 	interaction_runner = HotelInteractionActionRunnerScript.new()
 	interaction_runner.setup(flag_store, inventory_model, task_manager, horror_event_manager, rule_book_manager)
 	debug_ui_enabled = _is_debug_ui_enabled()
 	get_tree().root.size_changed.connect(_update_layout)
-	_seed_inventory()
+	HotelItemCatalogScript.register_defaults(inventory_model)
+	HotelItemCatalogScript.reset_to_initial_items(inventory_model)
 	day_save_manager.load_save_data()
+	meta_progress_save_manager.load_save_data()
+	horror_event_manager.import_collection_state(meta_progress_save_manager.get_collection_state())
 	_build_ui()
 	_build_audio()
 	_show_lobby()
@@ -1015,59 +394,6 @@ func _hide_editor_hotspot_definitions() -> void:
 		definitions.visible = false
 
 
-func _seed_inventory() -> void:
-	_register_inventory_item("room_105_key", "Room 105 Key", "A worn brass key from the front desk drawer.", "🔑")
-	_register_inventory_item("small_flashlight", "Flashlight", "A compact flashlight. Useful when the power fails.", "🔦")
-	_register_inventory_item("guest_note", "Guest Note", "A folded note with a room number written in pencil.", "📝")
-	_register_inventory_item("revealed_guest_note", "Revealed Note", "The flashlight reveals faint writing under the room number: Do not return it after midnight.", "📄")
-	_register_inventory_item("cleaning_cloth", "Cleaning Cloth", "A rough cloth for wiping sinks, floors, and anything that should not be touched directly.", "🧽")
-	_register_inventory_item("collected_trash", "Collected Trash", "Loose papers and trash gathered during room work.", "🗑", false)
-
-	inventory_model.add_item_by_id("room_105_key")
-	inventory_model.add_item_by_id("small_flashlight")
-	inventory_model.add_item_by_id("guest_note")
-	inventory_model.add_item_by_id("cleaning_cloth")
-	inventory_model.add_combination_rule(_make_combination_rule(
-		"reveal_guest_note",
-		"small_flashlight",
-		"guest_note",
-		["revealed_guest_note"],
-		false,
-		true,
-		"combine.reveal_guest_note",
-		"The flashlight reveals hidden writing on the note.",
-	))
-
-
-func _register_inventory_item(item_id: String, item_name: String, item_description: String, item_icon_text: String, item_can_equip := true) -> void:
-	inventory_model.register_item_definition(_make_inventory_item(item_id, item_name, item_description, item_icon_text, item_can_equip))
-
-
-func _make_inventory_item(item_id: String, item_name: String, item_description: String, item_icon_text: String, item_can_equip := true):
-	var item = HotelItemDefinitionScript.new()
-	item.id = item_id
-	item.name_key = "item.%s.name" % item_id
-	item.description_key = "item.%s.description" % item_id
-	item.fallback_display_name = item_name
-	item.fallback_description = item_description
-	item.icon_text = item_icon_text
-	item.can_equip = item_can_equip
-	return item
-
-
-func _make_combination_rule(rule_id: String, item_a_id: String, item_b_id: String, result_item_ids: Array[String], consume_item_a := true, consume_item_b := true, message_key := "", fallback_message := ""):
-	var rule = HotelItemCombinationRuleScript.new()
-	rule.id = rule_id
-	rule.item_a_id = item_a_id
-	rule.item_b_id = item_b_id
-	rule.result_item_ids = result_item_ids
-	rule.consume_item_a = consume_item_a
-	rule.consume_item_b = consume_item_b
-	rule.message_key = message_key
-	rule.fallback_message = fallback_message
-	return rule
-
-
 func _build_audio() -> void:
 	footstep_stream = load(FOOTSTEP_SOUND) as AudioStream
 	if footstep_stream == null:
@@ -1091,129 +417,16 @@ func _build_audio() -> void:
 
 
 func _build_menu() -> void:
-	menu_overlay = ColorRect.new()
-	menu_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
-	menu_overlay.color = Color(0.0, 0.0, 0.0, 0.58)
-	menu_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	menu_overlay.visible = false
-	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	menu_overlay = HotelPauseMenuScript.new()
 	add_child(menu_overlay)
-
-	var center := CenterContainer.new()
-	center.process_mode = Node.PROCESS_MODE_ALWAYS
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	menu_overlay.add_child(center)
-
-	var shell := HBoxContainer.new()
-	shell.process_mode = Node.PROCESS_MODE_ALWAYS
-	shell.add_theme_constant_override("separation", 24)
-	center.add_child(shell)
-
-	var menu_panel := PanelContainer.new()
-	menu_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	menu_panel.custom_minimum_size = Vector2(360.0, 0.0)
-	menu_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.94), Color(1.0, 1.0, 1.0, 0.16), 12))
-	shell.add_child(menu_panel)
-
-	var layout := VBoxContainer.new()
-	layout.process_mode = Node.PROCESS_MODE_ALWAYS
-	layout.add_theme_constant_override("separation", 14)
-	menu_panel.add_child(layout)
-
-	var title := Label.new()
-	title.text = _ui_text("menu.title", "Menu")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 28)
-	title.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
-	layout.add_child(title)
-
-	var continue_button := Button.new()
-	continue_button.text = _ui_text("menu.continue", "Continue")
-	continue_button.focus_mode = Control.FOCUS_NONE
-	continue_button.pressed.connect(_hide_menu)
-	layout.add_child(continue_button)
-
-	var main_menu_button := Button.new()
-	main_menu_button.text = _ui_text("menu.main_menu", "Main Menu")
-	main_menu_button.focus_mode = Control.FOCUS_NONE
-	main_menu_button.pressed.connect(_return_to_lobby)
-	layout.add_child(main_menu_button)
-
-	var brightness_label := Label.new()
-	brightness_label.text = _ui_text("menu.brightness", "Brightness")
-	brightness_label.add_theme_font_size_override("font_size", 16)
-	brightness_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
-	layout.add_child(brightness_label)
-
-	var brightness_row := HBoxContainer.new()
-	brightness_row.add_theme_constant_override("separation", 10)
-	layout.add_child(brightness_row)
-
-	brightness_slider = HSlider.new()
-	brightness_slider.min_value = MIN_BRIGHTNESS
-	brightness_slider.max_value = MAX_BRIGHTNESS
-	brightness_slider.step = 0.01
-	brightness_slider.value = game_brightness
-	brightness_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	brightness_slider.value_changed.connect(_on_brightness_changed)
-	brightness_row.add_child(brightness_slider)
-
-	brightness_value_label = Label.new()
-	brightness_value_label.custom_minimum_size = Vector2(56.0, 0.0)
-	brightness_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	brightness_value_label.add_theme_font_size_override("font_size", 16)
-	brightness_value_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
-	brightness_row.add_child(brightness_value_label)
-
-	var quit_button := Button.new()
-	quit_button.text = _ui_text("menu.quit", "Quit")
-	quit_button.focus_mode = Control.FOCUS_NONE
-	quit_button.pressed.connect(_quit_game)
-	layout.add_child(quit_button)
-
-	menu_content_shell = VBoxContainer.new()
-	menu_content_shell.process_mode = Node.PROCESS_MODE_ALWAYS
-	menu_content_shell.add_theme_constant_override("separation", 0)
-	shell.add_child(menu_content_shell)
-
-	var tab_bar := HBoxContainer.new()
-	tab_bar.process_mode = Node.PROCESS_MODE_ALWAYS
-	tab_bar.add_theme_constant_override("separation", 2)
-	menu_content_shell.add_child(tab_bar)
-
-	inventory_tab_button = Button.new()
-	inventory_tab_button.process_mode = Node.PROCESS_MODE_ALWAYS
-	inventory_tab_button.text = _ui_text("menu.inventory", "Inventory")
-	inventory_tab_button.toggle_mode = true
-	inventory_tab_button.focus_mode = Control.FOCUS_NONE
-	inventory_tab_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	inventory_tab_button.pressed.connect(_show_inventory_menu_panel)
-	tab_bar.add_child(inventory_tab_button)
-
-	rule_book_tab_button = Button.new()
-	rule_book_tab_button.process_mode = Node.PROCESS_MODE_ALWAYS
-	rule_book_tab_button.text = _ui_text("menu.rule_book", "Rule Book")
-	rule_book_tab_button.toggle_mode = true
-	rule_book_tab_button.focus_mode = Control.FOCUS_NONE
-	rule_book_tab_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	rule_book_tab_button.pressed.connect(_show_rule_book_menu_panel)
-	tab_bar.add_child(rule_book_tab_button)
-
-	inventory_screen = HotelInventoryScreenScript.new()
-	inventory_screen.process_mode = Node.PROCESS_MODE_ALWAYS
-	inventory_screen.custom_minimum_size = Vector2(570.0, 420.0)
-	inventory_screen.setup(inventory_model, localization)
-	menu_content_shell.add_child(inventory_screen)
-
-	rule_book_screen = HotelRuleBookScreenScript.new()
-	rule_book_screen.process_mode = Node.PROCESS_MODE_ALWAYS
-	rule_book_screen.custom_minimum_size = Vector2(570.0, 420.0)
-	rule_book_screen.setup(localization, rule_book_manager)
-	rule_book_screen.visible = false
-	menu_content_shell.add_child(rule_book_screen)
-	_sync_menu_content_width()
-
-	_update_brightness_label()
+	menu_overlay.setup(inventory_model, localization, rule_book_manager, game_brightness, MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+	menu_overlay.continue_requested.connect(_hide_menu)
+	menu_overlay.main_menu_requested.connect(_return_to_lobby)
+	menu_overlay.quit_requested.connect(_quit_game)
+	menu_overlay.brightness_changed.connect(_on_brightness_changed)
+	menu_overlay.rule_book_opened.connect(_on_rule_book_opened)
+	brightness_slider = menu_overlay.brightness_slider
+	brightness_value_label = menu_overlay.brightness_value_label
 
 	jumpscare_controller = HotelJumpscareControllerScript.new()
 	jumpscare_controller.finished.connect(_on_jumpscare_controller_finished)
@@ -1221,132 +434,12 @@ func _build_menu() -> void:
 
 
 func _build_lobby() -> void:
-	lobby_overlay = Control.new()
-	lobby_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
-	lobby_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	lobby_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lobby_overlay = HotelLobbyScreenScript.new()
 	add_child(lobby_overlay)
-
-	var background := TextureRect.new()
-	background.process_mode = Node.PROCESS_MODE_ALWAYS
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	background.texture = load(LOBBY_BACKGROUND_PHOTO) as Texture2D
-	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	background.material = _make_lobby_blur_material()
-	lobby_overlay.add_child(background)
-
-	var shade := ColorRect.new()
-	shade.process_mode = Node.PROCESS_MODE_ALWAYS
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	shade.color = Color(0.0, 0.0, 0.0, 0.46)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	lobby_overlay.add_child(shade)
-
-	var center := CenterContainer.new()
-	center.process_mode = Node.PROCESS_MODE_ALWAYS
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	lobby_overlay.add_child(center)
-
-	var panel := PanelContainer.new()
-	panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	panel.custom_minimum_size = Vector2(460.0, 0.0)
-	panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.90), Color(1.0, 1.0, 1.0, 0.14), 12))
-	center.add_child(panel)
-
-	var layout := VBoxContainer.new()
-	layout.process_mode = Node.PROCESS_MODE_ALWAYS
-	layout.add_theme_constant_override("separation", 14)
-	panel.add_child(layout)
-
-	var title := Label.new()
-	title.text = _ui_text("lobby.title", "Night Shift")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 34)
-	title.add_theme_color_override("font_color", Color(1.0, 0.92, 0.72))
-	layout.add_child(title)
-
-	lobby_horror_summary_label = Label.new()
-	lobby_horror_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lobby_horror_summary_label.add_theme_font_size_override("font_size", 14)
-	lobby_horror_summary_label.add_theme_color_override("font_color", Color(0.82, 0.75, 0.62))
-	layout.add_child(lobby_horror_summary_label)
-
-	var start_button := Button.new()
-	start_button.process_mode = Node.PROCESS_MODE_ALWAYS
-	start_button.text = _ui_text("lobby.start_shift", "Start Shift")
-	start_button.focus_mode = Control.FOCUS_NONE
-	start_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	start_button.pressed.connect(_start_shift)
-	layout.add_child(start_button)
-
-	lobby_continue_button = Button.new()
-	lobby_continue_button.process_mode = Node.PROCESS_MODE_ALWAYS
-	lobby_continue_button.text = _ui_text("lobby.continue", "Continue")
-	lobby_continue_button.focus_mode = Control.FOCUS_NONE
-	lobby_continue_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	lobby_continue_button.pressed.connect(_toggle_lobby_day_panel)
-	layout.add_child(lobby_continue_button)
-
-	lobby_day_panel = PanelContainer.new()
-	lobby_day_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	lobby_day_panel.visible = false
-	lobby_day_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.02, 0.024, 0.028, 0.70), Color(1.0, 1.0, 1.0, 0.08), 10))
-	layout.add_child(lobby_day_panel)
-
-	var day_layout := VBoxContainer.new()
-	day_layout.process_mode = Node.PROCESS_MODE_ALWAYS
-	day_layout.add_theme_constant_override("separation", 10)
-	lobby_day_panel.add_child(day_layout)
-
-	var day_title := Label.new()
-	day_title.text = _ui_text("lobby.choose_day", "Choose Day")
-	day_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	day_title.add_theme_font_size_override("font_size", 16)
-	day_title.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
-	day_layout.add_child(day_title)
-
-	lobby_day_grid = GridContainer.new()
-	lobby_day_grid.process_mode = Node.PROCESS_MODE_ALWAYS
-	lobby_day_grid.columns = HotelDaySaveManagerScript.TOTAL_DAYS
-	lobby_day_grid.add_theme_constant_override("h_separation", 8)
-	day_layout.add_child(lobby_day_grid)
-
-	var anomaly_collection_button := Button.new()
-	anomaly_collection_button.process_mode = Node.PROCESS_MODE_ALWAYS
-	anomaly_collection_button.text = _ui_text("lobby.anomaly_collection", "Anomaly Collection")
-	anomaly_collection_button.focus_mode = Control.FOCUS_NONE
-	anomaly_collection_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	anomaly_collection_button.pressed.connect(_toggle_anomaly_collection_panel)
-	layout.add_child(anomaly_collection_button)
-
-	anomaly_collection_panel = HotelAnomalyCollectionPanelScript.new()
-	anomaly_collection_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	anomaly_collection_panel.visible = false
-	anomaly_collection_panel.setup(horror_event_manager, localization)
-	anomaly_collection_panel.close_requested.connect(_hide_anomaly_collection_panel)
-	layout.add_child(anomaly_collection_panel)
-
-	var quit_button := Button.new()
-	quit_button.process_mode = Node.PROCESS_MODE_ALWAYS
-	quit_button.text = _ui_text("lobby.quit", "Quit")
-	quit_button.focus_mode = Control.FOCUS_NONE
-	quit_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	quit_button.pressed.connect(_quit_game)
-	layout.add_child(quit_button)
-
-	_refresh_lobby_continue_state()
-
-
-func _make_lobby_blur_material() -> ShaderMaterial:
-	var shader := Shader.new()
-	shader.code = LOBBY_BLUR_SHADER_CODE
-
-	var material := ShaderMaterial.new()
-	material.shader = shader
-	material.set_shader_parameter("blur_size", 4.0)
-	return material
+	lobby_overlay.setup(localization, horror_event_manager, day_save_manager, LOBBY_BACKGROUND_PHOTO)
+	lobby_overlay.start_shift_requested.connect(_start_shift)
+	lobby_overlay.day_selected.connect(_start_saved_day)
+	lobby_overlay.quit_requested.connect(_quit_game)
 
 
 func set_post_process_preset(preset_name: String) -> void:
@@ -1366,16 +459,14 @@ func clear_post_process_filter() -> void:
 func _show_lobby() -> void:
 	game_started = false
 	if lobby_overlay != null:
-		_refresh_lobby_continue_state()
-		_refresh_lobby_horror_summary()
-		lobby_overlay.visible = true
-		lobby_overlay.move_to_front()
+		lobby_overlay.open(_localized_horror_summary())
 
 	_set_game_paused(true)
 
 
 func _start_shift() -> void:
 	day_save_manager.start_new_shift()
+	HotelItemCatalogScript.reset_to_initial_items(inventory_model)
 	horror_event_manager.start_new_run()
 	task_manager.start_new_run()
 	rule_book_manager.import_state({})
@@ -1384,14 +475,6 @@ func _start_shift() -> void:
 	laundry_second_washer_open = _is_laundry_second_washer_open()
 	game_brightness = DEFAULT_BRIGHTNESS
 	_start_day(1, false, false)
-
-
-func _toggle_lobby_day_panel() -> void:
-	if lobby_day_panel == null or not _has_save_data():
-		return
-
-	lobby_day_panel.visible = not lobby_day_panel.visible
-	_refresh_lobby_day_grid()
 
 
 func _start_saved_day(day: int) -> void:
@@ -1403,7 +486,7 @@ func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) ->
 	day_save_manager.set_current_day(day)
 
 	if lobby_overlay != null:
-		lobby_overlay.visible = false
+		lobby_overlay.close()
 
 	_set_game_paused(false)
 
@@ -1457,6 +540,7 @@ func _restore_day_state(day: int) -> String:
 		inventory_model.import_state(slot.get("inventory", {}))
 	task_manager.import_state(slot.get("tasks", {}))
 	horror_event_manager.import_state(slot.get("horror", {}))
+	meta_progress_save_manager.save_collection_state(horror_event_manager.export_collection_state())
 	rule_book_manager.import_state(slot.get("rules", {}))
 	var saved_scene_id := String(slot.get("scene_id", START_SCENE_ID))
 	if not HOTEL_SCENES.has(saved_scene_id):
@@ -1486,77 +570,26 @@ func _change_day(day: int) -> void:
 	_start_day(target_day, day_save_manager.has_saved_day(target_day), false)
 
 
-func _has_save_data() -> bool:
-	return day_save_manager.has_save_data()
-
-
-func _has_saved_day(day: int) -> bool:
-	return day_save_manager.has_saved_day(day)
-
-
 func _day_name(day: int) -> String:
 	return _ui_text("day.label", "Day %d") % day
 
 
 func _refresh_lobby_continue_state() -> void:
-	if lobby_continue_button == null:
-		return
-
-	var has_save := _has_save_data()
-	lobby_continue_button.disabled = not has_save
-	lobby_continue_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if has_save else Control.CURSOR_FORBIDDEN
-	lobby_continue_button.tooltip_text = ""
-
-	if lobby_day_panel != null and not has_save:
-		lobby_day_panel.visible = false
-
-	_refresh_lobby_day_grid()
+	if lobby_overlay != null:
+		lobby_overlay.refresh_continue_state()
 
 
-func _refresh_lobby_horror_summary() -> void:
-	if lobby_horror_summary_label == null:
-		return
+func _localized_horror_summary() -> String:
+	var total_count: int = horror_event_manager.get_discovered_count()
+	if total_count == 0:
+		return _ui_text("lobby.horror_summary.none", "Anomalies found: 0")
 
-	lobby_horror_summary_label.text = _ui_text("lobby.horror_summary", "%s") % horror_event_manager.get_lobby_summary_text()
-	if anomaly_collection_panel != null:
-		anomaly_collection_panel.refresh()
-
-
-func _toggle_anomaly_collection_panel() -> void:
-	if anomaly_collection_panel == null:
-		return
-
-	anomaly_collection_panel.refresh()
-	anomaly_collection_panel.visible = not anomaly_collection_panel.visible
-
-
-func _hide_anomaly_collection_panel() -> void:
-	if anomaly_collection_panel != null:
-		anomaly_collection_panel.visible = false
-
-
-func _refresh_lobby_day_grid() -> void:
-	if lobby_day_grid == null:
-		return
-
-	for child in lobby_day_grid.get_children():
-		child.queue_free()
-
-	for day in range(1, HotelDaySaveManagerScript.TOTAL_DAYS + 1):
-		var day_button := Button.new()
-		day_button.process_mode = Node.PROCESS_MODE_ALWAYS
-		day_button.custom_minimum_size = Vector2(72.0, 48.0)
-		day_button.text = _day_name(day)
-		day_button.focus_mode = Control.FOCUS_NONE
-		day_button.disabled = not _has_saved_day(day)
-		day_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if not day_button.disabled else Control.CURSOR_FORBIDDEN
-		day_button.tooltip_text = _ui_text("lobby.day.saved", "Start from this saved day.") if not day_button.disabled else _ui_text("lobby.day.locked", "Reach this day first.")
-		day_button.pressed.connect(_start_saved_day.bind(day))
-		lobby_day_grid.add_child(day_button)
-
-
-func _latest_saved_day() -> int:
-	return day_save_manager.latest_saved_day()
+	var parts := []
+	var kind_counts: Dictionary = horror_event_manager.get_discovered_kind_counts()
+	for kind in kind_counts.keys():
+		var kind_name := _ui_text("anomaly_collection.kind.%s" % kind, String(kind).capitalize())
+		parts.append("%s %d" % [kind_name, int(kind_counts[kind])])
+	return _ui_text("lobby.horror_summary.count", "Anomalies found: %d (%s)") % [total_count, ", ".join(parts)]
 
 
 func _build_hotspots(hotspots: Array) -> void:
@@ -1763,8 +796,7 @@ func _show_menu() -> void:
 	if not game_started:
 		return
 
-	_show_inventory_menu_panel()
-	menu_overlay.visible = true
+	menu_overlay.open()
 	_set_game_paused(true)
 
 
@@ -1772,7 +804,7 @@ func _hide_menu() -> void:
 	if menu_overlay == null:
 		return
 
-	menu_overlay.visible = false
+	menu_overlay.close()
 	_set_game_paused(false)
 
 
@@ -1781,75 +813,29 @@ func _is_menu_open() -> bool:
 
 
 func _show_inventory_menu_panel() -> void:
-	if inventory_screen != null:
-		inventory_screen.visible = true
-
-	if rule_book_screen != null:
-		rule_book_screen.visible = false
-
-	_sync_menu_tabs("inventory")
+	if menu_overlay != null:
+		menu_overlay.show_inventory()
 
 
 func _show_rule_book_menu_panel() -> void:
-	if inventory_screen != null:
-		inventory_screen.visible = false
-
-	if rule_book_screen != null:
-		rule_book_manager.mark_all_visible_read()
-		rule_book_screen.visible = true
-		rule_book_screen.refresh_text()
-		_save_current_day()
-
-	_sync_menu_tabs("rule_book")
+	if menu_overlay != null:
+		menu_overlay.show_rule_book()
 
 
-func _sync_menu_tabs(active_tab: String) -> void:
-	if inventory_tab_button != null:
-		var inventory_active := active_tab == "inventory"
-		inventory_tab_button.button_pressed = inventory_active
-		_style_menu_tab(inventory_tab_button, inventory_active)
-
-	if rule_book_tab_button != null:
-		var rule_book_active := active_tab == "rule_book"
-		rule_book_tab_button.button_pressed = rule_book_active
-		_style_menu_tab(rule_book_tab_button, rule_book_active)
-
-
-func _sync_menu_content_width() -> void:
-	if inventory_screen == null or rule_book_screen == null:
-		return
-
-	var target_width: float = inventory_screen.get_combined_minimum_size().x
-	var target_height: float = maxf(inventory_screen.get_combined_minimum_size().y, rule_book_screen.get_combined_minimum_size().y)
-	if menu_content_shell != null:
-		menu_content_shell.custom_minimum_size = Vector2(target_width, 0.0)
-
-	inventory_screen.custom_minimum_size = Vector2(target_width, target_height)
-	rule_book_screen.custom_minimum_size = Vector2(target_width, target_height)
-
-
-func _style_menu_tab(button: Button, active: bool) -> void:
-	var background := Color(0.09, 0.075, 0.045, 0.98) if active else Color(0.03, 0.035, 0.04, 0.76)
-	var border := Color(1.0, 0.78, 0.32, 0.92) if active else Color(1.0, 1.0, 1.0, 0.12)
-	button.custom_minimum_size = Vector2(138.0, 38.0)
-	button.add_theme_stylebox_override("normal", _make_tab_style(background, border, active))
-	button.add_theme_stylebox_override("hover", _make_tab_style(Color(0.15, 0.12, 0.065, 0.98), Color(1.0, 0.82, 0.28, 0.92), true))
-	button.add_theme_stylebox_override("pressed", _make_tab_style(Color(0.09, 0.075, 0.045, 1.0), Color(1.0, 0.78, 0.32, 1.0), true))
-	button.add_theme_color_override("font_color", Color(1.0, 0.88, 0.58) if active else Color(0.72, 0.72, 0.68))
-	button.add_theme_color_override("font_hover_color", Color(1.0, 0.88, 0.58))
-
+func _on_rule_book_opened() -> void:
+	_save_current_day()
 
 func _return_to_lobby() -> void:
 	_save_current_day()
 	if menu_overlay != null:
-		menu_overlay.visible = false
+		menu_overlay.close()
 
 	_show_lobby()
 
 
 func _on_jumpscare_started(definition) -> void:
 	if jumpscare_controller != null:
-		jumpscare_controller.play(definition)
+		jumpscare_controller.play(definition, localization)
 
 
 func _on_jumpscare_controller_finished() -> void:
@@ -1860,6 +846,10 @@ func _on_jumpscare_finished(_definition, outcome: String) -> void:
 	_save_current_day()
 	if outcome == "game_over":
 		_show_lobby()
+
+
+func _on_horror_collection_changed(_definition) -> void:
+	meta_progress_save_manager.save_collection_state(horror_event_manager.export_collection_state())
 
 
 func _set_game_paused(paused: bool) -> void:
@@ -1899,7 +889,10 @@ func _update_brightness_label() -> void:
 	if brightness_value_label == null:
 		return
 
-	brightness_value_label.text = "%d%%" % roundi(game_brightness * 100.0)
+	if menu_overlay != null:
+		menu_overlay.set_brightness_value(game_brightness)
+	else:
+		brightness_value_label.text = "%d%%" % roundi(game_brightness * 100.0)
 
 
 func _on_persistent_dialogue_input(event: InputEvent) -> void:
@@ -1961,14 +954,32 @@ func _scene_photo(scene_id: String, scene_data: Dictionary) -> String:
 
 func _scene_hotspots(scene_id: String, scene_data: Dictionary) -> Array:
 	var editor_hotspots := _editor_hotspots_for_scene(scene_id)
-	var base_hotspots: Array = editor_hotspots if not editor_hotspots.is_empty() else scene_data["hotspots"]
-	var hotspots := base_hotspots.duplicate(true)
+	var hotspots := editor_hotspots.duplicate(true)
 	for task_hotspot in task_manager.get_hotspots_for_scene(scene_id):
 		hotspots.append(task_hotspot)
 	for horror_hotspot in horror_event_manager.get_revealed_hotspots(scene_id):
 		hotspots.append(horror_hotspot)
 
 	return hotspots
+
+
+func _validate_scene_authoring() -> void:
+	var definitions := get_node_or_null("HotspotDefinitions")
+	if definitions == null:
+		push_error("HotspotDefinitions is required. Runtime hotspots are authored only in scenes/main.tscn.")
+		return
+
+	for scene_id in HOTEL_SCENES.keys():
+		var scene_group := definitions.get_node_or_null(String(scene_id))
+		if scene_group == null:
+			push_error("Missing editor hotspot scene group: %s" % scene_id)
+			continue
+		var hotspot_count := 0
+		for child in scene_group.get_children():
+			if child.has_method("to_hotspot_data"):
+				hotspot_count += 1
+		if hotspot_count == 0:
+			push_warning("Scene has no authored hotspots: %s" % scene_id)
 
 
 func _editor_hotspots_for_scene(scene_id: String) -> Array:
@@ -2251,19 +1262,4 @@ func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBo
 	style.content_margin_right = 12.0
 	style.content_margin_top = 8.0
 	style.content_margin_bottom = 8.0
-	return style
-
-
-func _make_tab_style(background: Color, border: Color, active: bool) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = background
-	style.border_color = border
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(10)
-	style.corner_radius_bottom_left = 0
-	style.corner_radius_bottom_right = 0
-	style.content_margin_left = 16.0
-	style.content_margin_right = 16.0
-	style.content_margin_top = 9.0 if active else 7.0
-	style.content_margin_bottom = 9.0 if active else 7.0
 	return style

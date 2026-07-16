@@ -19,6 +19,7 @@ static func _make_room_105_fold_bedding():
 	task.scene_ids = ["room_105_door_window"]
 	task.hotspot_id = "task_room_105_fold_bedding"
 	task.task_type = "fold_bedding"
+	task.completion_flag_id = "task.room_105.bedding.folded"
 	task.rect = Rect2(0.050, 0.515, 0.420, 0.330)
 	task.label_key = "task.room_105_fold_bedding.label"
 	task.text_key = "task.room_105_fold_bedding.text"
@@ -38,6 +39,7 @@ static func _make_room_105_clean_sink():
 	task.task_type = "clean_stain"
 	task.rect = Rect2(0.060, 0.640, 0.330, 0.220)
 	task.required_item_id = "cleaning_cloth"
+	task.completion_flag_id = "task.room_105.sink.cleaned"
 	task.label_key = "task.room_105_clean_sink.label"
 	task.text_key = "task.room_105_clean_sink.text"
 	task.done_text_key = "task.room_105_clean_sink.done"
@@ -58,6 +60,7 @@ static func _make_room_107_collect_papers():
 	task.task_type = "collect_trash"
 	task.rect = Rect2(0.420, 0.700, 0.250, 0.170)
 	task.reward_item_id = "collected_trash"
+	task.completion_flag_id = "task.room_107.papers.collected"
 	task.label_key = "task.room_107_collect_papers.label"
 	task.text_key = "task.room_107_collect_papers.text"
 	task.done_text_key = "task.room_107_collect_papers.done"

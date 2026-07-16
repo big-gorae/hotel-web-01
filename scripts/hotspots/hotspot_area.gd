@@ -7,6 +7,10 @@ extends Control
 @export var target_scene_id := ""
 @export_multiline var description_text := ""
 @export var action := ""
+@export var actions: Array[HotelInteractionActionDefinition] = []
+@export var item_actions: Array[HotelItemInteractionDefinition] = []
+@export var blocked_text_key := ""
+@export_multiline var blocked_text := ""
 
 
 func _ready() -> void:
@@ -39,6 +43,20 @@ func to_hotspot_data(authoring_size: Vector2) -> Dictionary:
 
 	if not action.is_empty():
 		data["action"] = action
+	if not actions.is_empty():
+		data["actions"] = []
+		for action_definition in actions:
+			if action_definition != null:
+				data["actions"].append(action_definition.to_action_data())
+	if not item_actions.is_empty():
+		data["item_actions"] = []
+		for item_action_definition in item_actions:
+			if item_action_definition != null:
+				data["item_actions"].append(item_action_definition.to_item_action_data())
+	if not blocked_text_key.is_empty():
+		data["blocked_text_key"] = blocked_text_key
+	if not blocked_text.is_empty():
+		data["blocked_text"] = blocked_text
 
 	return data
 

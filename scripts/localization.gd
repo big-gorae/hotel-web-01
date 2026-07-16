@@ -1,6 +1,8 @@
 class_name HotelLocalization
 extends RefCounted
 
+signal language_changed(language: int)
+
 enum Language {
 	ENGLISH,
 	KOREAN,
@@ -48,6 +50,10 @@ var translations := {
 		"ui.lobby.day.saved": "Start from this saved day.",
 		"ui.lobby.day.locked": "Reach this day first.",
 		"ui.lobby.horror_summary": "%s",
+		"ui.lobby.horror_summary.none": "Anomalies found: 0",
+		"ui.lobby.horror_summary.count": "Anomalies found: %d (%s)",
+		"ui.anomaly_collection.kind.visual_anomaly": "Visual",
+		"ui.anomaly_collection.kind.jumpscare": "Jumpscare",
 		"ui.lobby.anomaly_collection": "Anomaly Collection",
 		"ui.lobby.quit": "Quit",
 		"ui.anomaly_collection.title": "Anomaly Collection",
@@ -143,6 +149,10 @@ var translations := {
 		"ui.lobby.day.saved": "이 저장 day에서 시작합니다.",
 		"ui.lobby.day.locked": "먼저 이 day에 도달해야 합니다.",
 		"ui.lobby.horror_summary": "%s",
+		"ui.lobby.horror_summary.none": "발견한 이상현상: 0",
+		"ui.lobby.horror_summary.count": "발견한 이상현상: %d (%s)",
+		"ui.anomaly_collection.kind.visual_anomaly": "시각 이상",
+		"ui.anomaly_collection.kind.jumpscare": "점프스케어",
 		"ui.lobby.anomaly_collection": "이상현상 모음",
 		"ui.lobby.quit": "종료",
 		"ui.anomaly_collection.title": "이상현상 모음",
@@ -232,6 +242,10 @@ var translations := {
 		"ui.lobby.day.saved": "この保存日から始めます。",
 		"ui.lobby.day.locked": "先にこの日に到達してください。",
 		"ui.lobby.horror_summary": "%s",
+		"ui.lobby.horror_summary.none": "発見した異常: 0",
+		"ui.lobby.horror_summary.count": "発見した異常: %d（%s）",
+		"ui.anomaly_collection.kind.visual_anomaly": "視覚異常",
+		"ui.anomaly_collection.kind.jumpscare": "ジャンプスケア",
 		"ui.lobby.anomaly_collection": "異常一覧",
 		"ui.lobby.quit": "終了",
 		"ui.anomaly_collection.title": "異常一覧",
@@ -319,6 +333,10 @@ var translations := {
 		"ui.lobby.day.saved": "Начать с этого сохраненного дня.",
 		"ui.lobby.day.locked": "Сначала дойдите до этого дня.",
 		"ui.lobby.horror_summary": "%s",
+		"ui.lobby.horror_summary.none": "Найдено аномалий: 0",
+		"ui.lobby.horror_summary.count": "Найдено аномалий: %d (%s)",
+		"ui.anomaly_collection.kind.visual_anomaly": "Визуальные",
+		"ui.anomaly_collection.kind.jumpscare": "Скримеры",
 		"ui.lobby.anomaly_collection": "Коллекция аномалий",
 		"ui.lobby.quit": "Выйти",
 		"ui.anomaly_collection.title": "Коллекция аномалий",
@@ -406,6 +424,10 @@ var translations := {
 		"ui.lobby.day.saved": "从这个已保存日期开始。",
 		"ui.lobby.day.locked": "请先到达这个日期。",
 		"ui.lobby.horror_summary": "%s",
+		"ui.lobby.horror_summary.none": "已发现异常：0",
+		"ui.lobby.horror_summary.count": "已发现异常：%d（%s）",
+		"ui.anomaly_collection.kind.visual_anomaly": "视觉异常",
+		"ui.anomaly_collection.kind.jumpscare": "惊吓",
 		"ui.lobby.anomaly_collection": "异常收集",
 		"ui.lobby.quit": "退出",
 		"ui.anomaly_collection.title": "异常收集",
@@ -476,8 +498,11 @@ var translations := {
 
 
 func set_language(language: int) -> void:
-	if SUPPORTED_LANGUAGES.has(language):
-		current_language = language
+	if not SUPPORTED_LANGUAGES.has(language) or current_language == language:
+		return
+
+	current_language = language
+	language_changed.emit(current_language)
 
 
 func get_language() -> int:

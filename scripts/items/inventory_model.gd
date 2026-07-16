@@ -87,6 +87,18 @@ func import_state(state: Dictionary) -> void:
 	equipped_item_changed.emit(equipped_item)
 
 
+func reset_items(item_ids: Array[String] = []) -> void:
+	items.clear()
+	equipped_item = null
+	for item_id in item_ids:
+		var item = create_item(item_id)
+		if item != null:
+			items.append(item)
+
+	items_changed.emit()
+	equipped_item_changed.emit(equipped_item)
+
+
 func equip_item(item) -> bool:
 	if item == null or not item.can_equip or not items.has(item):
 		return false

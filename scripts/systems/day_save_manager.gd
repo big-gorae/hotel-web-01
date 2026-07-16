@@ -1,8 +1,10 @@
 class_name HotelDaySaveManager
 extends RefCounted
 
+const JsonSaveStore := preload("res://scripts/systems/json_save_store.gd")
+
 const TOTAL_DAYS := 5
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SAVE_PATH := "user://hotel_save.json"
 
 var current_day := 1
@@ -13,20 +15,13 @@ var day_slots: Dictionary = {}
 func load_save_data() -> void:
 	unlocked_days = [1]
 	day_slots.clear()
-	if not FileAccess.file_exists(SAVE_PATH):
+	var loaded_data := JsonSaveStore.load_dictionary(SAVE_PATH)
+	if loaded_data.is_empty():
 		return
 
-	var save_file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if save_file == null:
-		push_warning("Failed to open save file: %s" % SAVE_PATH)
+	var save_data := _migrate_save_data(loaded_data)
+	if save_data.is_empty():
 		return
-
-	var parsed = JSON.parse_string(save_file.get_as_text())
-	if not parsed is Dictionary:
-		push_warning("Ignoring invalid save file: %s" % SAVE_PATH)
-		return
-
-	var save_data: Dictionary = parsed
 	unlocked_days.clear()
 	for value in save_data.get("unlocked_days", [1]):
 		unlock_day(int(value))
@@ -101,14 +96,26 @@ func clamp_day(day: int) -> int:
 
 
 func _write_save_data() -> void:
-	var save_file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if save_file == null:
-		push_warning("Failed to write save file: %s" % SAVE_PATH)
-		return
-
-	save_file.store_string(JSON.stringify({
+	JsonSaveStore.write_dictionary_atomic(SAVE_PATH, {
 		"version": SAVE_VERSION,
 		"current_day": current_day,
 		"unlocked_days": unlocked_days,
 		"day_slots": day_slots,
-	}, "\t"))
+	})
+
+
+func _migrate_save_data(save_data: Dictionary) -> Dictionary:
+	var version := int(save_data.get("version", 1))
+	if version > SAVE_VERSION:
+		push_warning("Save version %d is newer than supported version %d." % [version, SAVE_VERSION])
+		return {}
+
+	var migrated := save_data.duplicate(true)
+	if version <= 1:
+		if not migrated.get("day_slots", {}) is Dictionary:
+			migrated["day_slots"] = {}
+		if not migrated.get("unlocked_days", []) is Array:
+			migrated["unlocked_days"] = [1]
+		migrated["version"] = 2
+
+	return migrated
