@@ -1,0 +1,100 @@
+name: Deploy Web to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+env:
+  GODOT_RELEASE: "4.7-stable"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Cache Godot and Web export template
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/bin/godot
+            ~/.local/share/godot/export_templates/4.7.stable
+          key: godot-${{ runner.os }}-${{ env.GODOT_RELEASE }}-web-v1
+
+      - name: Install Godot and Web export template
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl --fail --location --retry 3 \
+            --output /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_RELEASE}/Godot_v${GODOT_RELEASE}_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          mv "/tmp/godot/Godot_v${GODOT_RELEASE}_linux.x86_64" "$HOME/.local/bin/godot"
+          chmod +x "$HOME/.local/bin/godot"
+
+          python3 -m venv /tmp/remotezip
+          /tmp/remotezip/bin/pip install --disable-pip-version-check --quiet remotezip==0.12.3
+          /tmp/remotezip/bin/python - <<'PY'
+          from pathlib import Path
+          from remotezip import RemoteZip
+
+          version = "4.7.stable"
+          archive_url = "https://godot-releases.nbg1.your-objectstorage.com/4.7-stable/Godot_v4.7-stable_export_templates.tpz"
+          target = Path.home() / ".local/share/godot/export_templates" / version
+          target.mkdir(parents=True, exist_ok=True)
+
+          with RemoteZip(archive_url) as archive:
+              for member in (
+                  "templates/icudt_godot.dat",
+                  "templates/version.txt",
+                  "templates/web_nothreads_debug.zip",
+                  "templates/web_nothreads_release.zip",
+              ):
+                  (target / Path(member).name).write_bytes(archive.read(member))
+          PY
+
+      - name: Add Godot to PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Godot installation
+        run: godot --version
+
+      - name: Run automated tests
+        env:
+          GODOT_BIN: godot
+        run: tools/test_all.sh
+
+      - name: Export Web release
+        env:
+          GODOT_BIN: godot
+        run: tools/export_web.sh
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

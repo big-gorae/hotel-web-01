@@ -5,3 +5,6 @@
 
 # Test reports
 reports/
+
+# Generated exports
+/build/

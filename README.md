@@ -195,6 +195,14 @@ HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
 
 The project already uses the GL Compatibility renderer and a scalable canvas setup, which are appropriate for a web export. In Godot, use `Project > Export > Add... > Web`.
 
+Create the same release build used by GitHub Pages:
+
+```sh
+tools/export_web.sh
+```
+
+Every push to `main` runs the automated tests, creates a single-threaded Web release, and deploys it with GitHub Actions. The published game is available at `https://big-gorae.github.io/hotel-web-01/` after GitHub Pages is configured to use GitHub Actions as its source.
+
 ## Test Harness
 
 This project uses a two-layer Godot test harness:
