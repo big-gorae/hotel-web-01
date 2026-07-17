@@ -23,11 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Cache Godot and Web export template
         id: godot-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.local/bin/godot
@@ -74,17 +74,13 @@ jobs:
         run: godot --version
 
       - name: Run automated tests
-        env:
-          GODOT_BIN: godot
-        run: tools/test_all.sh
+        run: GODOT_BIN="$HOME/.local/bin/godot" tools/test_all.sh
 
       - name: Export Web release
-        env:
-          GODOT_BIN: godot
-        run: tools/export_web.sh
+        run: GODOT_BIN="$HOME/.local/bin/godot" tools/export_web.sh
 
       - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: build/web
 
@@ -97,4 +93,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
