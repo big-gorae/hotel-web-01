@@ -26,6 +26,9 @@ func _run() -> void:
 
 	main._start_shift()
 	await process_frame
+	while main.is_intro_dialogue_active():
+		main._advance_intro_dialogue()
+	main._hide_menu()
 	main.horror_event_manager.active_event_id_by_room["room_105"] = "room_105_shadow_stain"
 	main.flag_store.set_value("anomaly.room_105.shadow_stain.visible", true)
 	main.show_scene("room_105_door_window", false)
@@ -41,7 +44,7 @@ func _run() -> void:
 		_fail("anomaly resolved without required rule")
 		return
 
-	main.rule_book_manager.mark_rule_read("compare_corridor_room_numbers")
+	main.rule_book_manager.mark_rule_read("remove_black_mold")
 	main._on_hotspot_pressed(anomaly_hotspot)
 	if not main.horror_event_manager.resolved_event_ids.has("room_105_shadow_stain"):
 		_fail("anomaly did not resolve after required rule")

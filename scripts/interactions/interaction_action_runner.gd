@@ -55,6 +55,15 @@ func execute_hotspot(hotspot: Dictionary, context):
 	return result
 
 
+func execute_item_on_hotspot(hotspot: Dictionary, context):
+	var result := InteractionResult.new()
+	if hotspot.is_empty():
+		return result
+
+	var item_result = _try_execute_item_actions(hotspot, context)
+	return item_result if item_result != null else result
+
+
 func execute_actions(actions, context):
 	var result := InteractionResult.new()
 	if actions is Array:

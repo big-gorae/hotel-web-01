@@ -1,10 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://dfq6v5yd6r0uh"]
 
-[ext_resource type="PackedScene" path="res://resource/3d_models/dripping_gaze/dripping_gaze.glb" id="1_dripping_gaze"]
+[ext_resource type="PackedScene" uid="uid://bfj6w2khhsk7u" path="res://resource/3d_models/dripping_gaze/dripping_gaze.glb" id="1_dripping_gaze"]
 
-[node name="Room105Bathroom3DOverlay" type="Node3D"]
+[node name="Room105Bathroom3DOverlay" type="Node3D" unique_id=934178890]
 
-[node name="room_105_bathtub_dripping_gaze" type="Node3D" parent="."]
+[node name="room_105_bathtub_dripping_gaze" type="Node3D" parent="." unique_id=1222078441]
 transform = Transform3D(1.05619, 0, 0, 0, 1.05619, 0, 0, 0, 1.05619, 2.05, -0.58, 0)
 
-[node name="DrippingGaze" parent="room_105_bathtub_dripping_gaze" instance=ExtResource("1_dripping_gaze")]
+[node name="DrippingGaze" parent="room_105_bathtub_dripping_gaze" unique_id=2015880997 instance=ExtResource("1_dripping_gaze")]
+transform = Transform3D(-0.044967365, -0.4146622, 0.090071596, 0.49878374, -0.037161637, 0.011266976, -0.002144103, 0.051594708, 0.7320134, -4.0649233, 2.011661, -0.9011062)

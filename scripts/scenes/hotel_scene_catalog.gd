@@ -63,6 +63,7 @@ const SCENES := {
 	"room_105_bathroom": {
 		"title": "Room 105",
 		"photo": "res://resource/images/room_105_bathroom.png",
+		"curtain_closed_photo": "res://resource/images/room_105_bathroom_curtain_closed.png",
 		"intro": "The bathroom is cramped and bright. The mirror, sink, tub, and door are all close together.",
 		"exits": [
 			{"label": "Room 105 Bathroom Entry", "target": "room_105_bathroom_entry"},
@@ -81,6 +82,7 @@ const SCENES := {
 	"room_106_bathroom": {
 		"title": "Room 106",
 		"photo": "res://resource/images/room_106_bathroom.png",
+		"curtain_closed_photo": "res://resource/images/room_106_bathroom_curtain_closed.png",
 		"intro": "Room 106 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
 		"exits": [{"label": "Room 106", "target": "room_106_bed_bathroom_entry"}],
 	},
@@ -106,6 +108,7 @@ const SCENES := {
 	"room_107_bathroom": {
 		"title": "Room 107",
 		"photo": "res://resource/images/room_107_bathroom.png",
+		"curtain_closed_photo": "res://resource/images/room_107_bathroom_curtain_closed.png",
 		"intro": "Room 107 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
 		"exits": [{"label": "Room 107 Bathroom Entry", "target": "room_107_bathroom_entry"}],
 	},
@@ -131,6 +134,7 @@ const SCENES := {
 	"room_108_bathroom": {
 		"title": "Room 108",
 		"photo": "res://resource/images/room_108_bathroom.png",
+		"curtain_closed_photo": "res://resource/images/room_108_bathroom_curtain_closed.png",
 		"intro": "Room 108 uses the shared bathroom angle for now. The mirror, sink, tub, and door are all close together.",
 		"exits": [{"label": "Room 108 Bathroom Entry", "target": "room_108_bathroom_entry"}],
 	},

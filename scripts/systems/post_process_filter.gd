@@ -3,6 +3,37 @@ extends ColorRect
 
 const MIN_INTENSITY := 0.0
 const MAX_INTENSITY := 2.0
+const VHS_SIGNAL_SHADER_CODE := """
+float vhs_noise(vec2 uv) {
+	return fract(sin(dot(uv, vec2(12.9898, 78.233)) + time_seed) * 43758.5453123);
+}
+
+vec3 vhs_rgb_sample(vec2 uv, float intensity, float offset_strength, float blur_lod) {
+	float jitter = (vhs_noise(vec2(floor(uv.y * 180.0), floor(time_seed * 32.0))) - 0.5) * offset_strength * intensity;
+	return vec3(
+		textureLod(SCREEN_TEXTURE, uv + vec2(jitter, 0.0), blur_lod).r,
+		textureLod(SCREEN_TEXTURE, uv, blur_lod).g,
+		textureLod(SCREEN_TEXTURE, uv - vec2(jitter, 0.0), blur_lod).b
+	);
+}
+
+vec3 vhs_apply_signal(vec3 color, vec2 uv, vec2 source_pixel_size, float intensity, float vhs_grain, float vhs_static, float vhs_scanline, float vhs_roll) {
+	float fine_static = vhs_noise(vec2(uv.x * 840.0 + time_seed * 71.0, uv.y * 480.0 - time_seed * 19.0)) - 0.5;
+	float line_static = vhs_noise(vec2(floor(uv.y * 360.0), floor(time_seed * 24.0))) - 0.5;
+	float old_grain = vhs_noise(uv / source_pixel_size) - 0.5;
+	color += old_grain * vhs_grain;
+	color += (fine_static * 1.35 + line_static * 0.95) * vhs_static * intensity;
+
+	float scanline = 0.5 + 0.5 * sin(uv.y * 1280.0);
+	color *= 1.0 - scanline * vhs_scanline * intensity;
+
+	float roll_center = fract(time_seed * 0.18);
+	float roll_distance = min(abs(uv.y - roll_center), 1.0 - abs(uv.y - roll_center));
+	float roll_band = 1.0 - smoothstep(0.0, 0.085, roll_distance);
+	color += roll_band * vhs_roll * intensity;
+	return color;
+}
+"""
 const SHADER_CODE := """
 shader_type canvas_item;
 
@@ -22,22 +53,12 @@ uniform float roll_strength = 0.0;
 uniform float rgb_offset_strength = 0.0;
 uniform float effect_intensity = 1.0;
 uniform float time_seed = 0.0;
-
-float noise(vec2 uv) {
-	return fract(sin(dot(uv, vec2(12.9898, 78.233)) + time_seed) * 43758.5453123);
-}
-
+""" + VHS_SIGNAL_SHADER_CODE + """
 void fragment() {
 	vec2 uv = SCREEN_UV;
-	float jitter = (noise(vec2(floor(uv.y * 180.0), floor(time_seed * 32.0))) - 0.5) * rgb_offset_strength * effect_intensity;
-	vec4 shifted_source = vec4(
-		texture(SCREEN_TEXTURE, uv + vec2(jitter, 0.0)).r,
-		texture(SCREEN_TEXTURE, uv).g,
-		texture(SCREEN_TEXTURE, uv - vec2(jitter, 0.0)).b,
-		texture(SCREEN_TEXTURE, uv).a
-	);
+	vec3 shifted_source = vhs_rgb_sample(uv, effect_intensity, rgb_offset_strength, 0.0);
 	vec3 original = texture(SCREEN_TEXTURE, uv).rgb;
-	vec3 color = shifted_source.rgb;
+	vec3 color = shifted_source;
 
 	float luma = dot(color, vec3(0.299, 0.587, 0.114));
 	color = mix(vec3(luma), color, saturation);
@@ -51,23 +72,11 @@ void fragment() {
 	float vignette = smoothstep(0.82 - vignette_softness, 0.82, dist);
 	color *= 1.0 - vignette * vignette_strength;
 
-	float fine_static = noise(vec2(uv.x * 840.0 + time_seed * 71.0, uv.y * 480.0 - time_seed * 19.0)) - 0.5;
-	float line_static = noise(vec2(floor(uv.y * 360.0), floor(time_seed * 24.0))) - 0.5;
-	float old_grain = noise(uv / SCREEN_PIXEL_SIZE) - 0.5;
-	color += old_grain * grain_strength;
-	color += (fine_static * 1.35 + line_static * 0.95) * static_strength * effect_intensity;
-
-	float scanline = 0.5 + 0.5 * sin(uv.y * 1280.0);
-	color *= 1.0 - scanline * scanline_strength * effect_intensity;
-
-	float roll_center = fract(time_seed * 0.18);
-	float roll_distance = min(abs(uv.y - roll_center), 1.0 - abs(uv.y - roll_center));
-	float roll_band = 1.0 - smoothstep(0.0, 0.085, roll_distance);
-	color += roll_band * roll_strength * effect_intensity;
+	color = vhs_apply_signal(color, uv, SCREEN_PIXEL_SIZE, effect_intensity, grain_strength, static_strength, scanline_strength, roll_strength);
 
 	float safe_intensity = clamp(effect_intensity, 0.0, 2.0);
 	color = mix(original, color, safe_intensity);
-	COLOR = vec4(clamp(color, vec3(0.0), vec3(1.0)), shifted_source.a);
+	COLOR = vec4(clamp(color, vec3(0.0), vec3(1.0)), texture(SCREEN_TEXTURE, uv).a);
 }
 """
 const PRESET_NONE := "none"

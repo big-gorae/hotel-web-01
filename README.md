@@ -9,14 +9,18 @@ Godot 4 GDScript starter for a 2.5D photo-based point-and-click hotel game.
 - `resource/images/room_105_door_window.png`: room 105 door and window angle
 - `resource/images/room_105_bathroom_entry.png`: room 105 bathroom entry angle
 - `resource/images/room_105_bathroom.png`: room 105 bathroom
+- `resource/images/room_105_bathroom_curtain_closed.png`: room 105 bathroom with the shower curtain closed
 - `resource/images/room_106_bed_bathroom_entry.png`: room 106 bed and bathroom entry angle
 - `resource/images/room_106_bathroom.png`: room 106 reused bathroom angle
+- `resource/images/room_106_bathroom_curtain_closed.png`: room 106 bathroom with the shower curtain closed
 - `resource/images/room_107_bed_nightstand.png`: room 107 bed and nightstand angle
 - `resource/images/room_107_bathroom_entry.png`: room 107 bathroom entry angle
 - `resource/images/room_107_bathroom.png`: room 107 reused bathroom angle
+- `resource/images/room_107_bathroom_curtain_closed.png`: room 107 bathroom with the shower curtain closed
 - `resource/images/room_108_bed_window.png`: room 108 bed and window angle
 - `resource/images/room_108_bathroom_entry.png`: room 108 bathroom entry angle
 - `resource/images/room_108_bathroom.png`: room 108 reused bathroom angle
+- `resource/images/room_108_bathroom_curtain_closed.png`: room 108 bathroom with the shower curtain closed
 - `resource/images/exterior_stairs.png`: exterior stairs
 - `resource/images/laundry_room.png`: laundry room with the second washer door open
 - `resource/images/laundry_room_washer_closed.png`: laundry room with the second washer door closed
@@ -136,9 +140,38 @@ To move to another scene when clicked, use `target`:
 
 Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment and item-to-item combination can be verified before pickup gameplay exists.
 
+The initial inventory now includes Mold Remover. Equip it in Hand and press `F` while viewing mold in Room 105 to remove two mold stacks per spray.
+
+## Controls
+
+- `E`: close or open your eyes. Closing your eyes masks the screen except for a cursor-sized viewing area.
+- `F`: use the item currently equipped in Hand. When a regular hotspot is under the cursor, the equipped item is applied to that hotspot.
+- `Esc`: open the menu. The Controls tab repeats the current shortcuts in game.
+
+The closed-eye view uses an injectable profile in `scripts/systems/eye_close_profile.gd`. Normal, anomalous, and child-song vision radii plus heartbeat, breathing, and humming streams can be replaced independently. Debug builds expose a radius slider beside the other debug controls.
+
+## Progressive Night Rules
+
+Starting a new shift opens directly on the Front Desk photo with gameplay paused. The unclaimed-wages call, the player's debt, and the missing older sister who worked under the player's name are revealed in a raised, borderless dialogue layer whose black background fades toward the bottom. Text types from the upper-left with short punctuation pauses; clicking while it types reveals the whole line, and clicking again advances. A pulsing downward arrow appears only when the current line is complete. The Day 1 Rule Book page opens after the final line, and gameplay begins when that page is closed.
+
+The Rule Book is split into one page per day. Each page contains only the rules newly issued that day, the latest page opens automatically whenever a day starts, and arrow navigation keeps earlier pages available. Day 1 begins with three ordinary housekeeping rules; later days reveal mold, Room 108 phone, Room 109, red washer, and abandoned-child rules. Day 7 ends with three short Room 109 instructions.
+
+Rule Book presentation is image-ready. Drop photographed or scanned handwritten pages into `resource/images/rule_book/` as `day_01.png` through `day_07.png`; the matching image automatically replaces that Day's generated text cards. Locale-specific files such as `resource/images/rule_book/ko/day_01.png` take priority, and missing images fall back to the current localized text UI. See `resource/images/rule_book/README.md` for the complete convention.
+
+The current anomalies are prototype encounters. Their visuals and interactions remain available for testing, but all runtime death, game-over, and jumpscare presentation paths are disabled.
+
+- Room 105 mold waits through a randomized long initial cooldown, then grows at a fixed interval from stack 1 through stack 6.
+- Calls originate from Room 108. The front desk phone must be answered before its thirteenth bell, and an answered light-repair request makes Room 108 unsafe to enter.
+- The open Room 109 door appears in the corridor from Day 3.
+- A red washer must be stopped; its door and the laundry-room exit remain dangerous until the completion music finishes. The resulting load is discarded while the player's eyes are closed.
+- The Room 106 child encounter starts singing automatically when the player closes their eyes. After the crying stops, the child can be held; interrupted or incorrect actions do not kill the player in the current prototype.
+
 ## Gameplay Systems Plan
 
 - `docs/gameplay-systems-design.md` defines the planned interaction runner, hotel task system, item-to-hotspot use, rule-book data model, anomaly resolution conditions, and save-state boundaries.
+- `docs/anomaly-bible/` is the anomaly bible. It separates complex named **Entities** from small, easily corrected **Phenomena** and keeps one document per approved event.
+- `docs/anomaly-bible/candidates.md` keeps promising anomaly concepts separate from approved canon.
+- `docs/night-structure.md` defines the story-led seven-night progression and guarantees that only one anomaly can be active at a time.
 - New hotel duties and anomaly fixes should follow that plan instead of adding more one-off action branches to `scripts/main.gd`.
 - `scripts/interactions/interaction_action_runner.gd` now handles hotspot action execution, including legacy action strings and new dictionary actions.
 - `scripts/tasks/task_manager.gd` owns hotel duty state. Current sample duties are Room 105 bedding, Room 105 bathroom sink cleaning, and Room 107 loose paper collection.
@@ -166,7 +199,7 @@ Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment and
 - Scene, hotspot, exit, UI text, item names/descriptions, rule book text, and scene photo paths are routed through localization keys with the current English text/path as fallback.
 - Item text uses `item.<item_id>.name` and `item.<item_id>.description`.
 - Localized photo variants can use `scene.<scene_id>.photo`; the closed laundry variant can use `scene.laundry_room.photo.closed`.
-- Rule Book entries use `ui.rule_book.rule.<number>`.
+- Rule Book entries use `ui.rule_book.rule.<number>` and unlock by their definition's `unlock_day`.
 
 ## Debug Toggles
 
@@ -186,7 +219,7 @@ HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
 - Opening the menu pauses gameplay with `SceneTree.paused`.
 - `scripts/systems/playback_pause_manager.gd` also pauses active audio/video players under the gameplay layer so future sounds and videos follow the same pause rule.
 - The menu moves to the left side of the overlay; the right side can switch between Inventory/Hand and Rule Book.
-- `Rule Book` opens a Napolitan-style hotel rules list.
+- `Rule Book` opens the latest day page by default; arrow buttons browse the earlier daily additions.
 - `Continue` returns to the game.
 - `Brightness` adjusts the game photo brightness without changing the menu UI.
 - `Quit` exits the running Godot game.

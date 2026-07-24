@@ -20,7 +20,14 @@ const HotelTaskManagerScript = preload("res://scripts/tasks/task_manager.gd")
 const HotelRuleBookManagerScript = preload("res://scripts/rules/rule_book_manager.gd")
 const HotelInteractionContextScript = preload("res://scripts/interactions/interaction_context.gd")
 const HotelInteractionActionRunnerScript = preload("res://scripts/interactions/interaction_action_runner.gd")
+const HotelShowerCurtainStateScript = preload("res://scripts/interactions/shower_curtain_state.gd")
 const HotelSceneCatalogScript = preload("res://scripts/scenes/hotel_scene_catalog.gd")
+const HotelEyeCloseControllerScript = preload("res://scripts/systems/eye_close_controller.gd")
+const HotelMoldGrowthSystemScript = preload("res://scripts/horror/mold_growth_system.gd")
+const HotelMoldOverlayScript = preload("res://scripts/ui/mold_overlay.gd")
+const HotelNightAnomalyDirectorScript = preload("res://scripts/horror/night_anomaly_director.gd")
+const HotelRoom109OverlayScript = preload("res://scripts/ui/room_109_overlay.gd")
+const HotelTypewriterDialogueControllerScript = preload("res://scripts/dialogue/typewriter_dialogue_controller.gd")
 
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
@@ -40,6 +47,17 @@ const FOOTSTEP_INTERVAL_SECONDS := 0.22
 const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
+const LETHAL_GIMMICKS_ENABLED := false
+const INTRO_DIALOGUE_FALLBACK_LINES := [
+	"At 12:47 a.m., an unfamiliar number called.\n‘Unclaimed wages remain under your name. Come collect them in person.’",
+	"I had never worked at this hotel.\nBut the employee record carried my name and two phone numbers.",
+	"The second number was mine.",
+	"I had been hiding from gambling debt and illegal work for a long time.\nMoney left under my name was difficult to ignore.",
+	"The employee photograph showed my missing older sister.\nShe had worked here under my name while investigating rumors of disappearances and abductions.",
+	"On the back of the record, she had written one line.\n‘Do not say you came looking for your younger sister.’",
+	"But I am her younger sister.",
+]
+const DIALOGUE_GRADIENT_SHADER_CODE := "shader_type canvas_item;\nuniform vec4 top_color : source_color = vec4(0.0, 0.0, 0.0, 0.94);\nuniform vec4 bottom_color : source_color = vec4(0.0, 0.0, 0.0, 0.10);\nvoid fragment() {\n\tfloat fade = smoothstep(0.0, 1.0, UV.y);\n\tCOLOR = mix(top_color, bottom_color, fade);\n}\n"
 
 const IDLE_STYLE := {
 	"bg": Color(1.0, 1.0, 1.0, 0.05),
@@ -70,6 +88,10 @@ var task_manager = null
 var horror_event_manager = null
 var rule_book_manager = null
 var interaction_runner = null
+var shower_curtain_state = null
+var eye_close_controller = null
+var mold_growth_system = null
+var night_anomaly_director = null
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
@@ -88,7 +110,12 @@ var footstep_stream: AudioStream
 var footstep_players: Array[AudioStreamPlayer] = []
 var footstep_timer: Timer
 var footstep_index := 0
+var mold_spray_player: AudioStreamPlayer
 var game_started := false
+var intro_dialogue_active := false
+var intro_dialogue_index := 0
+var debug_mold_preview_active := false
+var mold_removal_in_progress := false
 
 var gameplay_layer: Control
 var photo: TextureRect
@@ -103,6 +130,10 @@ var day_badge_label: Label
 var debug_panel: PanelContainer
 var persistent_dialogue_panel: PanelContainer
 var persistent_dialogue_label: Label
+var persistent_dialogue_hint_label: Label
+var intro_input_blocker: ColorRect
+var dialogue_gradient: ColorRect
+var typewriter_dialogue_controller
 var transient_dialogue_panel: PanelContainer
 var transient_dialogue_label: Label
 var navigation_panel: PanelContainer
@@ -120,6 +151,17 @@ var equipment_hud
 var jumpscare_controller
 var scene_transition_fader
 var lobby_overlay: Control
+var mold_overlay
+var room_109_overlay
+var eye_radius_slider: HSlider
+var mold_stack_slider: HSlider
+var mold_stack_value_label: Label
+var phone_bell_panel: PanelContainer
+var phone_bell_label: Label
+var system_message_panel: PanelContainer
+var system_message_label: Label
+var system_message_tween: Tween
+var mold_closet_timer: Timer
 
 
 func _ready() -> void:
@@ -133,16 +175,24 @@ func _ready() -> void:
 	meta_progress_save_manager = HotelMetaProgressSaveManagerScript.new()
 	flag_store = HotelFlagStoreScript.new()
 	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
+	shower_curtain_state = HotelShowerCurtainStateScript.new()
+	shower_curtain_state.setup(flag_store)
 	task_manager = HotelTaskManagerScript.new()
 	task_manager.setup_default_catalog()
 	horror_event_manager = HotelHorrorEventManagerScript.new()
 	horror_event_manager.setup_default_catalog(flag_store)
+	horror_event_manager.set_jumpscares_enabled(LETHAL_GIMMICKS_ENABLED)
 	horror_event_manager.jumpscare_started.connect(_on_jumpscare_started)
 	horror_event_manager.jumpscare_finished.connect(_on_jumpscare_finished)
 	horror_event_manager.event_seen.connect(_on_horror_collection_changed)
 	horror_event_manager.event_resolved.connect(_on_horror_collection_changed)
 	rule_book_manager = HotelRuleBookManagerScript.new()
 	rule_book_manager.setup_default_catalog()
+	mold_growth_system = HotelMoldGrowthSystemScript.new()
+	mold_growth_system.setup()
+	mold_growth_system.register_room("room_105")
+	mold_growth_system.stack_changed.connect(_on_mold_stack_changed)
+	mold_growth_system.maximum_reached.connect(_on_mold_maximum_reached)
 	interaction_runner = HotelInteractionActionRunnerScript.new()
 	interaction_runner.setup(flag_store, inventory_model, task_manager, horror_event_manager, rule_book_manager)
 	debug_ui_enabled = _is_debug_ui_enabled()
@@ -153,13 +203,17 @@ func _ready() -> void:
 	meta_progress_save_manager.load_save_data()
 	horror_event_manager.import_collection_state(meta_progress_save_manager.get_collection_state())
 	_build_ui()
+	_build_anomaly_runtime()
 	_build_audio()
 	_show_lobby()
 
 
 func _process(delta: float) -> void:
-	if game_started and not _is_lobby_open() and not _is_menu_open():
+	if game_started and not intro_dialogue_active and not _is_lobby_open() and not _is_menu_open():
 		horror_event_manager.tick_scene_view(current_scene_id, delta)
+		mold_growth_system.advance(delta)
+		night_anomaly_director.advance(delta)
+		_sync_eye_close_anomaly_context()
 
 
 func _is_debug_ui_enabled() -> bool:
@@ -168,6 +222,31 @@ func _is_debug_ui_enabled() -> bool:
 
 
 func _input(event: InputEvent) -> void:
+	if intro_dialogue_active:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
+			_advance_intro_dialogue()
+			get_viewport().set_input_as_handled()
+		return
+
+	if event is InputEventKey and event.pressed and not event.echo and debug_ui_enabled:
+		var debug_mold_stage := _debug_mold_stage_for_key(event.keycode)
+		if debug_mold_stage > 0 and game_started and not _is_lobby_open() and not _is_menu_open():
+			_set_debug_mold_stage(debug_mold_stage)
+			get_viewport().set_input_as_handled()
+			return
+
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E:
+		if game_started and not _is_lobby_open() and not _is_menu_open() and not horror_event_manager.is_jumpscare_active():
+			eye_close_controller.toggle_closed()
+			get_viewport().set_input_as_handled()
+		return
+
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F:
+		if game_started and not _is_lobby_open() and not _is_menu_open() and not horror_event_manager.is_jumpscare_active():
+			_use_equipped_item()
+			get_viewport().set_input_as_handled()
+		return
+
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		if horror_event_manager.is_jumpscare_active():
 			get_viewport().set_input_as_handled()
@@ -187,8 +266,12 @@ func _input(event: InputEvent) -> void:
 
 
 func show_scene(scene_id: String, play_transition_sound := true) -> void:
+	if intro_dialogue_active and scene_id != current_scene_id:
+		return
 	if not HOTEL_SCENES.has(scene_id):
 		push_warning("Unknown hotel scene: %s" % scene_id)
+		return
+	if night_anomaly_director != null and current_scene_id != scene_id and not night_anomaly_director.can_change_scene(scene_id):
 		return
 
 	if _should_use_scene_transition(scene_id, play_transition_sound):
@@ -210,16 +293,20 @@ func _apply_scene_change(scene_id: String, play_transition_sound := true) -> voi
 	var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
 	current_texture = load(_scene_photo(scene_id, scene_data)) as Texture2D
 	photo.texture = current_texture
-	if scene_3d_overlay != null:
-		scene_3d_overlay.show_scene_overlay(scene_id)
+	_sync_scene_3d_overlay()
 	title_label.text = _scene_text(scene_id, scene_data, "title")
 	_show_title_banner()
 	_set_persistent_dialogue(_scene_text(scene_id, scene_data, "intro"))
 	horror_event_manager.enter_scene(scene_id)
+	if night_anomaly_director != null:
+		night_anomaly_director.enter_scene(scene_id)
 	_build_hotspots(_scene_hotspots(scene_id, scene_data))
 	_build_navigation(scene_data["exits"])
 	_apply_brightness()
 	_update_layout()
+	_sync_mold_display()
+	_sync_mold_closet_threat()
+	_sync_eye_close_anomaly_context()
 
 
 func _build_ui() -> void:
@@ -238,6 +325,9 @@ func _build_ui() -> void:
 	scene_3d_overlay = HotelScene3DOverlayScript.new()
 	gameplay_layer.add_child(scene_3d_overlay)
 
+	mold_overlay = HotelMoldOverlayScript.new()
+	gameplay_layer.add_child(mold_overlay)
+
 	brightness_overlay = ColorRect.new()
 	brightness_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	brightness_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -246,6 +336,9 @@ func _build_ui() -> void:
 
 	post_process_filter = HotelPostProcessFilterScript.new()
 	gameplay_layer.add_child(post_process_filter)
+
+	room_109_overlay = HotelRoom109OverlayScript.new()
+	gameplay_layer.add_child(room_109_overlay)
 
 	hotspot_layer = Control.new()
 	hotspot_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -280,7 +373,7 @@ func _build_ui() -> void:
 	debug_panel.anchor_right = 1.0
 	debug_panel.anchor_top = 0.0
 	debug_panel.anchor_bottom = 0.0
-	debug_panel.offset_left = -280.0
+	debug_panel.offset_left = -555.0
 	debug_panel.offset_top = 18.0
 	debug_panel.offset_right = -18.0
 	debug_panel.offset_bottom = 66.0
@@ -304,11 +397,68 @@ func _build_ui() -> void:
 	filter_toggle = _make_debug_button("🎛", _ui_text("debug.filters.show", "Show filter selector"), _toggle_filter_selector)
 	corner_row.add_child(filter_toggle)
 
+	eye_radius_slider = HSlider.new()
+	eye_radius_slider.min_value = 28.0
+	eye_radius_slider.max_value = 320.0
+	eye_radius_slider.step = 4.0
+	eye_radius_slider.value = 150.0
+	eye_radius_slider.custom_minimum_size = Vector2(96.0, 32.0)
+	eye_radius_slider.tooltip_text = _ui_text("debug.eyes.radius", "Closed-eye vision radius")
+	eye_radius_slider.value_changed.connect(_on_eye_radius_debug_changed)
+	corner_row.add_child(eye_radius_slider)
+
+	mold_stack_value_label = Label.new()
+	mold_stack_value_label.text = "M 1/6"
+	mold_stack_value_label.tooltip_text = _ui_text("debug.mold.stack", "Mold stage 1-6 (number keys also work)")
+	mold_stack_value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mold_stack_value_label.add_theme_font_size_override("font_size", 12)
+	mold_stack_value_label.add_theme_color_override("font_color", Color(0.72, 0.86, 0.66))
+	corner_row.add_child(mold_stack_value_label)
+
+	mold_stack_slider = HSlider.new()
+	mold_stack_slider.min_value = 1.0
+	mold_stack_slider.max_value = 6.0
+	mold_stack_slider.step = 1.0
+	mold_stack_slider.value = 1.0
+	mold_stack_slider.custom_minimum_size = Vector2(92.0, 32.0)
+	mold_stack_slider.tooltip_text = _ui_text("debug.mold.stack", "Mold stage 1-6 (number keys also work)")
+	mold_stack_slider.value_changed.connect(_on_mold_stack_debug_changed)
+	corner_row.add_child(mold_stack_slider)
+
+	phone_bell_panel = PanelContainer.new()
+	phone_bell_panel.visible = false
+	phone_bell_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	phone_bell_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.18, 0.025, 0.025, 0.90), Color(1.0, 0.25, 0.22, 0.72), 8))
+	gameplay_layer.add_child(phone_bell_panel)
+	phone_bell_label = Label.new()
+	phone_bell_label.add_theme_font_size_override("font_size", 20)
+	phone_bell_label.add_theme_color_override("font_color", Color(1.0, 0.78, 0.72))
+	phone_bell_panel.add_child(phone_bell_label)
+
+	system_message_panel = PanelContainer.new()
+	system_message_panel.visible = false
+	system_message_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	system_message_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.025, 0.025, 0.03, 0.92), Color(0.75, 0.12, 0.12, 0.55), 8))
+	gameplay_layer.add_child(system_message_panel)
+	system_message_label = Label.new()
+	system_message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	system_message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	system_message_label.add_theme_font_size_override("font_size", 18)
+	system_message_label.add_theme_color_override("font_color", Color(0.96, 0.90, 0.84))
+	system_message_panel.add_child(system_message_label)
+
 	persistent_dialogue_panel = PanelContainer.new()
+	persistent_dialogue_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	persistent_dialogue_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	persistent_dialogue_panel.gui_input.connect(_on_persistent_dialogue_input)
-	persistent_dialogue_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
+	persistent_dialogue_panel.add_theme_stylebox_override("panel", _make_dialogue_panel_style())
 	gameplay_layer.add_child(persistent_dialogue_panel)
+
+	dialogue_gradient = ColorRect.new()
+	dialogue_gradient.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dialogue_gradient.color = Color.WHITE
+	dialogue_gradient.material = _make_dialogue_gradient_material()
+	persistent_dialogue_panel.add_child(dialogue_gradient)
 
 	var bottom_layout := VBoxContainer.new()
 	bottom_layout.add_theme_constant_override("separation", 10)
@@ -317,9 +467,22 @@ func _build_ui() -> void:
 	persistent_dialogue_label = Label.new()
 	persistent_dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	persistent_dialogue_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	persistent_dialogue_label.add_theme_font_size_override("font_size", 18)
+	persistent_dialogue_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	persistent_dialogue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	persistent_dialogue_label.add_theme_font_size_override("font_size", 20)
 	persistent_dialogue_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
 	bottom_layout.add_child(persistent_dialogue_label)
+
+	persistent_dialogue_hint_label = Label.new()
+	persistent_dialogue_hint_label.visible = false
+	persistent_dialogue_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	persistent_dialogue_hint_label.add_theme_font_size_override("font_size", 16)
+	persistent_dialogue_hint_label.add_theme_color_override("font_color", Color(0.92, 0.88, 0.76, 0.84))
+	bottom_layout.add_child(persistent_dialogue_hint_label)
+
+	typewriter_dialogue_controller = HotelTypewriterDialogueControllerScript.new()
+	typewriter_dialogue_controller.setup(persistent_dialogue_label, persistent_dialogue_hint_label)
+	gameplay_layer.add_child(typewriter_dialogue_controller)
 
 	transient_dialogue_panel = PanelContainer.new()
 	transient_dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -379,6 +542,17 @@ func _build_ui() -> void:
 	scene_transition_fader = HotelSceneTransitionFaderScript.new()
 	gameplay_layer.add_child(scene_transition_fader)
 
+	eye_close_controller = HotelEyeCloseControllerScript.new()
+	gameplay_layer.add_child(eye_close_controller)
+
+	intro_input_blocker = ColorRect.new()
+	intro_input_blocker.process_mode = Node.PROCESS_MODE_ALWAYS
+	intro_input_blocker.mouse_filter = Control.MOUSE_FILTER_STOP
+	intro_input_blocker.color = Color(0.0, 0.0, 0.0, 0.0)
+	intro_input_blocker.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	intro_input_blocker.visible = false
+	gameplay_layer.add_child(intro_input_blocker)
+
 	_position_bottom_panels()
 	_apply_persistent_dialogue_display()
 	_apply_navigation_display()
@@ -388,6 +562,25 @@ func _build_ui() -> void:
 	_update_day_display()
 
 
+func _build_anomaly_runtime() -> void:
+	night_anomaly_director = HotelNightAnomalyDirectorScript.new()
+	gameplay_layer.add_child(night_anomaly_director)
+	night_anomaly_director.setup(eye_close_controller)
+	night_anomaly_director.set_lethal_outcomes_enabled(LETHAL_GIMMICKS_ENABLED)
+	night_anomaly_director.dialogue_requested.connect(_show_system_message)
+	if LETHAL_GIMMICKS_ENABLED:
+		night_anomaly_director.death_requested.connect(_trigger_game_over_event)
+	night_anomaly_director.phone_bell_changed.connect(_on_phone_bell_changed)
+	night_anomaly_director.state_changed.connect(_on_night_anomaly_state_changed)
+	night_anomaly_director.event_survived.connect(_on_night_event_survived)
+	if LETHAL_GIMMICKS_ENABLED:
+		mold_closet_timer = Timer.new()
+		mold_closet_timer.one_shot = true
+		mold_closet_timer.wait_time = 5.0
+		mold_closet_timer.timeout.connect(_on_mold_closet_timeout)
+		gameplay_layer.add_child(mold_closet_timer)
+
+
 func _hide_editor_hotspot_definitions() -> void:
 	var definitions := get_node_or_null("HotspotDefinitions")
 	if definitions is CanvasItem:
@@ -395,6 +588,12 @@ func _hide_editor_hotspot_definitions() -> void:
 
 
 func _build_audio() -> void:
+	mold_spray_player = AudioStreamPlayer.new()
+	mold_spray_player.process_mode = Node.PROCESS_MODE_PAUSABLE
+	mold_spray_player.stream = _make_mold_spray_stream()
+	mold_spray_player.volume_db = -5.0
+	gameplay_layer.add_child(mold_spray_player)
+
 	footstep_stream = load(FOOTSTEP_SOUND) as AudioStream
 	if footstep_stream == null:
 		push_warning("Missing footstep sound: %s" % FOOTSTEP_SOUND)
@@ -416,6 +615,39 @@ func _build_audio() -> void:
 	gameplay_layer.add_child(footstep_timer)
 
 
+func _play_mold_spray_sound() -> void:
+	if mold_spray_player == null or DisplayServer.get_name() == "headless":
+		return
+	mold_spray_player.stop()
+	mold_spray_player.play()
+
+
+func _make_mold_spray_stream() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 0.62
+	var samples := int(mix_rate * duration)
+	var data := PackedByteArray()
+	var noise_rng := RandomNumberGenerator.new()
+	noise_rng.seed = 44105
+	data.resize(samples * 2)
+	for index in range(samples):
+		var time := float(index) / float(mix_rate)
+		var first_burst := sin(PI * clampf(time / 0.22, 0.0, 1.0)) if time <= 0.22 else 0.0
+		var second_time := time - 0.31
+		var second_burst := sin(PI * clampf(second_time / 0.24, 0.0, 1.0)) if second_time >= 0.0 and second_time <= 0.24 else 0.0
+		var envelope := pow(maxf(first_burst, second_burst), 0.48)
+		var white_noise := noise_rng.randf_range(-1.0, 1.0)
+		var spray_body := white_noise * 0.78 + sin(TAU * 2850.0 * time) * 0.10 + sin(TAU * 910.0 * time) * 0.08
+		var value := spray_body * envelope * 0.30
+		data.encode_s16(index * 2, clampi(int(value * 32767.0), -32768, 32767))
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = mix_rate
+	stream.stereo = false
+	stream.data = data
+	return stream
+
+
 func _build_menu() -> void:
 	menu_overlay = HotelPauseMenuScript.new()
 	add_child(menu_overlay)
@@ -428,9 +660,10 @@ func _build_menu() -> void:
 	brightness_slider = menu_overlay.brightness_slider
 	brightness_value_label = menu_overlay.brightness_value_label
 
-	jumpscare_controller = HotelJumpscareControllerScript.new()
-	jumpscare_controller.finished.connect(_on_jumpscare_controller_finished)
-	add_child(jumpscare_controller)
+	if LETHAL_GIMMICKS_ENABLED:
+		jumpscare_controller = HotelJumpscareControllerScript.new()
+		jumpscare_controller.finished.connect(_on_jumpscare_controller_finished)
+		add_child(jumpscare_controller)
 
 
 func _build_lobby() -> void:
@@ -470,11 +703,18 @@ func _start_shift() -> void:
 	horror_event_manager.start_new_run()
 	task_manager.start_new_run()
 	rule_book_manager.import_state({})
+	rule_book_manager.set_current_day(1)
 	flag_store.clear()
 	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
 	laundry_second_washer_open = _is_laundry_second_washer_open()
 	game_brightness = DEFAULT_BRIGHTNESS
+	mold_growth_system.import_state({})
+	mold_growth_system.register_room("room_105")
+	mold_growth_system.set_enabled(false)
+	night_anomaly_director.start_day(1)
+	eye_close_controller.open_eyes()
 	_start_day(1, false, false)
+	_begin_intro_dialogue()
 
 
 func _start_saved_day(day: int) -> void:
@@ -482,8 +722,12 @@ func _start_saved_day(day: int) -> void:
 
 
 func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) -> void:
+	_clear_intro_dialogue_state()
 	game_started = true
+	debug_mold_preview_active = false
 	day_save_manager.set_current_day(day)
+	rule_book_manager.set_current_day(day)
+	mold_growth_system.set_enabled(day >= 2)
 
 	if lobby_overlay != null:
 		lobby_overlay.close()
@@ -499,6 +743,14 @@ func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) ->
 	show_scene(target_scene_id, play_transition_sound)
 	_save_current_day()
 	_update_day_display()
+	call_deferred("_present_latest_rule_page")
+
+
+func _present_latest_rule_page() -> void:
+	if not game_started or intro_dialogue_active or _is_lobby_open() or menu_overlay == null:
+		return
+	menu_overlay.open_rule_book()
+	_set_game_paused(true)
 
 
 func _is_lobby_open() -> bool:
@@ -521,6 +773,8 @@ func _capture_day_state() -> Dictionary:
 		"tasks": task_manager.export_state(),
 		"horror": horror_event_manager.export_state(),
 		"rules": rule_book_manager.export_state(),
+		"mold": mold_growth_system.export_state(),
+		"night_anomalies": night_anomaly_director.export_state(),
 	}
 
 
@@ -542,6 +796,17 @@ func _restore_day_state(day: int) -> String:
 	horror_event_manager.import_state(slot.get("horror", {}))
 	meta_progress_save_manager.save_collection_state(horror_event_manager.export_collection_state())
 	rule_book_manager.import_state(slot.get("rules", {}))
+	rule_book_manager.set_current_day(day)
+	if slot.has("mold"):
+		mold_growth_system.import_state(slot.get("mold", {}))
+	else:
+		mold_growth_system.import_state({})
+		mold_growth_system.register_room("room_105")
+		mold_growth_system.set_enabled(day >= 2)
+	if slot.has("night_anomalies"):
+		night_anomaly_director.import_state(slot.get("night_anomalies", {}))
+	else:
+		night_anomaly_director.start_day(day)
 	var saved_scene_id := String(slot.get("scene_id", START_SCENE_ID))
 	if not HOTEL_SCENES.has(saved_scene_id):
 		return START_SCENE_ID
@@ -557,6 +822,12 @@ func _reset_day_runtime_state() -> void:
 	task_manager.start_new_run()
 	horror_event_manager.start_new_run()
 	rule_book_manager.import_state({})
+	rule_book_manager.set_current_day(day_save_manager.current_day)
+	mold_growth_system.import_state({})
+	mold_growth_system.register_room("room_105")
+	mold_growth_system.set_enabled(day_save_manager.current_day >= 2)
+	night_anomaly_director.start_day(day_save_manager.current_day)
+	eye_close_controller.open_eyes()
 	if brightness_slider != null:
 		brightness_slider.value = game_brightness
 
@@ -657,6 +928,8 @@ func _build_debug_day_bar() -> void:
 
 
 func _on_navigation_pressed(scene_id: String) -> void:
+	if intro_dialogue_active:
+		return
 	show_scene(scene_id)
 
 
@@ -665,7 +938,41 @@ func _on_filter_preset_selected(preset_name: String) -> void:
 
 
 func _on_hotspot_pressed(hotspot: Dictionary) -> void:
+	if intro_dialogue_active:
+		return
+	if shower_curtain_state != null and String(hotspot.get("id", "")) == HotelShowerCurtainStateScript.HOTSPOT_ID:
+		_toggle_shower_curtain()
+		return
+	if night_anomaly_director != null and night_anomaly_director.handle_hotspot(String(hotspot.get("id", ""))):
+		_save_current_day()
+		return
 	_apply_interaction_result(interaction_runner.execute_hotspot(hotspot, _make_interaction_context(hotspot)))
+
+
+func _use_equipped_item() -> void:
+	if inventory_model == null or inventory_model.equipped_item == null:
+		return
+
+	var item_id := String(inventory_model.equipped_item.id)
+	var room_id: String = String(horror_event_manager.room_registry.get_room_id(current_scene_id))
+	var removed_mold := false
+	if mold_overlay.visible:
+		mold_removal_in_progress = true
+		removed_mold = mold_growth_system.remove_mold(room_id, item_id)
+		mold_removal_in_progress = false
+	if removed_mold:
+		debug_mold_preview_active = false
+		_play_mold_spray_sound()
+		_save_current_day()
+		return
+
+	for button in hotspot_buttons:
+		if button.is_hovered():
+			var hotspot: Dictionary = button.get_meta("hotspot")
+			var result = interaction_runner.execute_item_on_hotspot(hotspot, _make_interaction_context(hotspot))
+			if result.consumed or result.has_dialogue():
+				_apply_interaction_result(result)
+				return
 
 
 func _run_hotspot_action(action: String) -> void:
@@ -749,8 +1056,33 @@ func _refresh_current_scene_photo() -> void:
 	var scene_data: Dictionary = HOTEL_SCENES[current_scene_id]
 	current_texture = load(_scene_photo(current_scene_id, scene_data)) as Texture2D
 	photo.texture = current_texture
+	_sync_scene_3d_overlay()
 	_apply_brightness()
 	_update_layout()
+
+
+func _toggle_shower_curtain() -> void:
+	var scene_data: Dictionary = HOTEL_SCENES.get(current_scene_id, {})
+	if shower_curtain_state == null or not shower_curtain_state.supports_scene(scene_data):
+		return
+
+	var closed: bool = shower_curtain_state.toggle(current_scene_id)
+	_refresh_current_scene_photo()
+	_build_hotspots(_scene_hotspots(current_scene_id, scene_data))
+	var state_key := "closed" if closed else "opened"
+	var message := "The shower curtain is closed." if closed else "The shower curtain is open."
+	_show_transient_dialogue(localization.translate("hotspot.%s.shower_curtain.%s" % [current_scene_id, state_key], message))
+	_save_current_day()
+
+
+func _sync_scene_3d_overlay() -> void:
+	if scene_3d_overlay == null:
+		return
+	var scene_data: Dictionary = HOTEL_SCENES.get(current_scene_id, {})
+	if shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data) and shower_curtain_state.is_closed(current_scene_id):
+		scene_3d_overlay.clear_overlay()
+		return
+	scene_3d_overlay.show_scene_overlay(current_scene_id)
 
 
 func _is_laundry_second_washer_open() -> bool:
@@ -758,6 +1090,172 @@ func _is_laundry_second_washer_open() -> bool:
 		return flag_store.get_bool(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
 
 	return laundry_second_washer_open
+
+
+func _on_mold_stack_changed(room_id: String, stack: int) -> void:
+	if room_id != "room_105":
+		return
+	_sync_mold_display()
+	_sync_eye_close_anomaly_context()
+	if mold_stack_value_label != null:
+		mold_stack_value_label.text = "M %d/6" % stack
+	if not mold_removal_in_progress and not debug_mold_preview_active:
+		if stack > 0:
+			_show_system_message(_ui_text("mold.stack", "Black mold is spreading in Room 105. (%d/6)") % stack)
+	_sync_mold_closet_threat()
+
+
+func _on_mold_maximum_reached(room_id: String) -> void:
+	if room_id != "room_105":
+		return
+	if not LETHAL_GIMMICKS_ENABLED:
+		return
+	if debug_mold_preview_active:
+		return
+	horror_event_manager.mark_event_seen("room_105_closet_woman")
+	_show_system_message(_ui_text("mold.closet_open", "The closet door begins to open."))
+	_sync_mold_closet_threat()
+
+
+func _sync_mold_display() -> void:
+	if mold_overlay == null or mold_growth_system == null:
+		return
+	var shows_mold_wall := current_scene_id == "room_105_bathroom_entry"
+	var mold_stack: int = mold_growth_system.get_mold_stack("room_105")
+	mold_overlay.set_stack(mold_stack if shows_mold_wall else 0)
+	mold_overlay.visible = shows_mold_wall and mold_stack > 0
+	if mold_overlay.visible and current_texture != null:
+		mold_overlay.set_photo_rect(_get_photo_draw_rect())
+
+
+func _sync_mold_closet_threat() -> void:
+	if mold_closet_timer == null:
+		return
+	var threatened: bool = not debug_mold_preview_active and current_scene_id.begins_with("room_105") and mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK
+	if threatened and mold_closet_timer.is_stopped():
+		mold_closet_timer.start()
+	elif not threatened and not mold_closet_timer.is_stopped():
+		mold_closet_timer.stop()
+
+
+func _on_mold_closet_timeout() -> void:
+	if current_scene_id.begins_with("room_105") and mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK:
+		_trigger_game_over_event("room_105_closet_woman")
+
+
+func _on_phone_bell_changed(count: int, maximum: int) -> void:
+	if phone_bell_panel == null or phone_bell_label == null:
+		return
+	phone_bell_panel.visible = count > 0
+	phone_bell_label.text = "☎  %02d / %02d" % [count, maximum]
+	_position_runtime_status()
+
+
+func _on_night_anomaly_state_changed() -> void:
+	if HOTEL_SCENES.has(current_scene_id):
+		_build_hotspots(_scene_hotspots(current_scene_id, HOTEL_SCENES[current_scene_id]))
+		_update_layout()
+	_sync_eye_close_anomaly_context()
+	_sync_room_109_display()
+
+
+func _on_night_event_survived(event_id: String) -> void:
+	horror_event_manager.resolve_event(event_id)
+	_save_current_day()
+
+
+func _sync_eye_close_anomaly_context() -> void:
+	if eye_close_controller == null:
+		return
+	var has_mold: bool = current_scene_id == "room_105_bathroom_entry" and mold_growth_system.get_mold_stack("room_105") > 0
+	var has_night_event: bool = night_anomaly_director != null and night_anomaly_director.is_scene_anomalous(current_scene_id)
+	eye_close_controller.set_anomaly_context(has_mold or has_night_event)
+
+
+func _trigger_game_over_event(event_id: String) -> void:
+	if not LETHAL_GIMMICKS_ENABLED:
+		return
+	if horror_event_manager.is_jumpscare_active():
+		return
+	if eye_close_controller != null:
+		eye_close_controller.open_eyes()
+	if horror_event_manager.is_jumpscare_active():
+		return
+	if not horror_event_manager.trigger_jumpscare(event_id):
+		push_warning("Unknown game-over event: %s" % event_id)
+
+
+func _on_eye_radius_debug_changed(value: float) -> void:
+	if eye_close_controller != null:
+		eye_close_controller.set_debug_vision_radius(value)
+
+
+func _on_mold_stack_debug_changed(value: float) -> void:
+	var stage := clampi(int(round(value)), 1, HotelMoldGrowthSystemScript.MAX_STACK)
+	debug_mold_preview_active = true
+	if mold_stack_value_label != null:
+		mold_stack_value_label.text = "M %d/6" % stage
+	if mold_growth_system != null:
+		mold_growth_system.force_stack("room_105", stage)
+
+
+func _set_debug_mold_stage(stage: int) -> void:
+	var safe_stage := clampi(stage, 1, HotelMoldGrowthSystemScript.MAX_STACK)
+	if mold_stack_slider != null and int(round(mold_stack_slider.value)) != safe_stage:
+		mold_stack_slider.value = safe_stage
+	else:
+		_on_mold_stack_debug_changed(safe_stage)
+
+
+func _debug_mold_stage_for_key(keycode: Key) -> int:
+	match keycode:
+		KEY_1:
+			return 1
+		KEY_2:
+			return 2
+		KEY_3:
+			return 3
+		KEY_4:
+			return 4
+		KEY_5:
+			return 5
+		KEY_6:
+			return 6
+	return 0
+
+
+func _show_system_message(message: String) -> void:
+	if system_message_panel == null or system_message_label == null:
+		return
+	system_message_label.text = message
+	system_message_label.custom_minimum_size = Vector2(minf(720.0, get_viewport_rect().size.x - 64.0), 0.0)
+	system_message_panel.visible = true
+	system_message_panel.modulate.a = 1.0
+	_position_runtime_status()
+	if system_message_tween != null:
+		system_message_tween.kill()
+	system_message_tween = create_tween()
+	system_message_tween.tween_interval(3.2)
+	system_message_tween.tween_property(system_message_panel, "modulate:a", 0.0, 0.5)
+	system_message_tween.finished.connect(func(): system_message_panel.visible = false)
+
+
+func _position_runtime_status() -> void:
+	var viewport_size := get_viewport_rect().size
+	if phone_bell_panel != null:
+		phone_bell_panel.size = phone_bell_panel.get_combined_minimum_size()
+		phone_bell_panel.position = Vector2(viewport_size.x - phone_bell_panel.size.x - 22.0, 82.0)
+	if system_message_panel != null:
+		system_message_panel.size = system_message_panel.get_combined_minimum_size()
+		system_message_panel.position = Vector2((viewport_size.x - system_message_panel.size.x) * 0.5, 92.0)
+
+
+func _sync_room_109_display() -> void:
+	if room_109_overlay == null or day_save_manager == null:
+		return
+	room_109_overlay.visible = game_started and current_scene_id == "corridor" and day_save_manager.current_day >= 3
+	if room_109_overlay.visible and current_texture != null:
+		room_109_overlay.set_photo_rect(_get_photo_draw_rect())
 
 
 func _toggle_hotspots() -> void:
@@ -793,7 +1291,7 @@ func _toggle_menu() -> void:
 func _show_menu() -> void:
 	if menu_overlay == null:
 		return
-	if not game_started:
+	if not game_started or intro_dialogue_active:
 		return
 
 	menu_overlay.open()
@@ -805,7 +1303,7 @@ func _hide_menu() -> void:
 		return
 
 	menu_overlay.close()
-	_set_game_paused(false)
+	_set_game_paused(intro_dialogue_active)
 
 
 func _is_menu_open() -> bool:
@@ -896,8 +1394,76 @@ func _update_brightness_label() -> void:
 
 
 func _on_persistent_dialogue_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+	var advances_with_mouse: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	var advances_with_touch: bool = event is InputEventScreenTouch and event.pressed
+	if not advances_with_mouse and not advances_with_touch:
+		return
+	if intro_dialogue_active:
+		_advance_intro_dialogue()
+	else:
 		_hide_persistent_dialogue()
+	get_viewport().set_input_as_handled()
+
+
+func _begin_intro_dialogue() -> void:
+	intro_dialogue_active = true
+	intro_dialogue_index = 0
+	show_persistent_dialogue = true
+	if equipment_hud != null:
+		equipment_hud.visible = false
+	intro_input_blocker.visible = true
+	intro_input_blocker.move_to_front()
+	persistent_dialogue_panel.move_to_front()
+	_refresh_intro_dialogue()
+	_set_game_paused(true)
+
+
+func _advance_intro_dialogue() -> void:
+	if not intro_dialogue_active:
+		return
+	if typewriter_dialogue_controller != null and typewriter_dialogue_controller.reveal_all():
+		return
+	if intro_dialogue_index >= INTRO_DIALOGUE_FALLBACK_LINES.size() - 1:
+		_finish_intro_dialogue()
+		return
+	intro_dialogue_index += 1
+	_refresh_intro_dialogue()
+
+
+func _refresh_intro_dialogue() -> void:
+	var line_number := intro_dialogue_index + 1
+	var line := localization.translate("ui.intro.dialogue.%d" % line_number, INTRO_DIALOGUE_FALLBACK_LINES[intro_dialogue_index])
+	current_persistent_dialogue_text = line
+	_apply_persistent_dialogue_display()
+	typewriter_dialogue_controller.play_line(line)
+
+
+func _finish_intro_dialogue() -> void:
+	_clear_intro_dialogue_state()
+	_hide_persistent_dialogue()
+	_present_latest_rule_page()
+
+
+func _clear_intro_dialogue_state() -> void:
+	intro_dialogue_active = false
+	intro_dialogue_index = 0
+	if equipment_hud != null:
+		equipment_hud.visible = true
+	if intro_input_blocker != null:
+		intro_input_blocker.visible = false
+	if persistent_dialogue_hint_label != null:
+		persistent_dialogue_hint_label.visible = false
+	if typewriter_dialogue_controller != null:
+		typewriter_dialogue_controller.clear()
+	_sync_debug_toggles()
+
+
+func is_intro_dialogue_active() -> bool:
+	return intro_dialogue_active
+
+
+func get_intro_dialogue_step() -> int:
+	return intro_dialogue_index + 1 if intro_dialogue_active else 0
 
 
 func _show_transient_dialogue(message: String) -> void:
@@ -948,6 +1514,9 @@ func _scene_text(scene_id: String, scene_data: Dictionary, field: String) -> Str
 func _scene_photo(scene_id: String, scene_data: Dictionary) -> String:
 	if scene_id == "laundry_room" and not _is_laundry_second_washer_open():
 		return localization.translate_scene_photo(scene_id, LAUNDRY_CLOSED_PHOTO, "closed")
+	if shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data):
+		var variant := "curtain_closed" if shower_curtain_state.is_closed(scene_id) else ""
+		return localization.translate_scene_photo(scene_id, shower_curtain_state.photo_path(scene_id, scene_data), variant)
 
 	return localization.translate_scene_photo(scene_id, scene_data["photo"])
 
@@ -959,6 +1528,11 @@ func _scene_hotspots(scene_id: String, scene_data: Dictionary) -> Array:
 		hotspots.append(task_hotspot)
 	for horror_hotspot in horror_event_manager.get_revealed_hotspots(scene_id):
 		hotspots.append(horror_hotspot)
+	if night_anomaly_director != null:
+		for anomaly_hotspot in night_anomaly_director.get_dynamic_hotspots(scene_id):
+			hotspots.append(anomaly_hotspot)
+	if shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data):
+		hotspots.append(shower_curtain_state.make_hotspot(scene_id))
 
 	return hotspots
 
@@ -1075,7 +1649,7 @@ func _apply_navigation_display() -> void:
 
 func _sync_debug_toggles() -> void:
 	if debug_panel != null:
-		debug_panel.visible = debug_ui_enabled
+		debug_panel.visible = debug_ui_enabled and not intro_dialogue_active
 
 	if hotspot_toggle == null:
 		return
@@ -1104,9 +1678,9 @@ func _position_bottom_panels() -> void:
 	if persistent_dialogue_panel != null:
 		persistent_dialogue_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 		persistent_dialogue_panel.offset_left = 18.0
-		persistent_dialogue_panel.offset_top = -150.0
+		persistent_dialogue_panel.offset_top = -265.0
 		persistent_dialogue_panel.offset_right = -18.0
-		persistent_dialogue_panel.offset_bottom = -18.0
+		persistent_dialogue_panel.offset_bottom = -64.0
 
 	if navigation_panel != null:
 		navigation_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -1127,7 +1701,10 @@ func _position_bottom_panels() -> void:
 
 func _set_persistent_dialogue(message: String) -> void:
 	current_persistent_dialogue_text = message
-	persistent_dialogue_label.text = current_persistent_dialogue_text
+	if typewriter_dialogue_controller != null:
+		typewriter_dialogue_controller.show_instant(current_persistent_dialogue_text)
+	else:
+		persistent_dialogue_label.text = current_persistent_dialogue_text
 	_apply_persistent_dialogue_display()
 
 
@@ -1147,10 +1724,14 @@ func _update_layout() -> void:
 	photo.size = viewport_size + Vector2(PARALLAX_PADDING * 2.0, PARALLAX_PADDING * 2.0)
 	if scene_3d_overlay != null:
 		scene_3d_overlay.apply_photo_parallax(offset, PARALLAX_PADDING)
+	if mold_overlay != null and mold_overlay.visible and current_texture != null:
+		mold_overlay.set_photo_rect(_get_photo_draw_rect())
 	_position_title_panel()
 	_position_transient_dialogue()
 	_update_hotspot_layout()
 	_update_day_display()
+	_position_runtime_status()
+	_sync_room_109_display()
 
 
 func _update_hotspot_layout() -> void:
@@ -1263,3 +1844,21 @@ func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBo
 	style.content_margin_top = 8.0
 	style.content_margin_bottom = 8.0
 	return style
+
+
+func _make_dialogue_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
+	style.content_margin_left = 28.0
+	style.content_margin_right = 28.0
+	style.content_margin_top = 22.0
+	style.content_margin_bottom = 14.0
+	return style
+
+
+func _make_dialogue_gradient_material() -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = DIALOGUE_GRADIENT_SHADER_CODE
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	return material

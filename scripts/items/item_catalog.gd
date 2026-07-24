@@ -9,6 +9,7 @@ const INITIAL_ITEM_IDS: Array[String] = [
 	"small_flashlight",
 	"guest_note",
 	"cleaning_cloth",
+	"mold_remover",
 ]
 
 
@@ -18,6 +19,7 @@ static func register_defaults(inventory_model) -> void:
 	_register_item(inventory_model, "guest_note", "Guest Note", "A folded note with a room number written in pencil.", "📝")
 	_register_item(inventory_model, "revealed_guest_note", "Revealed Note", "The flashlight reveals faint writing under the room number: Do not return it after midnight.", "📄")
 	_register_item(inventory_model, "cleaning_cloth", "Cleaning Cloth", "A rough cloth for wiping sinks, floors, and anything that should not be touched directly.", "🧽")
+	_register_item(inventory_model, "mold_remover", "Mold Remover", "A hotel-issued spray for removing black mold from guest rooms.", "🧴")
 	_register_item(inventory_model, "collected_trash", "Collected Trash", "Loose papers and trash gathered during room work.", "🗑", false)
 	inventory_model.add_combination_rule(_make_combination_rule(
 		"reveal_guest_note",

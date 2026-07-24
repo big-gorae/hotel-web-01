@@ -48,8 +48,10 @@ func _build() -> void:
 	inventory_layout.add_child(title)
 
 	var hint := Label.new()
-	hint.text = _text("inventory.hint", "Drag an item to Hand to equip it. Drop an item onto another item to combine them.")
+	hint.text = _text("inventory.hint", "Equip by dragging, double-clicking, or right-clicking. Drop one item onto another to combine them.")
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hint.add_theme_font_size_override("font_size", 14)
 	hint.add_theme_color_override("font_color", Color(0.72, 0.72, 0.68))
 	inventory_layout.add_child(hint)
@@ -94,11 +96,16 @@ func _refresh_items() -> void:
 	for item in items:
 		var button = InventoryItemButton.new()
 		button.setup(item, localization)
+		button.equip_requested.connect(_on_equip_requested)
 		button.item_dropped_on_item.connect(_on_item_dropped_on_item)
 		items_grid.add_child(button)
 
 
 func _on_hand_item_dropped(item) -> void:
+	inventory_model.equip_item(item)
+
+
+func _on_equip_requested(item) -> void:
 	inventory_model.equip_item(item)
 
 

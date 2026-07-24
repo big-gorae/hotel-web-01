@@ -14,8 +14,10 @@ var brightness_slider: HSlider
 var brightness_value_label: Label
 var inventory_tab_button: Button
 var rule_book_tab_button: Button
+var controls_tab_button: Button
 var inventory_screen
 var rule_book_screen
+var controls_screen
 
 
 func setup(inventory_model, new_localization, new_rule_book_manager, brightness: float, minimum_brightness: float, maximum_brightness: float) -> void:
@@ -35,6 +37,11 @@ func open() -> void:
 	visible = true
 
 
+func open_rule_book() -> void:
+	show_rule_book()
+	visible = true
+
+
 func close() -> void:
 	visible = false
 
@@ -42,16 +49,23 @@ func close() -> void:
 func show_inventory() -> void:
 	inventory_screen.visible = true
 	rule_book_screen.visible = false
+	controls_screen.visible = false
 	_sync_tabs("inventory")
 
 
 func show_rule_book() -> void:
 	inventory_screen.visible = false
-	rule_book_manager.mark_all_visible_read()
+	controls_screen.visible = false
 	rule_book_screen.visible = true
-	rule_book_screen.refresh_text()
+	rule_book_screen.show_latest_page()
 	_sync_tabs("rule_book")
-	rule_book_opened.emit()
+
+
+func show_controls() -> void:
+	inventory_screen.visible = false
+	rule_book_screen.visible = false
+	controls_screen.visible = true
+	_sync_tabs("controls")
 
 
 func set_brightness_value(value: float) -> void:
@@ -133,8 +147,10 @@ func _build(inventory_model, brightness: float, minimum_brightness: float, maxim
 	menu_content_shell.add_child(tab_bar)
 	inventory_tab_button = _make_tab_button(_text("menu.inventory", "Inventory"), show_inventory)
 	rule_book_tab_button = _make_tab_button(_text("menu.rule_book", "Rule Book"), show_rule_book)
+	controls_tab_button = _make_tab_button(_text("menu.controls", "Controls"), show_controls)
 	tab_bar.add_child(inventory_tab_button)
 	tab_bar.add_child(rule_book_tab_button)
+	tab_bar.add_child(controls_tab_button)
 
 	var InventoryScreen := preload("res://scripts/ui/inventory_screen.gd")
 	inventory_screen = InventoryScreen.new()
@@ -148,7 +164,14 @@ func _build(inventory_model, brightness: float, minimum_brightness: float, maxim
 	rule_book_screen.process_mode = Node.PROCESS_MODE_ALWAYS
 	rule_book_screen.custom_minimum_size = Vector2(570.0, 420.0)
 	rule_book_screen.setup(localization, rule_book_manager)
+	rule_book_screen.page_changed.connect(_on_rule_book_page_changed)
 	menu_content_shell.add_child(rule_book_screen)
+
+	var ControlsScreen := preload("res://scripts/ui/controls_screen.gd")
+	controls_screen = ControlsScreen.new()
+	controls_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	controls_screen.setup(localization)
+	menu_content_shell.add_child(controls_screen)
 	_sync_content_width()
 
 
@@ -176,17 +199,24 @@ func _on_brightness_changed(value: float) -> void:
 	brightness_changed.emit(value)
 
 
+func _on_rule_book_page_changed(day: int) -> void:
+	rule_book_manager.mark_day_read(day)
+	rule_book_opened.emit()
+
+
 func _sync_tabs(active_tab: String) -> void:
 	_style_tab(inventory_tab_button, active_tab == "inventory")
 	_style_tab(rule_book_tab_button, active_tab == "rule_book")
+	_style_tab(controls_tab_button, active_tab == "controls")
 
 
 func _sync_content_width() -> void:
 	var target_width: float = inventory_screen.get_combined_minimum_size().x
-	var target_height: float = maxf(inventory_screen.get_combined_minimum_size().y, rule_book_screen.get_combined_minimum_size().y)
+	var target_height := 420.0
 	menu_content_shell.custom_minimum_size = Vector2(target_width, 0.0)
 	inventory_screen.custom_minimum_size = Vector2(target_width, target_height)
 	rule_book_screen.custom_minimum_size = Vector2(target_width, target_height)
+	controls_screen.custom_minimum_size = Vector2(target_width, target_height)
 
 
 func _style_tab(button: Button, active: bool) -> void:

@@ -24,6 +24,7 @@ var collection_event_ids: Array[String] = []
 var collection_kind_counts: Dictionary = {}
 var collection_resolved_event_ids: Array[String] = []
 var active_jumpscare_id := ""
+var jumpscares_enabled := true
 
 
 func setup_default_catalog(new_flag_store = null) -> void:
@@ -31,6 +32,12 @@ func setup_default_catalog(new_flag_store = null) -> void:
 	definitions_by_id.clear()
 	for definition in HorrorCatalog.build_definitions():
 		register_definition(definition)
+
+
+func set_jumpscares_enabled(value: bool) -> void:
+	jumpscares_enabled = value
+	if not jumpscares_enabled:
+		active_jumpscare_id = ""
 
 
 func start_new_run() -> void:
@@ -94,7 +101,7 @@ func get_revealed_hotspots(scene_id: String) -> Array:
 
 
 func trigger_jumpscare(event_id: String) -> bool:
-	if not definitions_by_id.has(event_id) or is_jumpscare_active():
+	if not jumpscares_enabled or not definitions_by_id.has(event_id) or is_jumpscare_active():
 		return false
 
 	var definition = definitions_by_id[event_id]
@@ -120,7 +127,7 @@ func finish_jumpscare() -> void:
 
 
 func is_jumpscare_active() -> bool:
-	return not active_jumpscare_id.is_empty()
+	return jumpscares_enabled and not active_jumpscare_id.is_empty()
 
 
 func mark_event_seen(event_id: String) -> void:

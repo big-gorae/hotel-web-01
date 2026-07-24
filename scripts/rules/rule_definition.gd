@@ -5,6 +5,7 @@ var id := ""
 var order := 0
 var text_key := ""
 var fallback_text := ""
+var unlock_day := 1
 var tags: Array[String] = []
 var related_task_ids: Array[String] = []
 var related_horror_event_ids: Array[String] = []
@@ -18,6 +19,7 @@ func copy():
 	definition.order = order
 	definition.text_key = text_key
 	definition.fallback_text = fallback_text
+	definition.unlock_day = unlock_day
 	definition.tags = tags.duplicate()
 	definition.related_task_ids = related_task_ids.duplicate()
 	definition.related_horror_event_ids = related_horror_event_ids.duplicate()

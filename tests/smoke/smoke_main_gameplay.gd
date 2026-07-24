@@ -61,6 +61,73 @@ func _run() -> void:
 
 	main._start_shift()
 	await process_frame
+	if main.current_scene_id != "front_desk" or main.lobby_overlay.visible:
+		_fail("opening story did not begin on the front desk game screen")
+		return
+	if not main.is_intro_dialogue_active() or main.get_intro_dialogue_step() != 1:
+		_fail("front desk opening dialogue did not start")
+		return
+	if not main.get_tree().paused or not main.intro_input_blocker.visible or not main.persistent_dialogue_panel.visible:
+		_fail("gameplay was not paused behind the opening dialogue")
+		return
+	if not main.typewriter_dialogue_controller.is_typing() or main.persistent_dialogue_hint_label.visible:
+		_fail("opening dialogue did not begin in typewriter state")
+		return
+	if main.persistent_dialogue_label.vertical_alignment != VERTICAL_ALIGNMENT_TOP or main.persistent_dialogue_label.horizontal_alignment != HORIZONTAL_ALIGNMENT_LEFT:
+		_fail("opening dialogue text is not anchored from the upper-left")
+		return
+	if main.persistent_dialogue_panel.offset_top != -265.0 or main.dialogue_gradient.material == null:
+		_fail("opening dialogue panel did not use the raised gradient layout")
+		return
+	main.typewriter_dialogue_controller._process(0.12)
+	var partial_count: int = main.typewriter_dialogue_controller.get_visible_character_count()
+	if partial_count <= 0 or partial_count >= main.current_persistent_dialogue_text.length():
+		_fail("opening dialogue did not reveal text progressively")
+		return
+	var seen_seconds_before: Dictionary = main.horror_event_manager.seen_scene_seconds.duplicate(true)
+	main._process(20.0)
+	if main.horror_event_manager.seen_scene_seconds != seen_seconds_before:
+		_fail("horror progression advanced during opening dialogue")
+		return
+	main.show_scene("corridor", false)
+	if main.current_scene_id != "front_desk":
+		_fail("scene navigation was possible during opening dialogue")
+		return
+	var dialogue_click := InputEventMouseButton.new()
+	dialogue_click.button_index = MOUSE_BUTTON_LEFT
+	dialogue_click.pressed = true
+	main._on_persistent_dialogue_input(dialogue_click)
+	if main.get_intro_dialogue_step() != 1 or main.typewriter_dialogue_controller.is_typing():
+		_fail("first dialogue click did not complete the current line")
+		return
+	if not main.persistent_dialogue_hint_label.visible or main.persistent_dialogue_hint_label.text != "▼":
+		_fail("completed dialogue line did not show its downward arrow")
+		return
+	main._on_persistent_dialogue_input(dialogue_click)
+	if main.get_intro_dialogue_step() != 2 or not main.typewriter_dialogue_controller.is_typing():
+		_fail("second dialogue click did not start the next line")
+		return
+	for expected_step in range(3, 8):
+		main._advance_intro_dialogue()
+		main._advance_intro_dialogue()
+		if main.get_intro_dialogue_step() != expected_step:
+			_fail("opening dialogue did not advance to step %d" % expected_step)
+			return
+	if not "동생" in main.localization.translations[main.localization.Language.KOREAN]["ui.intro.dialogue.7"]:
+		_fail("opening story is missing the younger-sister reveal")
+		return
+	main._advance_intro_dialogue()
+	main._advance_intro_dialogue()
+	if main.is_intro_dialogue_active() or main.intro_input_blocker.visible:
+		_fail("opening dialogue did not release its input lock")
+		return
+	if not main.menu_overlay.visible or not main.menu_overlay.rule_book_screen.visible:
+		_fail("day one rule page did not follow the opening dialogue")
+		return
+	if main.menu_overlay.rule_book_screen.get_current_page_day() != 1 or main.menu_overlay.rule_book_screen.get_page_rule_count() != 3:
+		_fail("day one rule page did not show exactly its three new rules")
+		return
+	main._hide_menu()
 	main.show_scene("corridor")
 	if not main.scene_transition_fader.is_transitioning():
 		_fail("scene transition fader did not start")
@@ -104,6 +171,43 @@ func _run() -> void:
 		_fail("3D overlay parallax did not match photo size")
 		return
 
+	for room_number in [105, 106, 107, 108]:
+		var bathroom_scene_id := "room_%d_bathroom" % room_number
+		main.show_scene(bathroom_scene_id, false)
+		await process_frame
+		var open_curtain_hotspot := _find_hotspot(main, bathroom_scene_id, "shower_curtain")
+		if open_curtain_hotspot.is_empty():
+			_fail("room %d shower curtain hotspot missing" % room_number)
+			return
+		var open_curtain_rect: Rect2 = open_curtain_hotspot.get("rect")
+		main._on_hotspot_pressed(open_curtain_hotspot)
+		await process_frame
+		if not main.shower_curtain_state.is_closed(bathroom_scene_id):
+			_fail("room %d shower curtain did not close" % room_number)
+			return
+		if not main.current_texture.resource_path.ends_with("_curtain_closed.png"):
+			_fail("room %d closed curtain photo did not load" % room_number)
+			return
+		var closed_curtain_hotspot := _find_hotspot(main, bathroom_scene_id, "shower_curtain")
+		var closed_curtain_rect: Rect2 = closed_curtain_hotspot.get("rect")
+		if closed_curtain_rect.size.x <= open_curtain_rect.size.x:
+			_fail("room %d closed curtain click area did not expand" % room_number)
+			return
+		if room_number == 105 and main.scene_3d_overlay.visible:
+			_fail("room 105 tub overlay remained visible through the closed curtain")
+			return
+		main._on_hotspot_pressed(closed_curtain_hotspot)
+		await process_frame
+		if main.shower_curtain_state.is_closed(bathroom_scene_id):
+			_fail("room %d shower curtain did not reopen" % room_number)
+			return
+
+	main.show_scene("room_105_bathroom", false)
+	await process_frame
+	if not main.scene_3d_overlay.visible:
+		_fail("room 105 tub overlay did not return after reopening the curtain")
+		return
+
 	var sink_hotspot := _find_task_hotspot(main, "room_105_bathroom", "room_105_clean_sink")
 	if sink_hotspot.is_empty():
 		_fail("clean sink task hotspot missing")
@@ -133,32 +237,16 @@ func _run() -> void:
 		return
 
 	main._show_rule_book_menu_panel()
-	if not main.rule_book_manager.has_read_rule("keep_washer_closed_after_11"):
+	if not main.rule_book_manager.has_read_rule("make_vacant_beds"):
 		_fail("rule book read state missing")
 		return
 
 	main.localization.set_language(main.localization.Language.KOREAN)
-	if not main.horror_event_manager.trigger_jumpscare("room_107_phone_jumpscare"):
-		_fail("jumpscare did not start")
+	if main.horror_event_manager.trigger_jumpscare("room_108_light_repair_call"):
+		_fail("test-only jumpscare remained enabled")
 		return
-	await process_frame
-	if not main.jumpscare_controller.active:
-		_fail("jumpscare controller did not lock the screen")
-		return
-	if main.jumpscare_controller.current_presentation.title_label.text != "전화벨":
-		_fail("jumpscare presentation did not use localization")
-		return
-	var escape_event := InputEventKey.new()
-	escape_event.keycode = KEY_ESCAPE
-	escape_event.pressed = true
-	main._input(escape_event)
-	if main._is_menu_open():
-		_fail("escape opened the menu during a jumpscare")
-		return
-	main.jumpscare_controller.current_presentation._finish()
-	await process_frame
-	if main.horror_event_manager.is_jumpscare_active():
-		_fail("jumpscare did not finish through its presentation")
+	if main.jumpscare_controller != null or main.horror_event_manager.is_jumpscare_active():
+		_fail("disabled jumpscare still created a lethal presentation")
 		return
 	main.localization.set_language(main.localization.Language.ENGLISH)
 
@@ -169,9 +257,11 @@ func _run() -> void:
 			return
 
 	main.inventory_model.add_item_by_id("collected_trash")
-	main.horror_event_manager.mark_event_seen("room_107_phone_jumpscare")
+	main.horror_event_manager.mark_event_seen("room_108_light_repair_call")
 	main._start_shift()
 	await process_frame
+	_complete_intro_dialogue(main)
+	main._hide_menu()
 	if _find_inventory_item(main, "collected_trash") != null:
 		_fail("new shift retained an item from the previous run")
 		return
@@ -207,6 +297,14 @@ func _find_task_hotspot(main, scene_id: String, task_id: String) -> Dictionary:
 	return {}
 
 
+func _find_hotspot(main, scene_id: String, hotspot_id: String) -> Dictionary:
+	var hotspots: Array = main._scene_hotspots(scene_id, main.HOTEL_SCENES[scene_id])
+	for hotspot in hotspots:
+		if hotspot is Dictionary and String(hotspot.get("id", "")) == hotspot_id:
+			return hotspot
+	return {}
+
+
 func _find_inventory_item(main, item_id: String):
 	for item in main.inventory_model.get_items():
 		if item.id == item_id:
@@ -219,6 +317,11 @@ func _stop_transition_audio(main) -> void:
 		main.footstep_timer.stop()
 	for player in main.footstep_players:
 		player.stop()
+
+
+func _complete_intro_dialogue(main) -> void:
+	while main.is_intro_dialogue_active():
+		main._advance_intro_dialogue()
 
 
 func _preserve_save() -> void:

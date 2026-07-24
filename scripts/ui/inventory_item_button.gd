@@ -2,6 +2,7 @@ class_name HotelInventoryItemButton
 extends Button
 
 signal item_dropped_on_item(source_item, target_item)
+signal equip_requested(item)
 
 const DRAG_KIND := "hotel_inventory_item"
 
@@ -37,6 +38,17 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		"kind": DRAG_KIND,
 		"item": item,
 	}
+
+
+func _gui_input(event: InputEvent) -> void:
+	if not event is InputEventMouseButton or not event.pressed or item == null:
+		return
+	var mouse_event := event as InputEventMouseButton
+	var left_double_click: bool = mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.double_click
+	var right_click: bool = mouse_event.button_index == MOUSE_BUTTON_RIGHT
+	if left_double_click or right_click:
+		equip_requested.emit(item)
+		accept_event()
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:

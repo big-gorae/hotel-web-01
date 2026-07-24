@@ -60,12 +60,29 @@ func test_anomaly_requires_rule_before_resolution() -> void:
 	assert_that(horror.resolved_event_ids.has("room_105_shadow_stain")).is_false()
 	assert_that(blocked_result.blocked_reason_key).is_equal("horror_event.room_105_shadow_stain.blocked")
 
-	rules.mark_rule_read("compare_corridor_room_numbers")
+	rules.mark_rule_read("remove_black_mold")
 	var resolved_result = runner.execute_action("resolve_horror_event:room_105_shadow_stain", _context("room_105_door_window"))
 
 	assert_that(horror.resolved_event_ids.has("room_105_shadow_stain")).is_true()
 	assert_that(resolved_result.should_refresh_hotspots).is_true()
 	assert_that(resolved_result.should_save).is_true()
+
+
+func test_item_only_execution_silently_ignores_non_item_targets() -> void:
+	var hotspot := {
+		"id": "ordinary_door",
+		"text": "The door is locked.",
+		"item_actions": [
+			{
+				"item_id": "cleaning_cloth",
+				"actions": [{"type": "show_dialogue", "fallback_text": "Cleaned."}],
+			},
+		],
+	}
+	var result = runner.execute_item_on_hotspot(hotspot, _context("corridor", "ordinary_door", "flashlight"))
+
+	assert_that(result.consumed).is_false()
+	assert_that(result.has_dialogue()).is_false()
 
 
 func _register_item(item_id: String, can_equip: bool) -> void:

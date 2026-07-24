@@ -7,7 +7,6 @@ signal quit_requested
 
 const AnomalyCollectionPanel := preload("res://scripts/ui/anomaly_collection_panel.gd")
 const LOBBY_BLUR_SHADER_CODE := "shader_type canvas_item;\nuniform float blur_size = 3.5;\nvoid fragment() {\n\tvec2 px = TEXTURE_PIXEL_SIZE * blur_size;\n\tvec4 color = texture(TEXTURE, UV) * 0.18;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(-px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, -px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, px.y)) * 0.11;\n\tfloat luma = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n\tcolor.rgb = mix(vec3(luma), color.rgb, 0.74);\n\tcolor.rgb = (color.rgb - 0.5) * 1.10 + 0.5 - 0.02;\n\tcolor.rgb = mix(color.rgb, color.rgb * vec3(1.0, 0.91, 0.70), 0.18);\n\tfloat dist = distance(UV, vec2(0.5));\n\tfloat vignette = smoothstep(0.35, 0.82, dist);\n\tcolor.rgb *= 1.0 - vignette * 0.22;\n\tCOLOR = vec4(clamp(color.rgb, vec3(0.0), vec3(1.0)), color.a);\n}\n"
-
 var localization = null
 var horror_event_manager = null
 var day_save_manager = null

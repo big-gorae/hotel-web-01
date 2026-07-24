@@ -3,7 +3,7 @@ extends RefCounted
 
 const JsonSaveStore := preload("res://scripts/systems/json_save_store.gd")
 
-const TOTAL_DAYS := 5
+const TOTAL_DAYS := 7
 const SAVE_VERSION := 2
 const SAVE_PATH := "user://hotel_save.json"
 

@@ -17,6 +17,10 @@
 [ext_resource type="Texture2D" uid="uid://cmqjdidca5x10" path="res://resource/images/room_108_bathroom.png" id="15_yq6so"]
 [ext_resource type="Texture2D" uid="uid://dgah7jv8v0k1n" path="res://resource/images/room_108_bathroom_entry.png" id="16_fv21b"]
 [ext_resource type="Texture2D" uid="uid://b3v52axv73qps" path="res://resource/images/room_108_bed_window.png" id="17_tel4y"]
+[ext_resource type="Texture2D" path="res://resource/images/room_105_bathroom_curtain_closed.png" id="18_curtain105"]
+[ext_resource type="Texture2D" path="res://resource/images/room_106_bathroom_curtain_closed.png" id="19_curtain106"]
+[ext_resource type="Texture2D" path="res://resource/images/room_107_bathroom_curtain_closed.png" id="20_curtain107"]
+[ext_resource type="Texture2D" path="res://resource/images/room_108_bathroom_curtain_closed.png" id="21_curtain108"]
 
 [node name="Main" type="Control" unique_id=1019556374]
 layout_mode = 3
@@ -29,7 +33,7 @@ script = ExtResource("1")
 
 [node name="HotspotDefinitions" type="Control" parent="." unique_id=315014814]
 anchors_preset = 0
-offset_right = 9380.0
+offset_right = 10700.0
 offset_bottom = 5300.0
 
 [node name="corridor" type="Control" parent="HotspotDefinitions" unique_id=877612333]
@@ -82,7 +86,7 @@ anchors_preset = 0
 offset_left = 102.399994
 offset_top = 115.200005
 offset_right = 288.0
-offset_bottom = 760.00006
+offset_bottom = 743.00006
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_105"
@@ -251,7 +255,7 @@ mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "phone"
 hotspot_label = "Phone"
-description_text = "The desk phone still works. The last extension dialed was 105."
+description_text = "The desk phone still works. Its display is blank."
 
 [node name="logbook" type="Control" parent="HotspotDefinitions/front_desk" unique_id=1338044787]
 anchors_preset = 0
@@ -372,6 +376,43 @@ mouse_filter = 2
 texture = ExtResource("7_yc10j")
 expand_mode = 1
 
+[node name="OpenCurtainClickAreaPreview" type="ColorRect" parent="HotspotDefinitions/room_105_bathroom"]
+layout_mode = 0
+offset_left = 544.0
+offset_top = 43.2
+offset_right = 806.4
+offset_bottom = 907.2
+mouse_filter = 2
+color = Color(1, 0.82, 0.28, 0.16)
+
+[node name="CurtainClosedLabel" type="Label" parent="HotspotDefinitions/room_105_bathroom"]
+layout_mode = 0
+offset_left = 1320.0
+offset_top = -42.0
+offset_right = 1840.0
+offset_bottom = -6.0
+theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
+text = "Room 105 - Curtain Closed"
+
+[node name="CurtainClosedPhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_105_bathroom"]
+layout_mode = 0
+offset_left = 1320.0
+offset_right = 2600.0
+offset_bottom = 960.0
+mouse_filter = 2
+texture = ExtResource("18_curtain105")
+expand_mode = 1
+
+[node name="ClosedCurtainClickAreaPreview" type="ColorRect" parent="HotspotDefinitions/room_105_bathroom"]
+layout_mode = 0
+offset_left = 1864.0
+offset_top = 43.2
+offset_right = 2408.0
+offset_bottom = 907.2
+mouse_filter = 2
+color = Color(0.25, 0.72, 1, 0.16)
+
 [node name="bathroom_door" type="Control" parent="HotspotDefinitions/room_105_bathroom" unique_id=224011986]
 anchors_preset = 0
 offset_left = 1102.0001
@@ -396,10 +437,10 @@ description_text = "The mirror is worn at the edges, blurring the room behind yo
 
 [node name="bathroom_sink" type="Control" parent="HotspotDefinitions/room_105_bathroom" unique_id=1772623534]
 anchors_preset = 0
-offset_left = 68.0
-offset_top = 552.0
-offset_right = 503.6
-offset_bottom = 784.39996
+offset_left = 75.0
+offset_top = 553.0
+offset_right = 469.6
+offset_bottom = 764.39996
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "bathroom_sink"
@@ -408,10 +449,10 @@ description_text = "A small tube rests near the sink. The counter is stained fro
 
 [node name="bathroom_tub" type="Control" parent="HotspotDefinitions/room_105_bathroom" unique_id=261137525]
 anchors_preset = 0
-offset_left = 582.4
-offset_top = 115.2
-offset_right = 1017.60004
-offset_bottom = 844.8
+offset_left = 589.99963
+offset_top = 84.999985
+offset_right = 1025.5992
+offset_bottom = 711.8
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "bathroom_tub"
@@ -454,7 +495,7 @@ target_scene_id = "room_105_door_window"
 
 [node name="bathroom_right_edge" type="Control" parent="HotspotDefinitions/room_105_bathroom_entry" unique_id=1845654533]
 anchors_preset = 0
-offset_left = 1163.0
+offset_left = 1144.0
 offset_right = 1280.0
 offset_bottom = 853.8892
 mouse_filter = 2
@@ -605,6 +646,43 @@ mouse_filter = 2
 texture = ExtResource("10_y6deb")
 expand_mode = 1
 
+[node name="OpenCurtainClickAreaPreview" type="ColorRect" parent="HotspotDefinitions/room_106_bathroom"]
+layout_mode = 0
+offset_left = 544.0
+offset_top = 43.2
+offset_right = 806.4
+offset_bottom = 907.2
+mouse_filter = 2
+color = Color(1, 0.82, 0.28, 0.16)
+
+[node name="CurtainClosedLabel" type="Label" parent="HotspotDefinitions/room_106_bathroom"]
+layout_mode = 0
+offset_left = 1320.0
+offset_top = -42.0
+offset_right = 1840.0
+offset_bottom = -6.0
+theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
+text = "Room 106 - Curtain Closed"
+
+[node name="CurtainClosedPhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_106_bathroom"]
+layout_mode = 0
+offset_left = 1320.0
+offset_right = 2600.0
+offset_bottom = 960.0
+mouse_filter = 2
+texture = ExtResource("19_curtain106")
+expand_mode = 1
+
+[node name="ClosedCurtainClickAreaPreview" type="ColorRect" parent="HotspotDefinitions/room_106_bathroom"]
+layout_mode = 0
+offset_left = 1864.0
+offset_top = 43.2
+offset_right = 2408.0
+offset_bottom = 907.2
+mouse_filter = 2
+color = Color(0.25, 0.72, 1, 0.16)
+
 [node name="room_106_bathroom_door" type="Control" parent="HotspotDefinitions/room_106_bathroom" unique_id=1342634932]
 anchors_preset = 0
 offset_left = 1109.0001
@@ -742,6 +820,43 @@ offset_bottom = 960.0
 mouse_filter = 2
 texture = ExtResource("12_2wyq8")
 expand_mode = 1
+
+[node name="OpenCurtainClickAreaPreview" type="ColorRect" parent="HotspotDefinitions/room_107_bathroom"]
+layout_mode = 0
+offset_left = 544.0
+offset_top = 43.2
+offset_right = 806.4
+offset_bottom = 907.2
+mouse_filter = 2
+color = Color(1, 0.82, 0.28, 0.16)
+
+[node name="CurtainClosedLabel" type="Label" parent="HotspotDefinitions/room_107_bathroom"]
+layout_mode = 0
+offset_left = 1320.0
+offset_top = -42.0
+offset_right = 1840.0
+offset_bottom = -6.0
+theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
+text = "Room 107 - Curtain Closed"
+
+[node name="CurtainClosedPhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_107_bathroom"]
+layout_mode = 0
+offset_left = 1320.0
+offset_right = 2600.0
+offset_bottom = 960.0
+mouse_filter = 2
+texture = ExtResource("20_curtain107")
+expand_mode = 1
+
+[node name="ClosedCurtainClickAreaPreview" type="ColorRect" parent="HotspotDefinitions/room_107_bathroom"]
+layout_mode = 0
+offset_left = 1864.0
+offset_top = 43.2
+offset_right = 2408.0
+offset_bottom = 907.2
+mouse_filter = 2
+color = Color(0.25, 0.72, 1, 0.16)
 
 [node name="room_107_bathroom_door" type="Control" parent="HotspotDefinitions/room_107_bathroom" unique_id=642806767]
 anchors_preset = 0
@@ -962,6 +1077,43 @@ mouse_filter = 2
 texture = ExtResource("15_yq6so")
 expand_mode = 1
 
+[node name="OpenCurtainClickAreaPreview" type="ColorRect" parent="HotspotDefinitions/room_108_bathroom"]
+layout_mode = 0
+offset_left = 544.0
+offset_top = 43.2
+offset_right = 806.4
+offset_bottom = 907.2
+mouse_filter = 2
+color = Color(1, 0.82, 0.28, 0.16)
+
+[node name="CurtainClosedLabel" type="Label" parent="HotspotDefinitions/room_108_bathroom"]
+layout_mode = 0
+offset_left = 1320.0
+offset_top = -42.0
+offset_right = 1840.0
+offset_bottom = -6.0
+theme_override_colors/font_color = Color(1, 0.86, 0.42, 1)
+theme_override_font_sizes/font_size = 28
+text = "Room 108 - Curtain Closed"
+
+[node name="CurtainClosedPhotoPreview" type="TextureRect" parent="HotspotDefinitions/room_108_bathroom"]
+layout_mode = 0
+offset_left = 1320.0
+offset_right = 2600.0
+offset_bottom = 960.0
+mouse_filter = 2
+texture = ExtResource("21_curtain108")
+expand_mode = 1
+
+[node name="ClosedCurtainClickAreaPreview" type="ColorRect" parent="HotspotDefinitions/room_108_bathroom"]
+layout_mode = 0
+offset_left = 1864.0
+offset_top = 43.2
+offset_right = 2408.0
+offset_bottom = 907.2
+mouse_filter = 2
+color = Color(0.25, 0.72, 1, 0.16)
+
 [node name="room_108_bathroom_door" type="Control" parent="HotspotDefinitions/room_108_bathroom" unique_id=1993825394]
 anchors_preset = 0
 offset_left = 1068.7999
@@ -1134,10 +1286,10 @@ description_text = "The opposite wing of the hotel is visible through the window
 
 [node name="room_108_nightstand" type="Control" parent="HotspotDefinitions/room_108_bed_window" unique_id=381253360]
 anchors_preset = 0
-offset_left = 397.0002
-offset_top = 263.00018
-offset_right = 550.6002
-offset_bottom = 483.80017
+offset_left = 393.0002
+offset_top = 255.00018
+offset_right = 546.6002
+offset_bottom = 475.80017
 mouse_filter = 2
 script = ExtResource("2_0wfyh")
 hotspot_id = "room_108_nightstand"
