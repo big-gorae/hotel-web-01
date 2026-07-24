@@ -23,18 +23,18 @@
 | --- | --- | --- | --- | --- | --- |
 | 1 | 모니터에 귀신의 형상 | Day 3 | 프런트 모니터 | 모니터 전체를 길게 누름 | [monitor-ghost.md](monitor-ghost.md) |
 | 2 | 유리문 너머 빼꼼 보이는 얼굴 | Day 3 | 프런트 유리문 | 벨 빠른 3연타 후 다시 빠른 3연타 | [glass-door-peeking-face.md](glass-door-peeking-face.md) |
-| 3 | `"죽어"`라고 적힌 안내판 | Day 3 | 프런트 체크아웃 안내판 | 세부 처리법 미정 | [death-sign.md](death-sign.md) |
+| 3 | `"죽어"`라고 적힌 안내판 | Day 3 | 프런트 체크아웃 안내판 | 장착 아이템과 무관하게 안내판 전체를 길게 누름 | [death-sign.md](death-sign.md) |
 | 4 | 빨간색 객실등 | Day 2 | 객실 복도 105~108호 | 붉은 조명 전체를 길게 누름 | [red-room-light.md](red-room-light.md) |
 | 5 | 문 아래 피 웅덩이 | Day 2 | 객실 복도 105~108호 | 청소용 천 사용 | [blood-puddle-under-door.md](blood-puddle-under-door.md) |
 | 6 | 아기 얼굴 벽지 | Day 3 | 세탁실 전체 | 다섯 면을 각각 눌러 모든 눈을 감김 | [baby-face-wallpaper.md](baby-face-wallpaper.md) |
-| 7 | 수건 대신 걸린 인간 가죽 | Day 3 | 107호 욕실 | 세부 처리법 미정 | [human-skin-towel.md](human-skin-towel.md) |
-| 8 | 지옥으로 향하는 비상 화살표 | Day 2 | 복도·외부 비상계단 동선 | 세부 처리법 미정 | [hell-exit-arrow.md](hell-exit-arrow.md) |
-| 9 | 끔찍한 얼굴이 그려진 액자 | Day 3 | 105호 침실 | 세부 처리법 미정 | [grotesque-face-painting.md](grotesque-face-painting.md) |
+| 7 | 수건 대신 걸린 인간 가죽 | Day 3 | 107호 욕실 | 장착 아이템과 무관하게 가죽 전체를 길게 누름 | [human-skin-towel.md](human-skin-towel.md) |
+| 8 | 지옥으로 향하는 비상 화살표 | Day 2 | 복도·외부 비상계단 동선 | 장착 아이템과 무관하게 붉은 유도등 전체를 길게 누름 | [hell-exit-arrow.md](hell-exit-arrow.md) |
+| 9 | 끔찍한 얼굴이 그려진 액자 | Day 3 | 105호 침실 | 장착 아이템과 무관하게 액자 전체를 길게 누름 | [grotesque-face-painting.md](grotesque-face-painting.md) |
 | 10 | 귀신의 형상이 비치는 TV | Day 2 | 108호 침실 TV | TV 전체를 길게 누름 | [tv-ghost.md](tv-ghost.md) |
 | 11 | 닫힌 샤워 커튼과 다리 | Day 2 | 105~108호 욕실 중 한 곳 | 다리가 사라질 때까지 닫고 열기 반복 | [closed-shower-curtain.md](closed-shower-curtain.md) |
-| 12 | 자살 로프가 걸린 방 | Day 3 | 107호 침실 | 세부 처리법 미정 | [hanging-rope.md](hanging-rope.md) |
+| 12 | 자살 로프가 걸린 방 | Day 3 | 107호 침실 | 장착 아이템과 무관하게 로프 전체를 길게 누름 | [hanging-rope.md](hanging-rope.md) |
 | 13 | 빨간 손자국으로 꽉 찬 거울 | Day 3 | 105호 욕실 | 청소용 천 사용 | [bloody-handprint-mirror.md](bloody-handprint-mirror.md) |
-| 14 | 끔찍한 화장실이 보이는 거울 | Day 2 | 106호 욕실 | 해결법 미정 | [horrific-bathroom-mirror.md](horrific-bathroom-mirror.md) |
+| 14 | 끔찍한 화장실이 보이는 거울 | Day 2 | 106호 욕실 | `작은 거울`로 형상을 옮김 | [horrific-bathroom-mirror.md](horrific-bathroom-mirror.md) |
 | 15 | 내장으로 가득한 욕조 | Day 3 | 108호 욕실 | 해결법 미정 | [entrails-bathtub.md](entrails-bathtub.md) |
 
 ## 장소별 기억점
