@@ -171,6 +171,50 @@ func _run() -> void:
 		_fail("3D overlay parallax did not match photo size")
 		return
 
+	if main.debug_curtain_preview_selector == null or main.debug_curtain_preview_selector.disabled:
+		_fail("bathroom debug curtain comparison selector is unavailable")
+		return
+	main._set_debug_curtain_preview_mode(main.DEBUG_CURTAIN_OPEN)
+	await process_frame
+	if not main.current_texture.resource_path.ends_with("room_105_bathroom.png"):
+		_fail("debug curtain open preview did not load")
+		return
+	var debug_open_hotspot := _find_hotspot(main, "room_105_bathroom", "shower_curtain")
+	var debug_open_rect: Rect2 = debug_open_hotspot.get("rect")
+
+	main._set_debug_curtain_preview_mode(main.DEBUG_CURTAIN_CLOSED_EDIT)
+	await process_frame
+	if not main.current_texture.resource_path.ends_with("room_105_bathroom_curtain_closed.png"):
+		_fail("debug edit_002 closed curtain preview did not load")
+		return
+	if main.shower_curtain_state.is_closed("room_105_bathroom"):
+		_fail("debug edit_002 preview changed the saved curtain state")
+		return
+
+	main._set_debug_curtain_preview_mode(main.DEBUG_CURTAIN_CLOSED_PREV)
+	await process_frame
+	if main.current_texture.resource_path != main.DEBUG_CURTAIN_PREV_PHOTO:
+		_fail("debug prev closed curtain preview did not load")
+		return
+	var debug_prev_hotspot := _find_hotspot(main, "room_105_bathroom", "shower_curtain")
+	var debug_prev_rect: Rect2 = debug_prev_hotspot.get("rect")
+	if debug_prev_rect.size.x <= debug_open_rect.size.x:
+		_fail("debug closed preview did not use the full curtain click area")
+		return
+	if main.scene_3d_overlay.visible:
+		_fail("room 105 tub overlay remained visible in the debug closed preview")
+		return
+	main._on_hotspot_pressed(debug_prev_hotspot)
+	await process_frame
+	if main.debug_curtain_preview_mode != main.DEBUG_CURTAIN_OPEN or main.shower_curtain_state.is_closed("room_105_bathroom"):
+		_fail("clicking the debug curtain preview did not compare against the open photo")
+		return
+	main._set_debug_curtain_preview_mode(main.DEBUG_CURTAIN_GAMEPLAY)
+	await process_frame
+	if not main.scene_3d_overlay.visible:
+		_fail("room 105 tub overlay did not return after leaving debug curtain preview")
+		return
+
 	for room_number in [105, 106, 107, 108]:
 		var bathroom_scene_id := "room_%d_bathroom" % room_number
 		main.show_scene(bathroom_scene_id, false)

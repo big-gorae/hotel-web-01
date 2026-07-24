@@ -37,7 +37,10 @@ func photo_path(scene_id: String, scene_data: Dictionary) -> String:
 
 
 func make_hotspot(scene_id: String) -> Dictionary:
-	var closed := is_closed(scene_id)
+	return make_hotspot_for_state(is_closed(scene_id))
+
+
+func make_hotspot_for_state(closed: bool) -> Dictionary:
 	return {
 		"id": HOTSPOT_ID,
 		"label": "Shower Curtain",

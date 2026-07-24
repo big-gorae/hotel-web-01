@@ -41,6 +41,7 @@ const MIN_BRIGHTNESS := 0.55
 const MAX_BRIGHTNESS := 1.45
 const LAUNDRY_OPEN_PHOTO := "res://resource/images/laundry_room.png"
 const LAUNDRY_CLOSED_PHOTO := "res://resource/images/laundry_room_washer_closed.png"
+const DEBUG_CURTAIN_PREV_PHOTO := "res://resource/images/prev/화장실 닫힌 커튼 후보.png"
 const FOOTSTEP_SOUND := "res://resource/sounds/footstep.ogg"
 const FOOTSTEP_COUNT := 3
 const FOOTSTEP_INTERVAL_SECONDS := 0.22
@@ -48,6 +49,10 @@ const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
 const LETHAL_GIMMICKS_ENABLED := false
+const DEBUG_CURTAIN_GAMEPLAY := 0
+const DEBUG_CURTAIN_OPEN := 1
+const DEBUG_CURTAIN_CLOSED_EDIT := 2
+const DEBUG_CURTAIN_CLOSED_PREV := 3
 const INTRO_DIALOGUE_FALLBACK_LINES := [
 	"At 12:47 a.m., an unfamiliar number called.\n‘Unclaimed wages remain under your name. Come collect them in person.’",
 	"I had never worked at this hotel.\nBut the employee record carried my name and two phone numbers.",
@@ -116,6 +121,8 @@ var intro_dialogue_active := false
 var intro_dialogue_index := 0
 var debug_mold_preview_active := false
 var mold_removal_in_progress := false
+var debug_curtain_preview_mode := DEBUG_CURTAIN_GAMEPLAY
+var debug_last_closed_curtain_preview := DEBUG_CURTAIN_CLOSED_EDIT
 
 var gameplay_layer: Control
 var photo: TextureRect
@@ -144,6 +151,7 @@ var hotspot_toggle: Button
 var chat_toggle: Button
 var navigation_toggle: Button
 var filter_toggle: Button
+var debug_curtain_preview_selector: OptionButton
 var menu_overlay: ColorRect
 var brightness_slider: HSlider
 var brightness_value_label: Label
@@ -373,7 +381,7 @@ func _build_ui() -> void:
 	debug_panel.anchor_right = 1.0
 	debug_panel.anchor_top = 0.0
 	debug_panel.anchor_bottom = 0.0
-	debug_panel.offset_left = -555.0
+	debug_panel.offset_left = -805.0
 	debug_panel.offset_top = 18.0
 	debug_panel.offset_right = -18.0
 	debug_panel.offset_bottom = 66.0
@@ -396,6 +404,17 @@ func _build_ui() -> void:
 
 	filter_toggle = _make_debug_button("🎛", _ui_text("debug.filters.show", "Show filter selector"), _toggle_filter_selector)
 	corner_row.add_child(filter_toggle)
+
+	debug_curtain_preview_selector = OptionButton.new()
+	debug_curtain_preview_selector.custom_minimum_size = Vector2(232.0, 32.0)
+	debug_curtain_preview_selector.focus_mode = Control.FOCUS_NONE
+	debug_curtain_preview_selector.tooltip_text = "Bathroom photo comparison: gameplay, open, edit_002 closed, or prev closed."
+	debug_curtain_preview_selector.add_item("🛁 Gameplay", DEBUG_CURTAIN_GAMEPLAY)
+	debug_curtain_preview_selector.add_item("🛁 Open", DEBUG_CURTAIN_OPEN)
+	debug_curtain_preview_selector.add_item("🛁 Closed A · edit_002", DEBUG_CURTAIN_CLOSED_EDIT)
+	debug_curtain_preview_selector.add_item("🛁 Closed B · prev", DEBUG_CURTAIN_CLOSED_PREV)
+	debug_curtain_preview_selector.item_selected.connect(_on_debug_curtain_preview_selected)
+	corner_row.add_child(debug_curtain_preview_selector)
 
 	eye_radius_slider = HSlider.new()
 	eye_radius_slider.min_value = 28.0
@@ -1066,6 +1085,13 @@ func _toggle_shower_curtain() -> void:
 	if shower_curtain_state == null or not shower_curtain_state.supports_scene(scene_data):
 		return
 
+	if _is_debug_curtain_preview_active(scene_data):
+		var next_mode := debug_last_closed_curtain_preview if debug_curtain_preview_mode == DEBUG_CURTAIN_OPEN else DEBUG_CURTAIN_OPEN
+		_set_debug_curtain_preview_mode(next_mode)
+		var debug_message := "Debug preview: shower curtain open." if next_mode == DEBUG_CURTAIN_OPEN else "Debug preview: %s." % _debug_curtain_preview_label(next_mode)
+		_show_transient_dialogue(debug_message)
+		return
+
 	var closed: bool = shower_curtain_state.toggle(current_scene_id)
 	_refresh_current_scene_photo()
 	_build_hotspots(_scene_hotspots(current_scene_id, scene_data))
@@ -1079,10 +1105,57 @@ func _sync_scene_3d_overlay() -> void:
 	if scene_3d_overlay == null:
 		return
 	var scene_data: Dictionary = HOTEL_SCENES.get(current_scene_id, {})
-	if shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data) and shower_curtain_state.is_closed(current_scene_id):
+	if shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data) and _is_effective_shower_curtain_closed(current_scene_id, scene_data):
 		scene_3d_overlay.clear_overlay()
 		return
 	scene_3d_overlay.show_scene_overlay(current_scene_id)
+
+
+func _on_debug_curtain_preview_selected(index: int) -> void:
+	if debug_curtain_preview_selector == null:
+		return
+	_set_debug_curtain_preview_mode(debug_curtain_preview_selector.get_item_id(index))
+
+
+func _set_debug_curtain_preview_mode(mode: int) -> void:
+	debug_curtain_preview_mode = clampi(mode, DEBUG_CURTAIN_GAMEPLAY, DEBUG_CURTAIN_CLOSED_PREV)
+	if debug_curtain_preview_mode in [DEBUG_CURTAIN_CLOSED_EDIT, DEBUG_CURTAIN_CLOSED_PREV]:
+		debug_last_closed_curtain_preview = debug_curtain_preview_mode
+	if debug_curtain_preview_selector != null:
+		debug_curtain_preview_selector.select(debug_curtain_preview_mode)
+
+	var scene_data: Dictionary = HOTEL_SCENES.get(current_scene_id, {})
+	if shower_curtain_state == null or not shower_curtain_state.supports_scene(scene_data):
+		return
+	_refresh_current_scene_photo()
+	_build_hotspots(_scene_hotspots(current_scene_id, scene_data))
+
+
+func _is_debug_curtain_preview_active(scene_data: Dictionary) -> bool:
+	return debug_ui_enabled and debug_curtain_preview_mode != DEBUG_CURTAIN_GAMEPLAY and shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data)
+
+
+func _is_effective_shower_curtain_closed(scene_id: String, scene_data: Dictionary) -> bool:
+	if _is_debug_curtain_preview_active(scene_data):
+		return debug_curtain_preview_mode != DEBUG_CURTAIN_OPEN
+	return shower_curtain_state != null and shower_curtain_state.is_closed(scene_id)
+
+
+func _debug_curtain_preview_photo(scene_data: Dictionary) -> String:
+	match debug_curtain_preview_mode:
+		DEBUG_CURTAIN_OPEN:
+			return String(scene_data.get("photo", ""))
+		DEBUG_CURTAIN_CLOSED_EDIT:
+			return String(scene_data.get("curtain_closed_photo", ""))
+		DEBUG_CURTAIN_CLOSED_PREV:
+			return DEBUG_CURTAIN_PREV_PHOTO
+	return ""
+
+
+func _debug_curtain_preview_label(mode: int) -> String:
+	if mode == DEBUG_CURTAIN_CLOSED_PREV:
+		return "closed B · prev"
+	return "closed A · edit_002"
 
 
 func _is_laundry_second_washer_open() -> bool:
@@ -1515,6 +1588,8 @@ func _scene_photo(scene_id: String, scene_data: Dictionary) -> String:
 	if scene_id == "laundry_room" and not _is_laundry_second_washer_open():
 		return localization.translate_scene_photo(scene_id, LAUNDRY_CLOSED_PHOTO, "closed")
 	if shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data):
+		if _is_debug_curtain_preview_active(scene_data):
+			return _debug_curtain_preview_photo(scene_data)
 		var variant := "curtain_closed" if shower_curtain_state.is_closed(scene_id) else ""
 		return localization.translate_scene_photo(scene_id, shower_curtain_state.photo_path(scene_id, scene_data), variant)
 
@@ -1532,7 +1607,7 @@ func _scene_hotspots(scene_id: String, scene_data: Dictionary) -> Array:
 		for anomaly_hotspot in night_anomaly_director.get_dynamic_hotspots(scene_id):
 			hotspots.append(anomaly_hotspot)
 	if shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data):
-		hotspots.append(shower_curtain_state.make_hotspot(scene_id))
+		hotspots.append(shower_curtain_state.make_hotspot_for_state(_is_effective_shower_curtain_closed(scene_id, scene_data)))
 
 	return hotspots
 
@@ -1669,6 +1744,13 @@ func _sync_debug_toggles() -> void:
 	filter_toggle.button_pressed = show_filter_selector
 	filter_toggle.tooltip_text = _ui_text("debug.filters.hide", "Hide filter selector") if show_filter_selector else _ui_text("debug.filters.show", "Show filter selector")
 	_style_debug_button(filter_toggle, show_filter_selector)
+
+	if debug_curtain_preview_selector != null:
+		var scene_data: Dictionary = HOTEL_SCENES.get(current_scene_id, {})
+		var supports_curtain_preview: bool = shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data)
+		debug_curtain_preview_selector.disabled = not supports_curtain_preview
+		debug_curtain_preview_selector.select(debug_curtain_preview_mode)
+		debug_curtain_preview_selector.tooltip_text = "Bathroom photo comparison: gameplay, open, edit_002 closed, or prev closed." if supports_curtain_preview else "Enter a Room 105-108 bathroom to compare curtain photos."
 
 	if filter_bar != null:
 		filter_bar.sync_selected_preset()

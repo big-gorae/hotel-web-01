@@ -38,3 +38,15 @@ func test_closed_curtain_uses_the_larger_click_area() -> void:
 	assert_that(open_hotspot.get("id", "")).is_equal(ShowerCurtainState.HOTSPOT_ID)
 	assert_that(open_rect.size.x).is_less(closed_rect.size.x)
 	assert_that(open_rect.position).is_equal(closed_rect.position)
+
+
+func test_explicit_preview_state_builds_matching_click_area_without_changing_saved_state() -> void:
+	var flags := FlagStore.new()
+	var curtains := ShowerCurtainState.new()
+	curtains.setup(flags)
+
+	var preview_hotspot: Dictionary = curtains.make_hotspot_for_state(true)
+	var preview_rect: Rect2 = preview_hotspot.get("rect")
+
+	assert_that(preview_rect).is_equal(ShowerCurtainState.CLOSED_CLICK_RECT)
+	assert_that(curtains.is_closed("room_105_bathroom")).is_false()

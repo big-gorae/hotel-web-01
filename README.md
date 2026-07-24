@@ -201,9 +201,9 @@ The current anomalies are prototype encounters. Their visuals and interactions r
 - Localized photo variants can use `scene.<scene_id>.photo`; the closed laundry variant can use `scene.laundry_room.photo.closed`.
 - Rule Book entries use `ui.rule_book.rule.<number>` and unlock by their definition's `unlock_day`.
 
-## Debug Toggles
+## Debug Controls
 
-The three debug toggles are visible when running from the Godot editor, or when Godot is launched with `HOTEL_DEBUG_UI=1`.
+The debug controls are visible when running from the Godot editor, or when Godot is launched with `HOTEL_DEBUG_UI=1`.
 
 ```sh
 HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
@@ -212,6 +212,7 @@ HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
 - `▣`: shows or hides click area overlays. The real game view keeps them hidden by default.
 - `💬`: shows or hides the bottom chat/message panel. It is off by default.
 - `🧭`: shows or hides quick travel buttons. It is off by default and works independently from the chat panel.
+- `🛁 Gameplay / Open / Closed A / Closed B`: while viewing any Room 105-108 bathroom, immediately compares the gameplay state, the original open photo, the `edit_002` closed photo, and `resource/images/prev/화장실 닫힌 커튼 후보.png`. Preview choices do not modify or save the real curtain state.
 
 ## Pause Menu
 
