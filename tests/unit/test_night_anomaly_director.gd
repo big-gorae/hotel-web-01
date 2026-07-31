@@ -4,6 +4,15 @@ const NightAnomalyDirector := preload("res://scripts/horror/night_anomaly_direct
 const EyeCloseController := preload("res://scripts/systems/eye_close_controller.gd")
 
 
+func test_start_day_clears_external_anomaly_lock() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	director.set_external_anomaly_active(true)
+
+	director.start_day(4)
+
+	assert_bool(director.external_anomaly_active).is_false()
+
+
 func test_room_108_phone_kills_on_thirteenth_bell_and_blocks_room_after_answer() -> void:
 	var director = auto_free(NightAnomalyDirector.new())
 	var deaths := []
