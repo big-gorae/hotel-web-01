@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-07-27T16:27:09+00:00",
+  "height": 1024,
+  "job_id": "job_019fa466cf2439f3b61a7e6f287d408d",
+  "mime_type": "image/png",
+  "sha256": "ea9d3396ea5ffd04b9212340f64e0b558872230e9c2f4c488e5e5ffa8fad96e1",
+  "source_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa466cf2439f3b61a7e6f287d408d/source/original.png",
+  "source_uri": "image_workbench/jobs/job_019fa466cf2439f3b61a7e6f287d408d/source/original.png",
+  "status": "review_required",
+  "thumbnail_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa466cf2439f3b61a7e6f287d408d/source/thumbnail.png",
+  "thumbnail_uri": "image_workbench/jobs/job_019fa466cf2439f3b61a7e6f287d408d/source/thumbnail.png",
+  "title": "Room 105 pig-mask narrow-gap repair source",
+  "updated_at": "2026-07-27T16:31:24+00:00",
+  "width": 1535
+}

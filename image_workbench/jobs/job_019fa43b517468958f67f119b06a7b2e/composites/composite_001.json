@@ -1,0 +1,280 @@
+{
+  "blend_policy": "ai_relight_patch",
+  "candidate_count": 2,
+  "candidate_paths": [
+    "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_candidate_01.png",
+    "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_candidate_02.png"
+  ],
+  "candidate_uris": [
+    "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_candidate_01.png",
+    "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_candidate_02.png"
+  ],
+  "created_at": "2026-07-27T15:43:44+00:00",
+  "edit_envelope_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_edit_envelope.png",
+  "edit_envelope_uri": "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_edit_envelope.png",
+  "halo_px": 24,
+  "hard_lock_object_core": true,
+  "insert_asset_id": "asset_019fa43c045bde728266286c77a51811",
+  "integration_ring_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_integration_ring.png",
+  "integration_ring_uri": "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_integration_ring.png",
+  "job_id": "job_019fa43b517468958f67f119b06a7b2e",
+  "max_envelope_area_ratio": 0.3,
+  "object_core_mask_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_core_mask.png",
+  "object_core_mask_uri": "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_core_mask.png",
+  "preserve_contract": [
+    "Preserve the source scene, camera, geometry, and unrelated objects.",
+    "Preserve the inserted image identity and placement.",
+    "Integrate contact, shadow, reflection, color response, and occlusion without a visible seam."
+  ],
+  "preview_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_preview.png",
+  "preview_uri": "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_preview.png",
+  "provider": "openai_gpt_image_2",
+  "result_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_result.png",
+  "result_uri": "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_result.png",
+  "selected_candidate_index": 1,
+  "session_id": "composite_001",
+  "source_uri": "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/source/original.png",
+  "status": "review_required",
+  "transform": {
+    "flip_x": false,
+    "height": 0.43,
+    "opacity": 1.0,
+    "rotation_deg": 0.0,
+    "width": 0.18,
+    "x": 0.625,
+    "y": 0.205,
+    "z_index": 0
+  },
+  "updated_at": "2026-07-27T15:51:47+00:00",
+  "verification_report": {
+    "analysis_source": "openai_pairwise_candidate_judge",
+    "blend_policy": "ai_relight_patch",
+    "candidate_assessments": [
+      {
+        "index": 0,
+        "instruction_following": 0.82,
+        "issues": [
+          "Object is inserted in the intended region, but compositing is obvious.",
+          "Figure edges read as cutout-like against doorway and door.",
+          "Lighting/color integration is weaker; subject appears pasted in.",
+          "Ground contact and shadow cues are limited."
+        ],
+        "overall_score": 0.74,
+        "visual_consistency": 0.72,
+        "visual_quality": 0.68
+      },
+      {
+        "index": 1,
+        "instruction_following": 0.88,
+        "issues": [
+          "Slight mismatch in illumination between figure and room.",
+          "Lower body/contact with floor remains somewhat dark and ambiguous.",
+          "Minor edge/composite softness around head and coat."
+        ],
+        "overall_score": 0.84,
+        "visual_consistency": 0.84,
+        "visual_quality": 0.8
+      }
+    ],
+    "candidate_generation": [
+      {
+        "index": 0,
+        "metadata": {
+          "endpoint": "images/edits",
+          "mask_normalized": false,
+          "model": "gpt-image-2",
+          "response": {
+            "background": "opaque",
+            "created": 1785167298,
+            "data": [
+              {
+                "b64_json": "<image bytes>"
+              }
+            ],
+            "output_format": "png",
+            "quality": "high",
+            "size": "2048x1360",
+            "usage": {
+              "input_tokens": 6260,
+              "input_tokens_details": {
+                "image_tokens": 6060,
+                "text_tokens": 200
+              },
+              "output_tokens": 7351,
+              "output_tokens_details": {
+                "image_tokens": 7351,
+                "text_tokens": 0
+              },
+              "total_tokens": 13611
+            }
+          }
+        },
+        "path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_candidate_01.png",
+        "provider": "openai_gpt_image_2",
+        "requested_index": 1,
+        "requested_provider": "openai_gpt_image_2",
+        "uri": "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_candidate_01.png"
+      },
+      {
+        "index": 1,
+        "metadata": {
+          "endpoint": "images/edits",
+          "mask_normalized": false,
+          "model": "gpt-image-2",
+          "response": {
+            "background": "opaque",
+            "created": 1785167483,
+            "data": [
+              {
+                "b64_json": "<image bytes>"
+              }
+            ],
+            "output_format": "png",
+            "quality": "high",
+            "size": "2048x1360",
+            "usage": {
+              "input_tokens": 7920,
+              "input_tokens_details": {
+                "image_tokens": 7596,
+                "text_tokens": 324
+              },
+              "output_tokens": 7351,
+              "output_tokens_details": {
+                "image_tokens": 7351,
+                "text_tokens": 0
+              },
+              "total_tokens": 15271
+            }
+          }
+        },
+        "path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_candidate_02.png",
+        "provider": "openai_gpt_image_2",
+        "requested_index": "self_correction",
+        "uri": "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_candidate_02.png"
+      }
+    ],
+    "coherent_pixel_diagnostics": {
+      "edit_envelope_area_ratio": 0.1006,
+      "engine": "local_composite",
+      "object_core_diff": 36.42,
+      "object_core_preserved": false,
+      "outside_envelope_diff": 5.57,
+      "outside_envelope_preserved": false,
+      "warnings": [
+        "Inserted object core changed during blending."
+      ]
+    },
+    "completed_candidate_count": 2,
+    "confidence": 0.79,
+    "fallback_policy": "",
+    "full_frame_rendered": true,
+    "full_regeneration": true,
+    "generation_failures": [
+      {
+        "fallback_safe": "false",
+        "provider": "gemini_nano_banana_pro",
+        "reason": "Gemini image edit failed (500): {\"error\":{\"message\":\"Internal error encountered.\",\"code\":\"api_error\"}}"
+      }
+    ],
+    "hard_composite_applied": false,
+    "hard_lock_object_core": false,
+    "overall_status": "review",
+    "preservation_findings": [
+      "Room layout, camera viewpoint, furniture, lamp, bed, TV, and bathroom area are preserved in both candidates.",
+      "Inserted object identity as a pig-headed standing figure is preserved in both candidates.",
+      "Placement remains within the target guide region in both candidates."
+    ],
+    "provider_blend_status": "completed",
+    "provider_metadata": {
+      "endpoint": "images/edits",
+      "mask_normalized": false,
+      "model": "gpt-image-2",
+      "response": {
+        "background": "opaque",
+        "created": 1785167483,
+        "data": [
+          {
+            "b64_json": "<image bytes>"
+          }
+        ],
+        "output_format": "png",
+        "quality": "high",
+        "size": "2048x1360",
+        "usage": {
+          "input_tokens": 7920,
+          "input_tokens_details": {
+            "image_tokens": 7596,
+            "text_tokens": 324
+          },
+          "output_tokens": 7351,
+          "output_tokens_details": {
+            "image_tokens": 7351,
+            "text_tokens": 0
+          },
+          "total_tokens": 15271
+        }
+      }
+    },
+    "quality_gate": {
+      "normalized_score": 0.84,
+      "reasons": [
+        "semantic judge returned review",
+        "semantic judge requested user review"
+      ],
+      "render_strategy": "coherent_scene",
+      "status": "review_required",
+      "threshold": 0.8
+    },
+    "remaining_issues": [
+      "Need stronger environmental lighting response on the inserted figure.",
+      "Contact shadow and floor grounding could be more explicit.",
+      "Some residual cutout/composite cues remain, especially around silhouette edges."
+    ],
+    "render_strategy": "coherent_scene",
+    "repair_prompt": "Keep the original motel room unchanged. Preserve the pig-headed figure identity, pose, and doorway placement. Improve integration only: match the room's warm tungsten lighting on the figure, add natural contact shadow on the carpet and subtle occlusion by the door/frame, refine edge blending around the head and coat, and ensure the figure feels grounded in the doorway with no visible seam or pasted look.",
+    "score": 0.84,
+    "selected_candidate_index": 1,
+    "selection_reason": "Candidate 1 integrates the pig-headed figure into the target doorway region more naturally than Candidate 0, with better placement, scale, and less obvious compositing. Candidate 0 shows a stronger seam/cutout look and less convincing insertion. Candidate 1 still has minor realism issues around lighting and grounding, so it is best marked for review rather than pass.",
+    "self_correction": {
+      "attempted": true,
+      "candidate_index": 1,
+      "completed": true,
+      "initial_judge": {
+        "analysis_source": "openai_gpt_judge",
+        "change_alignment": "Inserted pig-headed figure is placed in the guided doorway region and identity is broadly preserved, with better scene integration than the source overlay.",
+        "outside_mask_risk": "",
+        "overall_status": "review",
+        "preservation_findings": [
+          "Source room, camera, and most unrelated objects appear preserved.",
+          "Inserted object placement remains in the intended area.",
+          "Object is partially occluded by the door, which helps integration.",
+          "Lighting/color response on the inserted figure is reasonably matched to the warm room."
+        ],
+        "remaining_issues": [
+          "Inserted figure identity is not fully preserved from the source insert: scale/crop changed substantially from close-up portrait to full body reveal.",
+          "Seam/integration is imperfect around head and body edges in the dark doorway.",
+          "Contact/shadow grounding at the feet is weak; figure appears slightly cutout-like.",
+          "Because the source scene should not change, the door-state/geometry change is a likely preservation failure."
+        ],
+        "repair_prompt": "Re-edit using the same source room without altering any room geometry, door position/state, lighting, or unrelated objects. Keep the inserted pig-headed portrait identity and placement consistent with the provided insert, but integrate it naturally in the doorway area using only realistic occlusion, edge blending, scene-consistent warm color response, and believable contact shadowing/reflection. Remove visible cutout seams and do not expand the person into a different crop or full-body interpretation.",
+        "score": 73,
+        "selected_candidate_index": 0,
+        "user_review_needed": true
+      },
+      "initial_selected_candidate_index": 0,
+      "max_attempts": 1,
+      "provider": "openai_gpt_image_2"
+    },
+    "target_guide_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_target_guide.png",
+    "target_guide_uri": "image_workbench/jobs/job_019fa43b517468958f67f119b06a7b2e/composites/composite_001_target_guide.png",
+    "tone_match": "scene_and_target_region_mean",
+    "tone_match_method": "masked_mean_std_transfer",
+    "tone_match_target_box": [
+      959,
+      210,
+      1235,
+      650
+    ],
+    "user_review_needed": true
+  }
+}

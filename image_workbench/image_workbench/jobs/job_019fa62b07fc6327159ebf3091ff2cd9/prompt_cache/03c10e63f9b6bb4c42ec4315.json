@@ -1,0 +1,62 @@
+{
+  "cache_type": "openai_edit_plan",
+  "created_at": "2026-07-28T00:42:09+00:00",
+  "plan": {
+    "acceptance_checks": [
+      "Temporary guide rectangle, forest background, and black coat are completely removed.",
+      "Wardrobe looks native to the room and matches dark brown wood, perspective, frame, hinges, knob, and nearly closed geometry.",
+      "Door opening is a very narrow left-edge slit only, visually around 18–25 px wide in the 1535 px image.",
+      "Inside the slit, only a tiny deep-hidden fragment of the mask is visible: exactly one eye hole with pale human eye, a small ear slice, and partial broad short snout with at least one dark nostril.",
+      "No full face, both eyes, full head, readable silhouette, or exposed body/clothing appears.",
+      "Wardrobe interior remains nearly black with faint warm rim light only.",
+      "Figure appears motionless, recessed, and not emerging.",
+      "All pixels outside the mask remain unchanged."
+    ],
+    "analysis_source": "openai_gpt_pipeline",
+    "change_summary": "The large rectangular photo pasted over the wardrobe is a TEMPORARY IDENTITY GUIDE ONLY. Remove that entire rectangle, its forest background, and its black coat. Reconstruct the exact hotel wardrobe underneath it: same dark brown wood, same frame, same right-side hinges, same brass knob, same perspective, and the same nearly closed door geometry as the surrounding source scene. The wardrobe door must remain almost fully closed, with only a very narrow vertical black slit along its left edge, approximately 18–25 pixels wide in this 1535 px image. Do not open the door wider.\n\nInside the slit, replace the previous generic pig head with the EXACT mask design shown in the temporary guide photo. This is a human wearing a mask, not an actual pig and not a different pig-mask design. Preserve these non-negotiable identity traits from the guide: smooth pale flesh-pink oval mask; very high rounded bald forehead; mostly clean lightly scuffed rubber/flesh surface with only subtle tiny gray marks, not thick black mold crust; asymmetric outward ears, with the viewer-left ear smaller and slightly folded and the viewer-right ear larger and taller; two very small circular deeply recessed eye holes set relatively low; pale gray human iris visible inside the one exposed eye hole; broad short cylindrical pink snout with two large round black nostrils; tiny slightly open mouth immediately below the snout; soft fleshy jaw folds. The eye-hole size, ear silhouette, forehead height, snout width/length, nostril spacing, and pale pink color must visibly match the guide, not merely suggest a pig.\n\nPush the masked figure deep behind the door. Through the narrow slit show only a cropped fragment of the official mask: a small slice of one ear, exactly one tiny round eye hole with its pale human eye, and part of the broad short snout with at least one dark nostril. Never show the full mask, both eyes, full head, full face, or readable facial silhouette. Beneath it show at most a near-black hair-thin hint of an unnaturally long, severely emaciated bare neck; no shoulder mass, chest, ribs, arms, hands, clothing, pelvis, buttocks, or genitals. The figure is motionless and hidden, not emerging.\n\nKeep the wardrobe interior nearly black and use only faint warm rim light consistent with the room. Preserve all pixels outside the locked selection exactly. Do not alter the bed, bathroom, lamp, walls, TV, table, camera, grading, sharpness, grain, or room lighting. The result must remain photorealistic subtle survival horror, frightening because the exact referenced mask is barely visible.",
+    "edit_mode_recommendation": "mask_edit",
+    "pipeline_cache": {
+      "cache_key": "03c10e63f9b6bb4c42ec4315",
+      "cache_path": "image_workbench/jobs/job_019fa62b07fc6327159ebf3091ff2cd9/prompt_cache/03c10e63f9b6bb4c42ec4315.json",
+      "cache_scope": {
+        "job_id": "job_019fa62b07fc6327159ebf3091ff2cd9"
+      },
+      "cache_status": "miss",
+      "version": "edit-plan-v2-coherent-scene"
+    },
+    "preserve_contract": [
+      "Preserve source camera perspective.",
+      "Preserve architecture, large furniture, object placement, lighting direction, and mood outside the requested change.",
+      "Keep all pixels outside the selected mask visually stable unless the instruction says this is a global change."
+    ],
+    "prompt_bundle": {
+      "edit_prompt": "Edit only inside the provided mask. Remove the entire pasted rectangular guide image completely, including its forest background, black coat, and all edges of the pasted rectangle. Reconstruct the original hotel wardrobe underneath so it matches the surrounding room exactly: dark brown wood wardrobe, same perspective, same frame, same right-side hinges, same brass knob, and the same nearly closed door geometry implied by the scene. The wardrobe door must remain almost fully closed. Leave only a very narrow vertical black slit along the LEFT edge of the door, approximately 18–25 pixels wide relative to this 1535 px image. Do not open the door wider.\n\nDeep inside that narrow slit, show only a tiny cropped fragment of a hidden human wearing the exact mask design indicated by the removed guide photo. This is a human in a mask, not an animal. Preserve these identity traits from the guide exactly: smooth pale flesh-pink oval mask; very high rounded bald forehead; lightly scuffed rubber/flesh surface with only subtle tiny gray marks; asymmetric outward ears with the viewer-left ear smaller and slightly folded and the viewer-right ear larger and taller; two very small circular deeply recessed eye holes set relatively low; a pale gray human iris visible inside the one exposed eye hole; broad short cylindrical pink snout with two large round black nostrils; tiny slightly open mouth immediately below the snout; soft fleshy jaw folds. However, because the slit is so narrow, reveal only a tiny partial glimpse: exactly one tiny round eye hole with pale human eye, a small slice of one ear, and part of the broad short snout with at least one dark nostril. Never show the full mask, both eyes, full head, full face, or a readable facial silhouette.\n\nPlace the figure deep behind the door, motionless, hidden, and not emerging. Beneath the visible mask fragment show at most a near-black hair-thin hint of an unnaturally long, severely emaciated bare neck. Show no shoulder mass, chest, ribs, arms, hands, clothing, pelvis, buttocks, or genitals. Keep the wardrobe interior nearly black, with only faint warm rim light consistent with the hotel room lighting. Match the room's existing photorealistic texture, perspective, noise, warmth, and subtle survival-horror tone. Preserve every pixel outside the mask exactly with no changes to the bed, bathroom, lamp, walls, TV, table, camera, grading, sharpness, grain, or room lighting.",
+      "mask_guidance": "Use only the provided rectangular mask area for edits. Reconstruct the wardrobe flush with surrounding geometry. Most of the mask should become wardrobe wood and door/frame detail; only a hairline vertical slit on the left side should remain dark. The hidden mask fragment must occupy only a small portion inside that slit and should be visually subordinate to the wardrobe reconstruction.",
+      "negative_prompt": "do not change unrelated objects, room layout, camera perspective, lighting direction, text, watermark",
+      "review_prompt": "Check that the pasted guide rectangle is fully gone and replaced by a believable hotel wardrobe matching the room. Verify the door is nearly closed with a left-edge slit about 18–25 px wide, not wider. Confirm the slit reveals only a tiny fragment of the exact reference mask: one small round eye hole with pale human eye, a small ear slice, and part of a broad short pink snout with at least one dark nostril. Ensure the interior stays nearly black, the figure remains deep and hidden, and no pixels outside the masked wardrobe area changed."
+    },
+    "provider_requirements": {
+      "guidance": [
+        "Use the supplied edit mask as the only editable region.",
+        "Prioritize inpainting/reconstruction fidelity over creative reinterpretation.",
+        "Honor strict geometry constraints for the nearly closed wardrobe door and narrow slit width.",
+        "Treat the temporary pasted photo as reference for mask identity traits only, not as an element to preserve.",
+        "If the model tends to over-reveal faces, bias strongly toward occlusion and darkness so only a cropped fragment is visible."
+      ],
+      "target_models": [
+        "gemini-3-pro-image",
+        "gpt-image-2"
+      ],
+      "target_provider": "auto_best"
+    },
+    "review_questions": [],
+    "risk_flags": [
+      "{'flag': 'scene_reconstruction_uncertainty', 'detail': 'The original wardrobe hidden behind the pasted rectangle is partially occluded, so exact underlying door-panel details may require inference from surrounding trim and room geometry.'}",
+      "{'flag': 'identity_match_under_occlusion', 'detail': 'The user requests exact mask-identity traits from the guide while also requiring only a tiny slit reveal; provider must prioritize the most diagnostic visible traits within severe occlusion.'}",
+      "{'flag': 'slit_width_precision', 'detail': 'Some image models may widen the opening unless the narrow 18–25 px constraint is emphasized.'}",
+      "{'flag': 'over-generation_risk', 'detail': 'Models may reveal too much face or body in horror edits; negative prompting and review should enforce minimal visibility.'}"
+    ],
+    "setup_blockers": []
+  },
+  "vision_model": "gpt-5.4"
+}

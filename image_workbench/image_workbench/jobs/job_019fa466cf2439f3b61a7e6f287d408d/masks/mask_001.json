@@ -1,0 +1,34 @@
+{
+  "created_at": "2026-07-27T16:27:30+00:00",
+  "edit_layer_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa466cf2439f3b61a7e6f287d408d/masks/mask_001_edit.png",
+  "edit_layer_uri": "image_workbench/jobs/job_019fa466cf2439f3b61a7e6f287d408d/masks/mask_001_edit.png",
+  "editable_coverage": 0.120117,
+  "geometry": {
+    "height": 0.6,
+    "pixel_box": [
+      936,
+      184,
+      1243,
+      799
+    ],
+    "source_size": [
+      1535,
+      1024
+    ],
+    "width": 0.2,
+    "x": 0.61,
+    "y": 0.18
+  },
+  "job_id": "job_019fa466cf2439f3b61a7e6f287d408d",
+  "mask_id": "mask_001",
+  "mask_kind": "rectangle",
+  "mask_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa466cf2439f3b61a7e6f287d408d/masks/mask_001.png",
+  "mask_uri": "image_workbench/jobs/job_019fa466cf2439f3b61a7e6f287d408d/masks/mask_001.png",
+  "protect_coverage": 0.0,
+  "protect_layer_path": null,
+  "protect_layer_uri": null,
+  "protect_mask_path": null,
+  "protect_mask_uri": null,
+  "risk_level": "low",
+  "selection_coverage": 0.120117
+}

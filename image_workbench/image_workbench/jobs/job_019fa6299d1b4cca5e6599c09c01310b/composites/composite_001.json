@@ -1,0 +1,72 @@
+{
+  "blend_policy": "local_only",
+  "candidate_count": 1,
+  "candidate_paths": [],
+  "candidate_uris": [],
+  "created_at": "2026-07-28T00:40:11+00:00",
+  "edit_envelope_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_edit_envelope.png",
+  "edit_envelope_uri": "image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_edit_envelope.png",
+  "halo_px": 24,
+  "hard_lock_object_core": true,
+  "insert_asset_id": "asset_019fa629e73f7746453ae23d6f118bc7",
+  "integration_ring_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_integration_ring.png",
+  "integration_ring_uri": "image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_integration_ring.png",
+  "job_id": "job_019fa6299d1b4cca5e6599c09c01310b",
+  "max_envelope_area_ratio": 0.3,
+  "object_core_mask_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_core_mask.png",
+  "object_core_mask_uri": "image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_core_mask.png",
+  "preserve_contract": [
+    "Preserve the source scene, camera, geometry, and unrelated objects.",
+    "Preserve the inserted image identity and placement.",
+    "Integrate contact, shadow, reflection, color response, and occlusion without a visible seam."
+  ],
+  "preview_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_preview.png",
+  "preview_uri": "image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_preview.png",
+  "provider": "auto_best",
+  "result_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_result.png",
+  "result_uri": "image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/composites/composite_001_result.png",
+  "session_id": "composite_001",
+  "source_uri": "image_workbench/jobs/job_019fa6299d1b4cca5e6599c09c01310b/source/original.png",
+  "status": "completed",
+  "transform": {
+    "flip_x": false,
+    "height": 0.57,
+    "opacity": 1.0,
+    "rotation_deg": 0.0,
+    "width": 0.19,
+    "x": 0.61,
+    "y": 0.18,
+    "z_index": 0
+  },
+  "updated_at": "2026-07-28T00:40:23+00:00",
+  "verification_report": {
+    "blend_policy": "local_only",
+    "edit_envelope_area_ratio": 0.1367,
+    "engine": "local_composite",
+    "full_regeneration": false,
+    "hard_lock_object_core": true,
+    "lighting_match": {
+      "shadow_blur_ratio": 0.08,
+      "shadow_offset_x_ratio": 0.04,
+      "shadow_offset_y_ratio": 0.08,
+      "shadow_strength": 0.32,
+      "source": "default"
+    },
+    "object_core_diff": 0.0,
+    "object_core_preserved": true,
+    "outside_envelope_diff": 0.0,
+    "outside_envelope_preserved": true,
+    "provider_blend_status": "not_requested",
+    "tone_match": "scene_and_target_region_mean",
+    "tone_match_method": "masked_mean_std_transfer",
+    "tone_match_target_box": [
+      936,
+      184,
+      1228,
+      768
+    ],
+    "warnings": [
+      "Inserted asset has no transparent background and is composited as a rectangle."
+    ]
+  }
+}

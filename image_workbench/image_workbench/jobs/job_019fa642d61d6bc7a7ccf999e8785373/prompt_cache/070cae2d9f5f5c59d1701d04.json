@@ -1,0 +1,74 @@
+{
+  "cache_type": "openai_edit_plan",
+  "created_at": "2026-07-28T01:08:50+00:00",
+  "plan": {
+    "acceptance_checks": [
+      "Only the locked wardrobe region changed; all outside pixels remain identical.",
+      "Wardrobe opening is approximately 34–42 px wide on the 1535 px image.",
+      "Opening is narrower than the source image's current gap, but not as narrow as an ultra-slit.",
+      "Right hinge side remains fixed; wardrobe frame and panel dimensions match the source.",
+      "Brass knob stays in the same place and appearance.",
+      "Dark brown wood grain, perspective, and warm room lighting remain consistent.",
+      "Visible face fragment includes one complete eye hole with pale gray eye, some forehead, partial ear slice, about half the snout with one full nostril and only the inner edge of the second nostril, and at most a tiny mouth edge.",
+      "Second eye is not visible.",
+      "A complete full face is not visible.",
+      "Mask identity is unchanged and still reads as the same approved pig-mask reference, not a generic pig or alternate design.",
+      "No neck or body parts are visible anywhere in the opening.",
+      "Figure appears deep, motionless, and not interacting with the door."
+    ],
+    "analysis_source": "openai_gpt_pipeline",
+    "change_summary": "Refine only the wardrobe-door occlusion inside the locked wardrobe region: close the sliding wooden door slightly so the black vertical gap becomes approximately 34–42 px wide on the 1535 px image, while preserving the already-correct official pig-mask identity and showing only a tighter, moderate reveal of that same face fragment.",
+    "edit_mode_recommendation": "mask_edit",
+    "pipeline_cache": {
+      "cache_key": "070cae2d9f5f5c59d1701d04",
+      "cache_path": "image_workbench/jobs/job_019fa642d61d6bc7a7ccf999e8785373/prompt_cache/070cae2d9f5f5c59d1701d04.json",
+      "cache_scope": {
+        "job_id": "job_019fa642d61d6bc7a7ccf999e8785373"
+      },
+      "cache_status": "miss",
+      "version": "edit-plan-v2-coherent-scene"
+    },
+    "preserve_contract": [
+      "Preserve every pixel outside the locked selection exactly.",
+      "Inside the selection, preserve the exact wardrobe frame, panel size, right hinge side position, dark brown wood grain character, brass knob, perspective, and warm room lighting.",
+      "Do not redraw, redesign, age, dirty, darken, stylize, or reinterpret the existing mask.",
+      "Preserve the mask's smooth pale peach-pink color, high rounded bald forehead, small low-set circular recessed eye hole with pale gray human iris, broad short cylindrical snout, round dark nostrils, tiny mouth, fleshy jaw folds, and asymmetric ear shape.",
+      "Keep the figure deep inside the wardrobe, motionless, and fully hidden except for the specified face fragment.",
+      "Do not reveal any neck or body parts: no shoulder, torso, chest, ribs, arms, hands, clothing, pelvis, buttocks, or genitals.",
+      "Do not alter bed, bathroom, lamp, walls, television, desk, camera viewpoint, global color grading, sharpness, grain, room lighting, or wardrobe placement."
+    ],
+    "prompt_bundle": {
+      "edit_prompt": "Edit only the masked wardrobe region. This is a small occlusion refinement, not a new character generation. Close the existing wooden wardrobe door slightly more than in the current image so the final black vertical opening is about 34–42 pixels wide on this 1535 px-wide image. Keep the right hinge side fixed. Retain the exact wardrobe frame, panel size, dark brown wood grain, brass knob, perspective, and warm room lighting.\n\nPreserve the existing official pig-mask identity exactly as already present in the source. Do NOT redraw, redesign, reinterpret, age, dirty, darken, stylize, or change the mask. Preserve exactly these visible design traits: smooth pale peach-pink color; high rounded bald forehead; one small low-set circular recessed eye hole with a pale gray human iris; broad short cylindrical snout; round dark nostrils; tiny mouth; fleshy jaw folds; asymmetric ear shape.\n\nThrough the final narrower opening, show only a moderate but frightening reveal: one complete small round eye hole with the pale gray human eye; a recognizable section of the high smooth forehead; a partial slice of one asymmetric ear; about half of the broad short pink snout including one full nostril and only the inner edge of the second nostril; and at most a tiny edge of the small mouth. Do not show the second eye. Do not show a complete full face. The visible proportions must read as the exact approved reference mask, not a generic pig, animal head, or alternate pig-mask design.\n\nHide the neck and every part of the body completely behind the opaque door and near-black wardrobe interior. The figure stays deep inside, motionless, and does not emerge or hold the door. Use only faint warm rim light consistent with the room. Preserve all pixels outside the masked region exactly.",
+      "mask_guidance": "Masked region covers the wardrobe/door area only. Confine edits to the supplied mask. Most likely required change is to slide/extend the wooden door leftward within the mask to reduce the visible gap while keeping the right hinge side and overall door geometry visually fixed. Preserve surrounding frame edges and any unmasked pixels seamlessly. Do not repaint the whole face; only maintain the currently visible face fragment with adjusted occlusion.",
+      "negative_prompt": "do not change unrelated objects, room layout, camera perspective, lighting direction, text, watermark",
+      "review_prompt": "Check that only the masked wardrobe region changed. Verify the vertical black opening measures roughly 34–42 px at image scale and is narrower than the source. Confirm the right hinge side, wardrobe frame, door panel size, wood grain, brass knob, perspective, and warm lighting are unchanged. Confirm exactly one complete eye hole is visible, with part of forehead, a partial ear slice, about half the snout with one full nostril and only the inner edge of the second nostril, and at most a tiny mouth edge. Confirm no second eye, no full face, and no body parts are visible. Confirm the mask design itself remains unchanged and still reads as the same official reference identity."
+    },
+    "provider_requirements": {
+      "asset_requirements": [
+        "Input source image",
+        "Edit mask at mask_001_edit.png"
+      ],
+      "inference_preferences": [
+        "Use image editing/inpainting, not full regeneration.",
+        "Honor the mask boundaries strictly.",
+        "Prioritize geometry preservation and identity preservation over creativity.",
+        "Keep the wardrobe frame, hinge side, panel dimensions, knob placement, perspective, and lighting unchanged.",
+        "Make the smallest possible edit that achieves the requested narrower gap."
+      ],
+      "model_candidates": [
+        "gemini-3-pro-image",
+        "gpt-image-2"
+      ],
+      "provider": "auto_best"
+    },
+    "review_questions": [],
+    "risk_flags": [
+      "High risk of model redesigning the face when the visible area is reduced; prompt must repeatedly require identity preservation.",
+      "Pixel-exact outside-mask preservation may depend on provider behavior; verify output strictly.",
+      "The requested 34–42 px opening is a narrow quantitative target; manual review should measure or estimate gap width.",
+      "Mask may include more area than necessary, increasing risk of incidental door/frame repainting."
+    ],
+    "setup_blockers": []
+  },
+  "vision_model": "gpt-5.4"
+}

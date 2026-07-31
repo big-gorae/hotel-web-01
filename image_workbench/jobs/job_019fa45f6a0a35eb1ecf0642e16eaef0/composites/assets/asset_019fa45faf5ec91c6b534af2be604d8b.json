@@ -1,0 +1,16 @@
+{
+  "alpha_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa45f6a0a35eb1ecf0642e16eaef0/composites/assets/asset_019fa45faf5ec91c6b534af2be604d8b_alpha.png",
+  "alpha_uri": "image_workbench/jobs/job_019fa45f6a0a35eb1ecf0642e16eaef0/composites/assets/asset_019fa45faf5ec91c6b534af2be604d8b_alpha.png",
+  "asset_id": "asset_019fa45faf5ec91c6b534af2be604d8b",
+  "created_at": "2026-07-27T16:19:23+00:00",
+  "description": "Identity-only reference for the dirty mold-covered pink pig mask. Preserve the mask's tall ears, rounded snout, small human eye openings, fungal grime and worn porous surface. The final entity must not inherit the black coat, broad shoulders, muscular build, forest background, or upright portrait pose.",
+  "has_alpha": false,
+  "height": 1086,
+  "job_id": "job_019fa45f6a0a35eb1ecf0642e16eaef0",
+  "mime_type": "image/png",
+  "sha256": "d2a5236755f103eb539d917e5c7b44d3c51ac62e7f5eb078e10da052e2844065",
+  "source_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/jobs/job_019fa45f6a0a35eb1ecf0642e16eaef0/composites/assets/asset_019fa45faf5ec91c6b534af2be604d8b_source.png",
+  "source_uri": "image_workbench/jobs/job_019fa45f6a0a35eb1ecf0642e16eaef0/composites/assets/asset_019fa45faf5ec91c6b534af2be604d8b_source.png",
+  "updated_at": "2026-07-27T16:19:23+00:00",
+  "width": 1448
+}
