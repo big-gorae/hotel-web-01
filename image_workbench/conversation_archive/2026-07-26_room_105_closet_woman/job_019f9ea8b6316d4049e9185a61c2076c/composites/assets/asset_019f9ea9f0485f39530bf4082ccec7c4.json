@@ -1,0 +1,16 @@
+{
+  "alpha_path": "/Users/binary-ho/Library/Application Support/com.scenelock.desktop/scenelock-projects/image_workbench/jobs/job_019f9ea8b6316d4049e9185a61c2076c/composites/assets/asset_019f9ea9f0485f39530bf4082ccec7c4_alpha.png",
+  "alpha_uri": "image_workbench/jobs/job_019f9ea8b6316d4049e9185a61c2076c/composites/assets/asset_019f9ea9f0485f39530bf4082ccec7c4_alpha.png",
+  "asset_id": "asset_019f9ea9f0485f39530bf4082ccec7c4",
+  "created_at": "2026-07-26T13:42:45+00:00",
+  "description": "Canonical Room 105 closet-woman composite asset and scene direction. Preserve this exact woman's bald pale head, huge irregular black eye sockets, small white staring irises, asymmetrical black smiling mouth, elongated pale neck, and crude low-resolution uncanny photographic texture; never beautify, humanize, or replace her with a generic realistic ghost. In the source room, target only the narrow brown wooden closet door immediately right of the open bathroom doorway. Keep the exact existing door and frame. The door is hinged on its right: rotate the leaf only slightly outward, creating a physically plausible narrow wedge-shaped dark opening along the left jamb. The woman stays inside and leans only her head and a short section of neck through the crack while staring directly at the camera. The wooden door edge must occlude a substantial part of her head and neck: she is peeking through the opening, not pasted onto the door and not standing in front. Remove only the reference's surrounding black background, leaving a deep unlit closet behind her. Match dim warm room light and grain while keeping her unnaturally pale. Preserve all room pixels outside the closet area. No full body, hands, extra limbs, added gore, black rectangle, text, UI, or unrelated changes.",
+  "has_alpha": false,
+  "height": 1536,
+  "job_id": "job_019f9ea8b6316d4049e9185a61c2076c",
+  "mime_type": "image/png",
+  "sha256": "8006a6d45cdc1e73bbc9d6a22149d0360031f115e03d6c221bdea0caba5ee1c5",
+  "source_path": "/Users/binary-ho/Library/Application Support/com.scenelock.desktop/scenelock-projects/image_workbench/jobs/job_019f9ea8b6316d4049e9185a61c2076c/composites/assets/asset_019f9ea9f0485f39530bf4082ccec7c4_source.png",
+  "source_uri": "image_workbench/jobs/job_019f9ea8b6316d4049e9185a61c2076c/composites/assets/asset_019f9ea9f0485f39530bf4082ccec7c4_source.png",
+  "updated_at": "2026-07-26T13:42:45+00:00",
+  "width": 1024
+}
