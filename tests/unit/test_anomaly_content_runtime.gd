@@ -6,6 +6,16 @@ const InventoryModel := preload("res://scripts/items/inventory_model.gd")
 const ItemCatalog := preload("res://scripts/items/item_catalog.gd")
 
 
+func test_start_day_clears_external_anomaly_lock() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	add_child(runtime)
+	runtime.set_external_anomaly_active(true)
+
+	runtime.start_day(4)
+
+	assert_bool(runtime.external_anomaly_active).is_false()
+
+
 func test_generic_hold_resolves_only_after_full_duration() -> void:
 	var runtime = auto_free(ContentRuntime.new())
 	add_child(runtime)

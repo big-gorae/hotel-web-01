@@ -101,6 +101,7 @@ func set_external_anomaly_active(value: bool) -> void:
 
 func start_day(day: int) -> void:
 	current_day = maxi(day, 1)
+	external_anomaly_active = false
 	if _random_seed_override >= 0:
 		_rng.seed = _random_seed_override + current_day
 	else:

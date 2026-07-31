@@ -106,10 +106,10 @@ func _run() -> void:
 	):
 		_fail("closet threat did not advance to the pig-mask man in the door gap")
 		return
-	main.mold_closet_timer.stop()
-	main._on_mold_closet_timeout()
+	main.mold_closet_timer.start(0.05)
+	await create_timer(0.08).timeout
 	if not main.jumpscare_controller.active or not main.horror_event_manager.is_jumpscare_active():
-		_fail("pig-mask preview did not trigger the real fatal jumpscare")
+		_fail("pig-mask preview timer did not trigger the real fatal jumpscare")
 		return
 	if (
 		main.jumpscare_controller.current_presentation == null
@@ -128,7 +128,17 @@ func _run() -> void:
 	main.system_message_panel.visible = false
 	main._use_equipped_item()
 	if main.mold_growth_system.get_mold_stack("room_105") != 4:
-		_fail("first mold remover spray did not remove two stacks")
+		_fail(
+			"first mold remover spray did not remove two stacks "
+			+ "(stack=%d, equipped=%s, room=%s, overlay=%s, eyes_closed=%s)"
+			% [
+				main.mold_growth_system.get_mold_stack("room_105"),
+				String(main.inventory_model.equipped_item.id) if main.inventory_model.equipped_item != null else "none",
+				String(main.horror_event_manager.room_registry.get_room_id(main.current_scene_id)),
+				str(main.mold_overlay.visible),
+				str(main.eye_close_controller.is_closed()),
+			]
+		)
 		return
 	if main.system_message_panel.visible:
 		_fail("mold remover spray should not show a system message")
@@ -141,6 +151,7 @@ func _run() -> void:
 	if main.mold_growth_system.get_mold_stack("room_105") != 0:
 		_fail("third mold remover spray did not clear the remaining stacks")
 		return
+	await process_frame
 	if main.mold_spray_player == null or main.mold_spray_player.stream == null:
 		_fail("mold remover spray sound was not prepared")
 		return
@@ -221,7 +232,16 @@ func _run() -> void:
 	main.night_anomaly_director.advance(main.night_anomaly_director.blanket_eye_close_duration)
 	main.eye_close_controller.open_eyes()
 	if main.night_anomaly_director.blanket_state != main.night_anomaly_director.BLANKET_RESOLVED:
-		_fail("blanket child did not resolve after the closed-eye hold")
+		_fail(
+			"blanket child did not resolve after the closed-eye hold "
+			+ "(state=%s, external=%s, content=%s, mold=%d)"
+			% [
+				main.night_anomaly_director.blanket_state,
+				str(main.night_anomaly_director.external_anomaly_active),
+				main.anomaly_content_runtime.current_event_id,
+				main.mold_growth_system.get_mold_stack("room_105"),
+			]
+		)
 		return
 	main.show_scene("front_desk", false)
 	main.night_anomaly_director.force_phone_ring()
