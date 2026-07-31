@@ -58,6 +58,7 @@ const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
 const LETHAL_GIMMICKS_ENABLED := true
+const MOLD_PIG_MASK_EVENT_ID := "room_105_closet_woman"
 const DEBUG_CURTAIN_GAMEPLAY := 0
 const DEBUG_CURTAIN_OPEN := 1
 const DEBUG_CURTAIN_CLOSED_EDIT := 2
@@ -135,7 +136,6 @@ var mold_spray_player: AudioStreamPlayer
 var game_started := false
 var intro_dialogue_active := false
 var intro_dialogue_index := 0
-var debug_mold_preview_active := false
 var mold_removal_in_progress := false
 var debug_curtain_preview_mode := DEBUG_CURTAIN_GAMEPLAY
 var debug_last_closed_curtain_preview := DEBUG_CURTAIN_CLOSED_EDIT
@@ -188,8 +188,6 @@ var hold_progress_overlay
 var choice_dialogue_overlay
 var anomaly_audio_controller
 var eye_radius_slider: HSlider
-var mold_stack_slider: HSlider
-var mold_stack_value_label: Label
 var phone_bell_panel: PanelContainer
 var phone_bell_label: Label
 var system_message_panel: PanelContainer
@@ -304,13 +302,6 @@ func _input(event: InputEvent) -> void:
 		jumpscare_lab.close_lab()
 		get_viewport().set_input_as_handled()
 		return
-
-	if event is InputEventKey and event.pressed and not event.echo and debug_ui_enabled:
-		var debug_mold_stage := _debug_mold_stage_for_key(event.keycode)
-		if debug_mold_stage > 0 and game_started and not _is_lobby_open() and not _is_menu_open():
-			_set_debug_mold_stage(debug_mold_stage)
-			get_viewport().set_input_as_handled()
-			return
 
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E:
 		if game_started and not _is_lobby_open() and not _is_menu_open() and not horror_event_manager.is_jumpscare_active():
@@ -529,6 +520,9 @@ func _build_ui() -> void:
 	debug_anomaly_selector.tooltip_text = "Force one confirmed anomaly. Deferred-resolution events are preview-only."
 	debug_anomaly_selector.add_item("☠ Anomaly preview", 0)
 	var anomaly_debug_index := 1
+	debug_anomaly_selector.add_item("곰팡이 돼지 가면 남자 · %s" % MOLD_PIG_MASK_EVENT_ID, anomaly_debug_index)
+	debug_anomaly_selector.set_item_metadata(anomaly_debug_index, MOLD_PIG_MASK_EVENT_ID)
+	anomaly_debug_index += 1
 	for event_id in MVP_NIGHT_DEBUG_EVENT_IDS:
 		debug_anomaly_selector.add_item(String(event_id), anomaly_debug_index)
 		debug_anomaly_selector.set_item_metadata(anomaly_debug_index, event_id)
@@ -561,24 +555,6 @@ func _build_ui() -> void:
 	eye_radius_slider.tooltip_text = _ui_text("debug.eyes.radius", "Closed-eye vision radius")
 	eye_radius_slider.value_changed.connect(_on_eye_radius_debug_changed)
 	tuning_row.add_child(eye_radius_slider)
-
-	mold_stack_value_label = Label.new()
-	mold_stack_value_label.text = "M 1/6"
-	mold_stack_value_label.tooltip_text = _ui_text("debug.mold.stack", "Mold stage 1-6 (number keys also work)")
-	mold_stack_value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	mold_stack_value_label.add_theme_font_size_override("font_size", 12)
-	mold_stack_value_label.add_theme_color_override("font_color", Color(0.72, 0.86, 0.66))
-	tuning_row.add_child(mold_stack_value_label)
-
-	mold_stack_slider = HSlider.new()
-	mold_stack_slider.min_value = 1.0
-	mold_stack_slider.max_value = 6.0
-	mold_stack_slider.step = 1.0
-	mold_stack_slider.value = 1.0
-	mold_stack_slider.custom_minimum_size = Vector2(92.0, 32.0)
-	mold_stack_slider.tooltip_text = _ui_text("debug.mold.stack", "Mold stage 1-6 (number keys also work)")
-	mold_stack_slider.value_changed.connect(_on_mold_stack_debug_changed)
-	tuning_row.add_child(mold_stack_slider)
 
 	phone_bell_panel = PanelContainer.new()
 	phone_bell_panel.visible = false
@@ -934,7 +910,6 @@ func _start_saved_day(day: int) -> void:
 func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) -> void:
 	_clear_intro_dialogue_state()
 	game_started = true
-	debug_mold_preview_active = false
 	day_save_manager.set_current_day(day)
 	rule_book_manager.set_current_day(day)
 	mold_growth_system.set_enabled(day >= 2)
@@ -1208,7 +1183,6 @@ func _use_equipped_item() -> void:
 		removed_mold = mold_growth_system.remove_mold(room_id, item_id)
 		mold_removal_in_progress = false
 	if removed_mold:
-		debug_mold_preview_active = false
 		_play_mold_spray_sound()
 		_save_current_day()
 		return
@@ -1399,7 +1373,11 @@ func _on_debug_anomaly_selected(index: int) -> void:
 		return
 	var event_id := String(debug_anomaly_selector.get_item_metadata(index))
 	var target_scene_id := ""
-	if event_id in MVP_NIGHT_DEBUG_EVENT_IDS:
+	if event_id == MOLD_PIG_MASK_EVENT_ID:
+		_start_mold_pig_mask_preview()
+		debug_anomaly_selector.select(0)
+		return
+	elif event_id in MVP_NIGHT_DEBUG_EVENT_IDS:
 		anomaly_content_runtime.start_day(day_save_manager.current_day)
 		night_anomaly_director.start_day(day_save_manager.current_day)
 		match event_id:
@@ -1428,6 +1406,31 @@ func _on_debug_anomaly_selected(index: int) -> void:
 	if not target_scene_id.is_empty() and HOTEL_SCENES.has(target_scene_id):
 		show_scene(target_scene_id, false)
 	debug_anomaly_selector.select(0)
+
+
+func _start_mold_pig_mask_preview() -> bool:
+	if (
+		mold_growth_system == null
+		or mold_closet_timer == null
+		or anomaly_content_runtime == null
+		or night_anomaly_director == null
+	):
+		return false
+	anomaly_content_runtime.start_day(day_save_manager.current_day)
+	night_anomaly_director.start_day(day_save_manager.current_day)
+	debug_anomaly_preview_event_id = MOLD_PIG_MASK_EVENT_ID
+	if not mold_closet_timer.is_stopped():
+		mold_closet_timer.stop()
+	show_scene("room_105_bathroom_entry", false)
+	mold_growth_system.force_stack("room_105", HotelMoldGrowthSystemScript.MAX_STACK)
+	# The production event closes the player's eyes as an initial shock. The
+	# integrated preview reopens them so the door and pig-mask phases are visible.
+	if eye_close_controller != null:
+		eye_close_controller.open_eyes()
+	_sync_mold_display()
+	_sync_mold_closet_threat()
+	_sync_anomaly_visual_overlay()
+	return not mold_closet_timer.is_stopped()
 
 
 func _open_jumpscare_lab() -> void:
@@ -1489,9 +1492,7 @@ func _on_mold_stack_changed(room_id: String, stack: int) -> void:
 		return
 	_sync_mold_display()
 	_sync_eye_close_anomaly_context()
-	if mold_stack_value_label != null:
-		mold_stack_value_label.text = "M %d/6" % stack
-	if not mold_removal_in_progress and not debug_mold_preview_active:
+	if not mold_removal_in_progress:
 		if stack > 0:
 			_show_system_message(_ui_text("mold.stack", "Black mold is spreading in Room 105. (%d/6)") % stack)
 	_sync_mold_closet_threat()
@@ -1503,9 +1504,7 @@ func _on_mold_maximum_reached(room_id: String) -> void:
 		return
 	if not LETHAL_GIMMICKS_ENABLED:
 		return
-	if debug_mold_preview_active:
-		return
-	horror_event_manager.mark_event_seen("room_105_closet_woman")
+	horror_event_manager.mark_event_seen(MOLD_PIG_MASK_EVENT_ID)
 	if anomaly_audio_controller != null:
 		anomaly_audio_controller.play_cue("closet_woman_laugh")
 	if current_scene_id.begins_with("room_105") and eye_close_controller != null:
@@ -1527,7 +1526,7 @@ func _sync_mold_display() -> void:
 func _sync_mold_closet_threat() -> void:
 	if mold_closet_timer == null:
 		return
-	var threatened: bool = not debug_mold_preview_active and mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK
+	var threatened: bool = mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK
 	if threatened and mold_closet_timer.is_stopped():
 		mold_closet_timer.start()
 	elif not threatened and not mold_closet_timer.is_stopped():
@@ -1536,7 +1535,7 @@ func _sync_mold_closet_threat() -> void:
 
 func _on_mold_closet_timeout() -> void:
 	if mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK:
-		_trigger_game_over_event("room_105_closet_woman")
+		_trigger_game_over_event(MOLD_PIG_MASK_EVENT_ID)
 
 
 func _on_phone_bell_changed(count: int, maximum: int) -> void:
@@ -1601,7 +1600,7 @@ func _sync_anomaly_visual_overlay() -> void:
 		and mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK
 	):
 		presentation_state = {
-			"event_id": "room_105_closet_woman",
+			"event_id": MOLD_PIG_MASK_EVENT_ID,
 			"state": "face" if mold_closet_timer.time_left <= 5.0 else "door_open",
 			"scene_id": "room_105_bathroom_entry",
 		}
@@ -1754,38 +1753,10 @@ func _on_eye_radius_debug_changed(value: float) -> void:
 		eye_close_controller.set_debug_vision_radius(value)
 
 
-func _on_mold_stack_debug_changed(value: float) -> void:
-	var stage := clampi(int(round(value)), 1, HotelMoldGrowthSystemScript.MAX_STACK)
-	debug_mold_preview_active = true
-	if mold_stack_value_label != null:
-		mold_stack_value_label.text = "M %d/6" % stage
-	if mold_growth_system != null:
-		mold_growth_system.force_stack("room_105", stage)
-
-
 func _set_debug_mold_stage(stage: int) -> void:
 	var safe_stage := clampi(stage, 1, HotelMoldGrowthSystemScript.MAX_STACK)
-	if mold_stack_slider != null and int(round(mold_stack_slider.value)) != safe_stage:
-		mold_stack_slider.value = safe_stage
-	else:
-		_on_mold_stack_debug_changed(safe_stage)
-
-
-func _debug_mold_stage_for_key(keycode: Key) -> int:
-	match keycode:
-		KEY_1:
-			return 1
-		KEY_2:
-			return 2
-		KEY_3:
-			return 3
-		KEY_4:
-			return 4
-		KEY_5:
-			return 5
-		KEY_6:
-			return 6
-	return 0
+	if mold_growth_system != null:
+		mold_growth_system.force_stack("room_105", safe_stage)
 
 
 func _show_system_message(message: String) -> void:

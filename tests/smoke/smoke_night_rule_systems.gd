@@ -77,17 +77,55 @@ func _run() -> void:
 		_fail("forced Room 109 entity was not visible on day three")
 		return
 
-	main.show_scene("room_105_bathroom_entry", false)
-	main._set_debug_mold_stage(4)
-	if not main.mold_overlay.visible or main.mold_overlay.stack != 4:
-		_fail("debug mold stage did not display to the right of the Room 105 closet")
+	var mold_preview_index := _find_anomaly_preview_index(main, main.MOLD_PIG_MASK_EVENT_ID)
+	if mold_preview_index < 0:
+		_fail("mold pig-mask event was missing from the integrated anomaly preview selector")
 		return
-	main._set_debug_mold_stage(6)
-	if main.mold_closet_timer == null or not main.mold_closet_timer.is_stopped():
-		_fail("debug mold preview should prepare but not start the closet death timer")
+	main._on_debug_anomaly_selected(mold_preview_index)
+	if main.current_scene_id != "room_105_bathroom_entry":
+		_fail("integrated mold preview did not open the Room 105 closet scene")
+		return
+	if not main.mold_overlay.visible or main.mold_overlay.stack != 6:
+		_fail("integrated mold preview did not begin at the fatal sixth mold stack")
+		return
+	if main.mold_closet_timer == null or main.mold_closet_timer.is_stopped():
+		_fail("integrated mold preview did not start the pig-mask threat timer")
+		return
+	if (
+		main.anomaly_presentation_layer._active_event_id != main.MOLD_PIG_MASK_EVENT_ID
+		or main.anomaly_presentation_layer._active_state_id != "door_open"
+		or not main.anomaly_presentation_layer.is_rendering_artifact()
+	):
+		_fail("sixth mold stack did not reveal the authored open-closet phase")
+		return
+	main.mold_closet_timer.start(4.9)
+	main._sync_anomaly_visual_overlay()
+	if (
+		main.anomaly_presentation_layer._active_state_id != "face"
+		or not main.anomaly_presentation_layer.is_rendering_artifact()
+	):
+		_fail("closet threat did not advance to the pig-mask man in the door gap")
+		return
+	main.mold_closet_timer.stop()
+	main._on_mold_closet_timeout()
+	if not main.jumpscare_controller.active or not main.horror_event_manager.is_jumpscare_active():
+		_fail("pig-mask preview did not trigger the real fatal jumpscare")
+		return
+	if (
+		main.jumpscare_controller.current_presentation == null
+		or String(main.jumpscare_controller.current_presentation.subject.texture.resource_path)
+			!= main.HotelHorrorEventManagerScript.HorrorCatalog.PIG_MASK_REFERENCE
+	):
+		_fail("pig-mask fatal phase did not use the approved reference image")
+		return
+	main.jumpscare_controller.stop()
+	main.horror_event_manager.active_jumpscare_id = ""
+	if not main.mold_overlay.visible or main.mold_overlay.stack != 6:
+		_fail("mold stack was not preserved for cleanup after preview")
 		return
 	var remover = _find_inventory_item(main, "mold_remover")
 	main.inventory_model.equip_item(remover)
+	main.system_message_panel.visible = false
 	main._use_equipped_item()
 	if main.mold_growth_system.get_mold_stack("room_105") != 4:
 		_fail("first mold remover spray did not remove two stacks")
@@ -290,6 +328,14 @@ func _find_inventory_item(main, item_id: String):
 		if String(item.id) == item_id:
 			return item
 	return null
+
+
+func _find_anomaly_preview_index(main, event_id: String) -> int:
+	for index in main.debug_anomaly_selector.item_count:
+		var metadata = main.debug_anomaly_selector.get_item_metadata(index)
+		if metadata != null and String(metadata) == event_id:
+			return index
+	return -1
 
 
 func _latest_rule_page_is_open(main, day: int, rule_count: int) -> bool:
