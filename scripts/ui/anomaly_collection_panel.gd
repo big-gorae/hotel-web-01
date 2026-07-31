@@ -13,6 +13,8 @@ var entries_box: VBoxContainer
 func setup(new_horror_event_manager, new_localization) -> void:
 	horror_event_manager = new_horror_event_manager
 	localization = new_localization
+	if localization != null and not localization.language_changed.is_connected(_on_language_changed):
+		localization.language_changed.connect(_on_language_changed)
 	_build()
 	refresh()
 
@@ -25,7 +27,12 @@ func refresh() -> void:
 		child.queue_free()
 
 	var entries: Array = horror_event_manager.get_discovered_entries()
-	count_label.text = _text("anomaly_collection.count", "Discovered: %d") % entries.size()
+	var entity_count := entries.filter(func(entry): return String(entry.get("collection_kind", "")) == "entity").size()
+	var phenomenon_count := entries.size() - entity_count
+	count_label.text = _text(
+		"anomaly_collection.count",
+		"Discovered: %d · Entities: %d · Phenomena: %d",
+	) % [entries.size(), entity_count, phenomenon_count]
 	empty_label.visible = entries.is_empty()
 
 	for entry in entries:
@@ -36,7 +43,7 @@ func _build() -> void:
 	for child in get_children():
 		child.queue_free()
 
-	custom_minimum_size = Vector2(460.0, 330.0)
+	custom_minimum_size = Vector2(540.0, 420.0)
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_theme_stylebox_override("panel", _make_panel_style(Color(0.015, 0.018, 0.022, 0.88), Color(1.0, 0.82, 0.28, 0.20), 10))
 
@@ -109,12 +116,18 @@ func _make_entry_card(entry: Dictionary) -> PanelContainer:
 	meta.add_theme_color_override("font_color", Color(0.70, 0.68, 0.62))
 	layout.add_child(meta)
 
-	var description := Label.new()
-	description.text = _event_description(entry)
-	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	description.add_theme_font_size_override("font_size", 14)
-	description.add_theme_color_override("font_color", Color(0.82, 0.80, 0.74))
-	layout.add_child(description)
+	var body_label := Label.new()
+	body_label.text = _body_label(entry)
+	body_label.add_theme_font_size_override("font_size", 11)
+	body_label.add_theme_color_override("font_color", _kind_color(entry))
+	layout.add_child(body_label)
+
+	var body := Label.new()
+	body.text = _event_body(entry)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_theme_font_size_override("font_size", 14)
+	body.add_theme_color_override("font_color", Color(0.86, 0.83, 0.76))
+	layout.add_child(body)
 
 	return card
 
@@ -123,8 +136,8 @@ func _event_title(entry: Dictionary) -> String:
 	return _translate(String(entry.get("title_key", "")), String(entry.get("fallback_title", "")))
 
 
-func _event_description(entry: Dictionary) -> String:
-	return _translate(String(entry.get("description_key", "")), String(entry.get("fallback_description", "")))
+func _event_body(entry: Dictionary) -> String:
+	return _translate(String(entry.get("body_key", "")), String(entry.get("fallback_body", "")))
 
 
 func _room_name(entry: Dictionary) -> String:
@@ -133,8 +146,20 @@ func _room_name(entry: Dictionary) -> String:
 
 
 func _type_name(entry: Dictionary) -> String:
-	var event_type := String(entry.get("event_type", "anomaly"))
-	return _text("anomaly_collection.type.%s" % event_type, event_type.capitalize())
+	var kind := String(entry.get("collection_kind", "phenomenon"))
+	return _text("anomaly_collection.kind.%s" % kind, kind.capitalize())
+
+
+func _body_label(entry: Dictionary) -> String:
+	if String(entry.get("collection_kind", "phenomenon")) == "entity":
+		return _text("anomaly_collection.body.story", "STORY")
+	return _text("anomaly_collection.body.description", "PHENOMENON DESCRIPTION")
+
+
+func _kind_color(entry: Dictionary) -> Color:
+	if String(entry.get("collection_kind", "phenomenon")) == "entity":
+		return Color(0.96, 0.66, 0.42)
+	return Color(0.62, 0.78, 0.84)
 
 
 func _status_name(entry: Dictionary) -> String:
@@ -153,6 +178,11 @@ func _translate(key: String, fallback: String) -> String:
 		return fallback
 
 	return localization.translate(key, fallback)
+
+
+func _on_language_changed(_language: int) -> void:
+	_build()
+	refresh()
 
 
 func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBoxFlat:

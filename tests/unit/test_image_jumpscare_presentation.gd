@@ -85,7 +85,7 @@ func test_fake_mother_preserves_the_original_portrait_ratio_over_a_full_backdrop
 	presentation.stop()
 
 
-func test_hanging_girl_uses_her_full_scene_then_lunges_into_the_face() -> void:
+func test_hanging_girl_crops_out_the_room_then_lunges_into_the_face() -> void:
 	var definition
 	for candidate in HorrorCatalog.build_definitions():
 		if candidate.id == "room_107_hanging_girl":
@@ -95,14 +95,21 @@ func test_hanging_girl_uses_her_full_scene_then_lunges_into_the_face() -> void:
 	assert_str(definition.jumpscare_image_path).is_equal(HorrorCatalog.HANGING_GIRL_REFERENCE)
 	assert_bool(ResourceLoader.exists(definition.jumpscare_image_path)).is_true()
 	assert_str(definition.presentation_scene_path).is_equal(HorrorCatalog.IMAGE_JUMPSCARE_SCENE)
-	assert_vector(definition.jumpscare_focus_point).is_equal(Vector2(0.70, 0.31))
+	assert_str(definition.jumpscare_fit_mode).is_equal("contain")
+	assert_vector(definition.jumpscare_focus_point).is_equal(Vector2(0.5, 0.36))
+	assert_that(definition.jumpscare_source_rect).is_equal(
+		HorrorCatalog.JUMPSCARE_SOURCE_RECT_BY_EVENT["room_107_hanging_girl"]
+	)
 	assert_float(definition.jumpscare_lunge_zoom).is_equal_approx(7.0, 0.001)
 
 	var presentation = auto_free(ImagePresentationScene.instantiate())
 	add_child(presentation)
 	presentation.play(definition)
 
-	assert_object(presentation.subject.texture).is_not_null()
-	assert_vector(presentation.focus_point).is_equal(Vector2(0.70, 0.31))
+	assert_object(presentation.source_texture).is_not_null()
+	assert_str(presentation.source_texture.resource_path).is_equal(HorrorCatalog.HANGING_GIRL_REFERENCE)
+	assert_bool(presentation.subject.texture is AtlasTexture).is_true()
+	assert_object(presentation.backdrop_subject.texture).is_same(presentation.subject.texture)
+	assert_vector(presentation.focus_point).is_equal(Vector2(0.5, 0.36))
 	assert_float(presentation.lunge_zoom).is_equal_approx(7.0, 0.001)
 	presentation.stop()

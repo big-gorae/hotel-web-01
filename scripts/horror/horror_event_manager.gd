@@ -186,10 +186,11 @@ func get_discovered_entries() -> Array:
 			"discovery_kind": definition.discovery_kind,
 			"room_id": definition.room_id,
 			"room_name": room_registry.get_room_display_name(definition.room_id),
-			"title_key": "horror_event.%s.title" % definition.id,
-			"description_key": "horror_event.%s.description" % definition.id,
+			"collection_kind": definition.collection_kind,
+			"title_key": definition.collection_title_key if not definition.collection_title_key.is_empty() else "horror_event.%s.title" % definition.id,
+			"body_key": definition.collection_body_key if not definition.collection_body_key.is_empty() else "horror_event.%s.description" % definition.id,
 			"fallback_title": definition.fallback_title,
-			"fallback_description": definition.fallback_description,
+			"fallback_body": definition.fallback_description,
 			"resolved": collection_resolved_event_ids.has(definition.id),
 		})
 

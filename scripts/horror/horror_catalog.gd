@@ -3,6 +3,7 @@ extends RefCounted
 
 const HorrorEventDefinition := preload("res://scripts/horror/horror_event_definition.gd")
 const ContentCatalog := preload("res://scripts/horror/anomaly_content_catalog.gd")
+const CollectionContent := preload("res://scripts/horror/anomaly_collection_content.gd")
 const IMAGE_JUMPSCARE_SCENE := "res://scenes/horror/image_jumpscare_presentation.tscn"
 const PIG_MASK_REFERENCE := "res://resource/images/references/entities/room_105_closet_pig_mask_man/reference_pig_mask_01.png"
 const FAKE_MOTHER_REFERENCE := "res://resource/images/references/entities/room_106_fake_mother/reference_face_01.png"
@@ -16,17 +17,22 @@ const JUMPSCARE_IMAGE_BY_EVENT := {
 const JUMPSCARE_FOCUS_BY_EVENT := {
 	"room_105_closet_woman": Vector2(0.5, 0.3),
 	"room_106_abandoned_child": Vector2(0.5, 0.44),
-	"room_107_hanging_girl": Vector2(0.70, 0.31),
+	"room_107_hanging_girl": Vector2(0.5, 0.36),
 }
 const JUMPSCARE_FIT_BY_EVENT := {
 	"room_105_closet_woman": "cover",
 	"room_106_abandoned_child": "contain",
-	"room_107_hanging_girl": "cover",
+	"room_107_hanging_girl": "contain",
 }
 const JUMPSCARE_INITIAL_ZOOM_BY_EVENT := {
 	"room_105_closet_woman": 1.02,
 	"room_106_abandoned_child": 1.02,
 	"room_107_hanging_girl": 1.02,
+}
+const JUMPSCARE_SOURCE_RECT_BY_EVENT := {
+	# Tight upper-body crop: the approved Hanging Girl herself lunges forward
+	# instead of presenting the entire Room 107 photograph as the subject.
+	"room_107_hanging_girl": Rect2(0.587, 0.120, 0.242, 0.516),
 }
 const JUMPSCARE_TUNING_BY_EVENT := {
 	"room_105_closet_woman": {
@@ -85,6 +91,8 @@ static func build_definitions() -> Array:
 		else:
 			definitions.append(_make_collection_event(content_definition))
 	definitions.append(_make_game_over_event("hell_mirror", "hotel", _scene_ids(""), "Mirror of Hell", "The screaming inside the mirror reaches the other side."))
+	for definition in definitions:
+		CollectionContent.apply_to_definition(definition)
 	return definitions
 
 
@@ -140,6 +148,10 @@ static func _make_game_over_event(event_id: String, room_id: String, scene_ids: 
 		definition.jumpscare_focus_point = JUMPSCARE_FOCUS_BY_EVENT.get(event_id, Vector2(0.5, 0.5))
 		definition.jumpscare_fit_mode = String(JUMPSCARE_FIT_BY_EVENT.get(event_id, "cover"))
 		definition.jumpscare_initial_zoom = float(JUMPSCARE_INITIAL_ZOOM_BY_EVENT.get(event_id, 1.08))
+		definition.jumpscare_source_rect = JUMPSCARE_SOURCE_RECT_BY_EVENT.get(
+			event_id,
+			Rect2(0.0, 0.0, 1.0, 1.0),
+		)
 		var tuning: Dictionary = JUMPSCARE_TUNING_BY_EVENT.get(event_id, {})
 		definition.jumpscare_hold_seconds = float(tuning.get("hold_seconds", definition.jumpscare_hold_seconds))
 		definition.jumpscare_lunge_seconds = float(tuning.get("lunge_seconds", definition.jumpscare_lunge_seconds))
@@ -176,6 +188,10 @@ static func _room_id_from_scene(scene_id: String) -> String:
 		return "laundry_room"
 	if scene_id == "front_desk":
 		return "front_desk"
+	if scene_id == "corridor":
+		return "corridor"
+	if scene_id == "exterior_stairs":
+		return "exterior_stairs"
 	return "hotel"
 
 

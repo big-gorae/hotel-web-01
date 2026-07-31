@@ -33,7 +33,7 @@
 - `room_108_entrails_bathtub`은 외형만 검수 가능하며 처리 hotspot을 만들지 않았다.
 - 곰팡이 돼지 가면 남자, 받지 못한 전화, 붉은 세탁기, 등록되지 않은 아이, 이불 속 아이는 확정 처리와 방치 사망 흐름을 갖는다.
 - `room_109_open_door`는 외형·탐지·전역 fatal만 구현했고 성공 처리법은 만들지 않았다.
-- `room_107_hanging_girl`은 발동과 동시에 세탁실 탁자에 인형을 만들고, 클릭 획득·선택지 대화·선택 이력 표시·룰북 단서·인형 전달 해결·오답 사망 서술을 구현했다. Preview는 세탁실 인형 획득부터 시작해 107호 생존 루트까지 이어진다. 목각 여자 인형은 기존 `resource/images/anomalies/room_107_hanging_girl/room_107_bed_nightstand/visible.png` 사진만 조우·적대 상태·점프스케어에 공용하며 새 생성 사진으로 교체하지 않는다.
+- `room_107_hanging_girl`은 발동과 동시에 세탁실 탁자에 인형을 만들고, 클릭 획득·Hand 장착·선택지 대화·선택 이력 표시·룰북 단서·비장착 상태의 인형 전달 해결·오답 사망 서술을 구현했다. Preview는 세탁실 인형 획득부터 시작해 107호 생존 루트까지 이어진다. 목각 여자 인형은 기존 `resource/images/anomalies/room_107_hanging_girl/room_107_bed_nightstand/visible.png`를 조우·적대 상태·점프스케어 원본으로 공용하며, 점프스케어에서는 방 전체 대신 인형 상반신만 런타임 크롭해 돌진시킨다.
 - `hotel_following_shadow`은 Day 3부터 production queue에 등장한다. 이동음과 프런트 벨 복제, 빠른 벨 3연타 반응, 비명·심장 소리·화면 점멸, 2.2초 간격 안의 복도↔객실 경계 4회 반복 성공 판정, 저장·복원과 전역 fatal까지 연결됐다.
 - 모든 production 기현상은 같은 시간에 하나만 활성화된다. 해결법이 없는 부분 구현 엔티티는 production queue에 넣지 않고 debug 검수로만 열어 두었다.
 

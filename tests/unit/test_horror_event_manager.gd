@@ -2,6 +2,7 @@ extends GdUnitTestSuite
 
 const FlagStore := preload("res://scripts/systems/flag_store.gd")
 const HorrorEventManager := preload("res://scripts/horror/horror_event_manager.gd")
+const Localization := preload("res://scripts/localization.gd")
 
 
 func test_anomaly_flag_lifecycle_and_collection_survive_new_run() -> void:
@@ -43,6 +44,42 @@ func test_collection_state_round_trips_independently_from_run_state() -> void:
 	assert_that(restored.get_discovered_count()).is_equal(1)
 	assert_that(restored.discovered_event_ids).is_empty()
 	assert_that(restored.get_discovered_entries()[0].get("id", "")).is_equal("room_108_light_repair_call")
+
+
+func test_collection_entries_separate_entity_stories_from_phenomenon_descriptions() -> void:
+	var manager := HorrorEventManager.new()
+	manager.setup_default_catalog()
+	manager.mark_event_seen("room_105_closet_woman")
+	manager.mark_event_seen("corridor_red_room_light")
+
+	var entries := manager.get_discovered_entries()
+	var entity: Dictionary = entries[0]
+	var phenomenon: Dictionary = entries[1]
+	assert_str(String(entity.get("collection_kind", ""))).is_equal("entity")
+	assert_str(String(phenomenon.get("collection_kind", ""))).is_equal("phenomenon")
+	assert_str(String(entity.get("body_key", ""))).ends_with(".body")
+	assert_str(String(phenomenon.get("body_key", ""))).ends_with(".body")
+
+
+func test_collection_copy_uses_korean_and_falls_back_to_english_for_untranslated_locales() -> void:
+	var localization := Localization.new()
+	var story_key := "anomaly_collection.event.room_107_hanging_girl.body"
+
+	localization.set_language(Localization.Language.KOREAN)
+	assert_str(localization.translate(story_key)).contains("데롱데롱 놀이")
+
+	localization.set_language(Localization.Language.JAPANESE)
+	assert_str(localization.translate(story_key)).contains("dangle-dangle game")
+
+
+func test_every_catalog_entry_has_editable_collection_copy_and_canon_kind() -> void:
+	var manager := HorrorEventManager.new()
+	manager.setup_default_catalog()
+	for event_id in manager.definitions_by_id:
+		var definition = manager.get_definition(event_id)
+		assert_str(definition.collection_title_key).is_not_empty()
+		assert_str(definition.collection_body_key).is_not_empty()
+		assert_array(["entity", "phenomenon"]).contains([definition.collection_kind])
 
 
 func test_weighted_selection_uses_definition_weights() -> void:
