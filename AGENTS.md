@@ -4,7 +4,8 @@
 
 - When the user asks to “apply,” “reflect,” or “반영” a change, completion includes implementing it locally, running relevant validation, committing it, and pushing the commit to the configured remote repository.
 - Treat a request as local-only only when the user explicitly says not to commit or push.
-- Do not report a change as remotely applied until the remote branch contains the intended commit.
+- Pushing only to a feature branch is not complete. Either update the remote default branch when direct pushes are explicitly authorized and safe, or create a pull request that targets the remote default branch.
+- Do not report a change as remotely applied until the intended commit is on the remote default branch or a pull request targeting that branch has been created.
 - Clearly distinguish between a pushed feature branch, a merged default branch, and a deployed build.
 
 ## Conflict and Intent Safety
