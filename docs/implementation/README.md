@@ -5,6 +5,7 @@
 - [런타임 설계](anomaly-runtime-design.md): 활성 이상현상 1개, 상태 머신, 진행 바, 아이템과 저장 구조
 - [이야기 구현 계획](story-production-plan.md): 밀린 임금 전화, 두 연락처, 언니의 명의 사용과 관리자 단서
 - [콘텐츠 제작 계획](anomaly-content-production-plan.md): 확정 이상현상별 코드·이미지·음향·테스트 산출물
+- [이상현상 모음 콘텐츠 편집](anomaly-collection-content.md): 엔티티 스토리·기현상 설명과 다국어 fallback 수정 방법
 - [SceneLock 연동 명세](scenelock-handoff.md): 이미지 생성·편집·합성 결과를 안전하게 게임에 반영하는 계약
 - [점프스케어 연출](jumpscare-presentation.md): 원본 이미지 직결, 0.3초 후 돌진, 공용 충격음과 점프스케어 연구소
 - [현재 구현 상태](implementation-status.md): 설계, 코드 기반, 미연결 시스템과 미제작 자산의 경계

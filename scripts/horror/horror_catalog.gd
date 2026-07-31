@@ -3,6 +3,7 @@ extends RefCounted
 
 const HorrorEventDefinition := preload("res://scripts/horror/horror_event_definition.gd")
 const ContentCatalog := preload("res://scripts/horror/anomaly_content_catalog.gd")
+const CollectionContent := preload("res://scripts/horror/anomaly_collection_content.gd")
 const IMAGE_JUMPSCARE_SCENE := "res://scenes/horror/image_jumpscare_presentation.tscn"
 const PIG_MASK_REFERENCE := "res://resource/images/references/entities/room_105_closet_pig_mask_man/reference_pig_mask_01.png"
 const FAKE_MOTHER_REFERENCE := "res://resource/images/references/entities/room_106_fake_mother/reference_face_01.png"
@@ -90,6 +91,8 @@ static func build_definitions() -> Array:
 		else:
 			definitions.append(_make_collection_event(content_definition))
 	definitions.append(_make_game_over_event("hell_mirror", "hotel", _scene_ids(""), "Mirror of Hell", "The screaming inside the mirror reaches the other side."))
+	for definition in definitions:
+		CollectionContent.apply_to_definition(definition)
 	return definitions
 
 
@@ -185,6 +188,10 @@ static func _room_id_from_scene(scene_id: String) -> String:
 		return "laundry_room"
 	if scene_id == "front_desk":
 		return "front_desk"
+	if scene_id == "corridor":
+		return "corridor"
+	if scene_id == "exterior_stairs":
+		return "exterior_stairs"
 	return "hotel"
 
 
