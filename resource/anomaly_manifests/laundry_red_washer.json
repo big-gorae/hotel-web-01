@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "event_id": "laundry_red_washer",
+  "source_scene_id": "laundry_room",
+  "source_path": "res://resource/images/laundry_room_washer_closed.png",
+  "source_sha256": "4044c5dcb30e02efaeadce7b2a793b1a73cd3090c33e7cc90c5685c08641323d",
+  "canvas": {
+    "width": 1448,
+    "height": 1086
+  },
+  "states": {
+    "red": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/laundry_red_washer/laundry_room/red.png",
+        "sha256": "f8e28281bce8a9cd17ce1386b8d15302339f3233dff886eb36f56d5c919c341d",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "music": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/laundry_red_washer/laundry_room/red.png",
+        "sha256": "f8e28281bce8a9cd17ce1386b8d15302339f3233dff886eb36f56d5c919c341d",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "ready": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/laundry_red_washer/laundry_room/red.png",
+        "sha256": "f8e28281bce8a9cd17ce1386b8d15302339f3233dff886eb36f56d5c919c341d",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "discarded": {
+      "base_only": true
+    }
+  }
+}

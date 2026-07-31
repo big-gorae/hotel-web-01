@@ -139,6 +139,18 @@ func start_song(duration: float) -> bool:
 	return true
 
 
+func stop_song(emit_interrupted := false) -> void:
+	if not _song_active:
+		return
+	_song_active = false
+	_song_seconds_remaining = 0.0
+	if _song_player != null:
+		_song_player.stop()
+	_update_mask_uniforms()
+	if emit_interrupted:
+		song_interrupted.emit()
+
+
 func get_song_seconds_remaining() -> float:
 	return _song_seconds_remaining
 

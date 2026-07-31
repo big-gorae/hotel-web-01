@@ -40,6 +40,28 @@ func _run() -> void:
 	if main.filter_toggle == null or main.filter_bar == null:
 		_fail("filter debug controls were not initialized")
 		return
+	if main.debug_jumpscare_lab_button == null or main.jumpscare_lab == null:
+		_fail("jumpscare lab was not initialized")
+		return
+	main._open_jumpscare_lab()
+	if not main.jumpscare_lab.visible:
+		_fail("jumpscare lab did not open")
+		return
+	if not main.jumpscare_lab.select_event_by_id("room_105_closet_woman"):
+		_fail("pig-mask jumpscare lab entry is missing")
+		return
+	main.jumpscare_lab.set_control_value("jumpscare_hold_seconds", 0.24)
+	if not main.jumpscare_lab.preview_selected():
+		_fail("jumpscare lab preview request failed")
+		return
+	if not main.jumpscare_controller.active:
+		_fail("jumpscare lab preview did not start")
+		return
+	if String(main.jumpscare_controller.current_presentation.subject.texture.resource_path) != main.HotelHorrorEventManagerScript.HorrorCatalog.PIG_MASK_REFERENCE:
+		_fail("jumpscare preview did not use the original pig-mask reference")
+		return
+	main.jumpscare_controller.stop()
+	main.jumpscare_lab.close_lab()
 	if main.filter_bar.visible:
 		_fail("filter selector should start hidden")
 		return
@@ -159,8 +181,14 @@ func _run() -> void:
 
 	main.show_scene("room_105_bathroom", false)
 	await process_frame
-	if main.scene_3d_overlay == null or not main.scene_3d_overlay.visible or main.scene_3d_overlay.get_model_count() != 1:
-		_fail("room 105 bathroom 3D overlay missing")
+	if main.scene_3d_overlay == null or main.scene_3d_overlay.visible:
+		_fail("abandoned-child 3D model appeared without its encounter")
+		return
+	main.show_scene("room_106_bathroom", false)
+	main.night_anomaly_director.force_child_encounter()
+	await process_frame
+	if not main.scene_3d_overlay.visible or main.scene_3d_overlay.get_model_count() != 1:
+		_fail("Room 106 abandoned-child 3D model missing during its encounter")
 		return
 	main.mouse_position = Vector2(1280.0, 720.0)
 	main._update_layout()
@@ -170,6 +198,9 @@ func _run() -> void:
 	if main.scene_3d_overlay.size != main.photo.size:
 		_fail("3D overlay parallax did not match photo size")
 		return
+	main.night_anomaly_director.start_day(1)
+	main.show_scene("room_105_bathroom", false)
+	await process_frame
 
 	if main.debug_curtain_preview_selector == null or main.debug_curtain_preview_selector.disabled:
 		_fail("bathroom debug curtain comparison selector is unavailable")
@@ -211,8 +242,8 @@ func _run() -> void:
 		return
 	main._set_debug_curtain_preview_mode(main.DEBUG_CURTAIN_GAMEPLAY)
 	await process_frame
-	if not main.scene_3d_overlay.visible:
-		_fail("room 105 tub overlay did not return after leaving debug curtain preview")
+	if main.scene_3d_overlay.visible:
+		_fail("abandoned-child 3D model returned outside its encounter")
 		return
 
 	for room_number in [105, 106, 107, 108]:
@@ -237,8 +268,8 @@ func _run() -> void:
 		if closed_curtain_rect.size.x <= open_curtain_rect.size.x:
 			_fail("room %d closed curtain click area did not expand" % room_number)
 			return
-		if room_number == 105 and main.scene_3d_overlay.visible:
-			_fail("room 105 tub overlay remained visible through the closed curtain")
+		if main.scene_3d_overlay.visible:
+			_fail("abandoned-child 3D model appeared during ordinary curtain interaction")
 			return
 		main._on_hotspot_pressed(closed_curtain_hotspot)
 		await process_frame
@@ -248,8 +279,8 @@ func _run() -> void:
 
 	main.show_scene("room_105_bathroom", false)
 	await process_frame
-	if not main.scene_3d_overlay.visible:
-		_fail("room 105 tub overlay did not return after reopening the curtain")
+	if main.scene_3d_overlay.visible:
+		_fail("abandoned-child 3D model appeared after reopening an ordinary curtain")
 		return
 
 	var sink_hotspot := _find_task_hotspot(main, "room_105_bathroom", "room_105_clean_sink")
@@ -261,7 +292,10 @@ func _run() -> void:
 	if cloth_item == null or not main.inventory_model.equip_item(cloth_item):
 		_fail("cleaning cloth could not be equipped")
 		return
-	main._on_hotspot_pressed(sink_hotspot)
+	main._apply_interaction_result(main.interaction_runner.execute_item_on_hotspot(
+		sink_hotspot,
+		main._make_interaction_context(sink_hotspot)
+	))
 	if main.task_manager.get_task_state("room_105_clean_sink") != "done":
 		_fail("clean sink task did not complete")
 		return
@@ -286,12 +320,14 @@ func _run() -> void:
 		return
 
 	main.localization.set_language(main.localization.Language.KOREAN)
-	if main.horror_event_manager.trigger_jumpscare("room_108_light_repair_call"):
-		_fail("test-only jumpscare remained enabled")
+	if not main.horror_event_manager.trigger_jumpscare("room_108_light_repair_call"):
+		_fail("lethal jumpscare did not start")
 		return
-	if main.jumpscare_controller != null or main.horror_event_manager.is_jumpscare_active():
-		_fail("disabled jumpscare still created a lethal presentation")
+	if main.jumpscare_controller == null or not main.horror_event_manager.is_jumpscare_active():
+		_fail("lethal jumpscare presentation was not created")
 		return
+	main.jumpscare_controller.stop()
+	main.horror_event_manager.finish_jumpscare()
 	main.localization.set_language(main.localization.Language.ENGLISH)
 
 	var state: Dictionary = main._capture_day_state()
@@ -302,6 +338,7 @@ func _run() -> void:
 
 	main.inventory_model.add_item_by_id("collected_trash")
 	main.horror_event_manager.mark_event_seen("room_108_light_repair_call")
+	var collection_count_before_restart: int = main.horror_event_manager.get_discovered_count()
 	main._start_shift()
 	await process_frame
 	_complete_intro_dialogue(main)
@@ -313,7 +350,10 @@ func _run() -> void:
 		if _find_inventory_item(main, initial_item_id) == null:
 			_fail("new shift did not restore initial item %s" % initial_item_id)
 			return
-	if main.horror_event_manager.get_discovered_count() != 1:
+	if (
+		main.horror_event_manager.get_discovered_count() != collection_count_before_restart
+		or not main.horror_event_manager.collection_event_ids.has("room_108_light_repair_call")
+	):
 		_fail("new shift cleared the permanent horror collection")
 		return
 
@@ -323,7 +363,10 @@ func _run() -> void:
 	root.add_child(restored_main)
 	await process_frame
 	await process_frame
-	if restored_main.horror_event_manager.get_discovered_count() != 1:
+	if (
+		restored_main.horror_event_manager.get_discovered_count() != collection_count_before_restart
+		or not restored_main.horror_event_manager.collection_event_ids.has("room_108_light_repair_call")
+	):
 		_fail("permanent horror collection did not survive an app restart")
 		return
 	restored_main.queue_free()

@@ -25,6 +25,7 @@ var collection_kind_counts: Dictionary = {}
 var collection_resolved_event_ids: Array[String] = []
 var active_jumpscare_id := ""
 var jumpscares_enabled := true
+var random_spawning_enabled := true
 
 
 func setup_default_catalog(new_flag_store = null) -> void:
@@ -38,6 +39,10 @@ func set_jumpscares_enabled(value: bool) -> void:
 	jumpscares_enabled = value
 	if not jumpscares_enabled:
 		active_jumpscare_id = ""
+
+
+func set_random_spawning_enabled(value: bool) -> void:
+	random_spawning_enabled = value
 
 
 func start_new_run() -> void:
@@ -255,6 +260,8 @@ func import_collection_state(state: Dictionary) -> void:
 
 
 func _try_spawn_random_anomaly(scene_id: String) -> void:
+	if not random_spawning_enabled:
+		return
 	var room_id := room_registry.get_room_id(scene_id)
 	if active_event_id_by_room.has(room_id):
 		return

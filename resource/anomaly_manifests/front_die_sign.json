@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "front_die_sign",
+  "source_scene_id": "front_desk",
+  "source_path": "res://resource/images/front_desk.png",
+  "source_sha256": "9fc6b06e7f7f9fa0fdf909ef569c7be6e8b36446db87e8202f838192179f9f60",
+  "canvas": {
+    "width": 1535,
+    "height": 1024
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/front_die_sign/front_desk/visible.png",
+        "sha256": "2b5942b8e79d9a56046f33ae68a679aed5e7032d8dd06e01654a38ae2e7d53fb",
+        "width": 1535,
+        "height": 1024
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}

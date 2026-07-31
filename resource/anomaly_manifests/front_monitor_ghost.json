@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "front_monitor_ghost",
+  "source_scene_id": "front_desk",
+  "source_path": "res://resource/images/front_desk.png",
+  "source_sha256": "9fc6b06e7f7f9fa0fdf909ef569c7be6e8b36446db87e8202f838192179f9f60",
+  "canvas": {
+    "width": 1535,
+    "height": 1024
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/front_monitor_ghost/front_desk/visible.png",
+        "sha256": "16bd458c985e6b266328a7f53137463dbb17fa6a26065a936368c71b26aa10b1",
+        "width": 1535,
+        "height": 1024
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}

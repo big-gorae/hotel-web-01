@@ -7,4 +7,4 @@ Original source mentioned by OpenGameArt: https://www.freesound.org/people/Fanto
 License: CC0 1.0 Universal
 License URL: https://creativecommons.org/publicdomain/zero/1.0/
 Downloaded on: 2026-07-04
-Modifications: Converted from FLAC to Ogg Vorbis and renamed for Godot/web playback.
+Modifications: Converted from FLAC to Ogg Vorbis and renamed for Godot/web playback. The same sample is arranged into a three-step sequence in resource/sounds/anomalies/shadow_footstep_sequence.ogg.

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "room_105_bloody_handprint_mirror",
+  "source_scene_id": "room_105_bathroom",
+  "source_path": "res://resource/images/room_105_bathroom.png",
+  "source_sha256": "668ddd1c70b50b78507bf3ceec9d2a4b25c50142df9c37e55399672d73b1c999",
+  "canvas": {
+    "width": 1448,
+    "height": 1086
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/room_105_bloody_handprint_mirror/room_105_bathroom/visible.png",
+        "sha256": "d6ab849c76135faae62c2900ad87954c54916056b491974446a63bd73b242326",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}

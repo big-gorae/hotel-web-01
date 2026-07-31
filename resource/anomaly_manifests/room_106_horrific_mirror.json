@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "room_106_horrific_mirror",
+  "source_scene_id": "room_106_bathroom",
+  "source_path": "res://resource/images/room_106_bathroom.png",
+  "source_sha256": "668ddd1c70b50b78507bf3ceec9d2a4b25c50142df9c37e55399672d73b1c999",
+  "canvas": {
+    "width": 1448,
+    "height": 1086
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/room_106_horrific_mirror/room_106_bathroom/visible.png",
+        "sha256": "b44467ad1be5a1691ef3c84c5b2733e70133375037c67766fcfff0bcec0168dc",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}

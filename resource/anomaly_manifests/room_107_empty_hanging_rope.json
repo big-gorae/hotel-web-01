@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "room_107_empty_hanging_rope",
+  "source_scene_id": "room_107_bed_nightstand",
+  "source_path": "res://resource/images/room_107_bed_nightstand.png",
+  "source_sha256": "7a4554e7c77990024109641eef99e559018469c440dd34cded42f333a1192926",
+  "canvas": {
+    "width": 1448,
+    "height": 1086
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/room_107_empty_hanging_rope/room_107_bed_nightstand/visible.png",
+        "sha256": "243e832f34f0eda2479a38c13aaf8b145667f062f90198b8241570ad9a778c61",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}

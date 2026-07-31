@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "corridor_red_room_light",
+  "source_scene_id": "corridor",
+  "source_path": "res://resource/images/corridor.png",
+  "source_sha256": "a715b594a0abbf4502e2751d991f76d5331b44a9c57850cfad8898f0e459d867",
+  "canvas": {
+    "width": 1536,
+    "height": 1024
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/corridor_red_room_light/corridor/visible.png",
+        "sha256": "987f11a0653a2b0d7e71c2bd81893fc80d6dfae757b1cbf164bf2b6b603311d9",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}

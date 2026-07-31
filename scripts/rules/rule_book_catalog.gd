@@ -22,6 +22,8 @@ static func build_definitions() -> Array:
 		_make_rule("leave_room_109_open", 14, 7, ["room_109", "anomaly"]),
 		_make_rule("let_room_109_guest_pass", 15, 7, ["room_109", "anomaly"]),
 		_make_rule("do_not_turn_until_silence", 16, 7, ["room_109", "anomaly"]),
+		_make_rule("give_doll_to_cute_girl", 17, 3, ["room_107", "girl", "doll", "anomaly"]),
+		_make_rule("ring_bell_and_run_from_follower", 18, 3, ["front_desk", "bell", "shadow", "anomaly"]),
 	]
 
 

@@ -84,6 +84,7 @@ func _build() -> void:
 	hand_slot = EquipmentSlot.new()
 	hand_slot.setup(localization)
 	hand_slot.item_dropped.connect(_on_hand_item_dropped)
+	hand_slot.clear_requested.connect(_on_hand_clear_requested)
 	add_child(hand_slot)
 
 
@@ -103,6 +104,10 @@ func _refresh_items() -> void:
 
 func _on_hand_item_dropped(item) -> void:
 	inventory_model.equip_item(item)
+
+
+func _on_hand_clear_requested() -> void:
+	inventory_model.clear_equipped_item()
 
 
 func _on_equip_requested(item) -> void:

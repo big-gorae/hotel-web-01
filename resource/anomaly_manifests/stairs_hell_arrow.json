@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "stairs_hell_arrow",
+  "source_scene_id": "exterior_stairs",
+  "source_path": "res://resource/images/exterior_stairs.png",
+  "source_sha256": "08c3c7d654468dd1e309f8514518d85bc471ed91ec11f52fb748879949de668f",
+  "canvas": {
+    "width": 1448,
+    "height": 1086
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/stairs_hell_arrow/exterior_stairs/visible.png",
+        "sha256": "dc300aa1aef83888d1eda0219ddca69e9b7eb581d924dbe15251f6d5ba3ba597",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}

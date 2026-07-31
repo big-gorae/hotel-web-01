@@ -7,6 +7,7 @@ var description_key := ""
 var fallback_display_name := ""
 var fallback_description := ""
 var icon_text := "□"
+var icon_path := ""
 var can_equip := true
 
 
@@ -18,6 +19,7 @@ func copy():
 	item.fallback_display_name = fallback_display_name
 	item.fallback_description = fallback_description
 	item.icon_text = icon_text
+	item.icon_path = icon_path
 	item.can_equip = can_equip
 	return item
 
