@@ -1,0 +1,66 @@
+{
+  "cache_type": "openai_edit_plan",
+  "created_at": "2026-07-28T00:46:08+00:00",
+  "plan": {
+    "acceptance_checks": [
+      "Only the wardrobe-region mask area is edited; outside-mask pixels remain unchanged.",
+      "Wardrobe frame position is unchanged.",
+      "Door appears substantially more closed than before, with right hinge side fixed.",
+      "Visible opening is approximately one third or less of the previous width and ends as a thin 18–25 px slit.",
+      "Door retains same dark brown wood grain, panel size, knob, perspective, and warm lighting.",
+      "Only tiny fragments of the correct existing pig mask remain visible through the slit.",
+      "Exactly one tiny eye hole with pale gray human iris is visible.",
+      "A partial snout edge with one dark nostril is visible; not a full snout.",
+      "At most a tiny ear slice is visible; no full ear or full head outline.",
+      "No second eye, mouth, jaw, neck, shoulders, torso, limbs, clothing, or any body part is visible.",
+      "Interior of the slit stays dark and recessed, enhancing concealment rather than exposure.",
+      "No global color, sharpness, grain, or lighting changes are introduced."
+    ],
+    "analysis_source": "openai_gpt_pipeline",
+    "change_summary": "Edit only the locked wardrobe region. The source already contains the CORRECT official pale-pink pig-mask identity. Do not redesign, replace, darken, dirty, age, or reinterpret that mask. Preserve its exact smooth pale flesh-pink material, very high bald forehead, tiny low-set circular eye hole with pale gray human iris, broad short snout, round black nostril, tiny mouth, jaw folds, and asymmetric ear proportions wherever a fragment remains visible.\n\nOnly close the wooden wardrobe door much farther around the existing figure. Keep the right hinge side fixed and keep the same wardrobe frame, panel size, dark brown wood grain, brass knob, perspective, and warm illumination. Move/rotate the door's left edge leftward to cover most of the currently visible mask and body. Reduce the current black opening to roughly one third of its present width: leave only a thin 18–25 pixel vertical black slit along the left edge of the door in this 1535 px image. It must look almost fully closed.\n\nThrough that final slit, retain only the most diagnostic cropped pieces of the existing correct mask: a tiny slice of one ear, exactly one tiny round recessed eye hole with the pale human eye, and a partial edge of the broad short pink snout showing one dark nostril. Cover the rest of the forehead, full head silhouette, other eye, most of the snout, mouth, jaw, neck, and all body with the opaque wooden door and darkness. No shoulder, torso, chest, ribs, arms, hands, clothing, pelvis, buttocks, or genitals. Do not turn it into a human face, generic pig, animal head, or a different mask. The figure stays deep, motionless, and hidden.\n\nPreserve every pixel outside the locked selection exactly. Do not change the bed, bathroom, lamp, walls, television, desk, camera, color grading, sharpness, grain, or global lighting. Do not widen or relocate the wardrobe. The fear comes from recognizing the exact official mask in an almost imperceptible slit.",
+    "edit_mode_recommendation": "mask_edit",
+    "pipeline_cache": {
+      "cache_key": "896fb69f33cfcbc2e2b38a1a",
+      "cache_path": "image_workbench/jobs/job_019fa62eaea053aae86dafdfcc6ef03b/prompt_cache/896fb69f33cfcbc2e2b38a1a.json",
+      "cache_scope": {
+        "job_id": "job_019fa62eaea053aae86dafdfcc6ef03b"
+      },
+      "cache_status": "miss",
+      "version": "edit-plan-v2-coherent-scene"
+    },
+    "preserve_contract": [
+      "Preserve source camera perspective.",
+      "Preserve architecture, large furniture, object placement, lighting direction, and mood outside the requested change.",
+      "Keep all pixels outside the selected mask visually stable unless the instruction says this is a global change."
+    ],
+    "prompt_bundle": {
+      "edit_prompt": "Edit only the masked wardrobe region. Keep the wardrobe frame, right hinge side, same door panel size, dark brown wood grain, brass knob, perspective, and warm room lighting unchanged. Close the wardrobe door much farther so it looks almost fully shut. Rotate/swing the door from the fixed right hinge so the free left edge moves leftward and covers most of the current opening and figure. Reduce the visible black gap to only a thin vertical slit approximately 18 to 25 pixels wide in this 1535 px-wide image, running along the left edge of the door. Through that final slit, show only minimal cropped fragments of the already-existing correct official pig-mask identity: a tiny slice of one ear, exactly one tiny round recessed eye hole containing the pale gray human iris, and a partial edge of the broad short pale-pink snout with one dark round nostril. Preserve the exact smooth pale flesh-pink mask material and correct proportions wherever a fragment remains visible. Hide everything else behind the opaque wooden door and darkness: no full forehead, no full head silhouette, no second eye, no most-of-snout view, no mouth, no jaw, no neck, and absolutely no shoulders, torso, ribs, chest, arms, hands, clothing, pelvis, buttocks, or genitals. The figure remains deep inside, motionless, and hidden. Match the existing darkness inside the wardrobe slit. Do not change anything outside the masked area.",
+      "mask_guidance": "Mask covers the wardrobe/door opening region approximately pixel box [952,184,1243,788] in a 1535x1024 image. Constrain all generation strictly to this rectangle. Preserve clean boundary alignment with untouched surroundings. Treat the task as a door-position adjustment plus occlusion refinement, not a full scene rewrite.",
+      "negative_prompt": "do not change unrelated objects, room layout, camera perspective, lighting direction, text, watermark",
+      "review_prompt": "Check that only the masked wardrobe region changed. Verify the wardrobe door now appears almost fully closed with the right hinge side fixed and only a thin 18-25 px vertical black slit remaining at the door's left edge. Verify that through the slit only three tiny diagnostic mask fragments are visible: one small ear slice, exactly one tiny round eye hole with pale gray human iris, and a partial pink snout edge with one dark nostril. Confirm no other facial features or any body parts are visible. Confirm the wood grain, knob, perspective, and warm illumination match the original door, and the rest of the room is pixel-identical."
+    },
+    "provider_requirements": {
+      "candidate_models": [
+        "gemini-3-pro-image",
+        "gpt-image-2"
+      ],
+      "execution_notes": [
+        "Use the supplied edit mask only; do not expand edits beyond it.",
+        "Favor structural inpainting / local geometry edit over generative redesign.",
+        "Maintain exact global grading and illumination continuity with the untouched room.",
+        "If the model cannot reliably preserve the official mask identity in tiny visible fragments, bias toward showing less of the figure rather than inventing new facial structure."
+      ],
+      "provider": "auto_best",
+      "routing_hint": "Prefer the model with strongest masked inpainting and hard preservation outside selection."
+    },
+    "review_questions": [],
+    "risk_flags": [
+      "Geometric door swing may tempt the model to alter frame width or perspective inside the mask.",
+      "Tiny slit visibility may cause the model to hallucinate a new face instead of preserving the existing mask identity.",
+      "The requested 18–25 px slit is very narrow; some models may over-hide all features or reveal too much.",
+      "Because no source identity reference JSON is provided, preservation relies entirely on the source image and prompt discipline."
+    ],
+    "setup_blockers": []
+  },
+  "vision_model": "gpt-5.4"
+}

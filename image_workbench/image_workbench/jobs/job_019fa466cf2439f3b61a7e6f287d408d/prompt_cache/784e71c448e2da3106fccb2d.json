@@ -1,0 +1,64 @@
+{
+  "cache_type": "openai_edit_plan",
+  "created_at": "2026-07-27T16:28:37+00:00",
+  "plan": {
+    "acceptance_checks": [
+      "Only the masked wardrobe region changed.",
+      "Door reads as almost fully closed, with a visible slit approximately 18–25 px wide.",
+      "Right hinge side remains spatially fixed; left edge moved toward the left jamb.",
+      "Wardrobe door remains the same wood wardrobe with matching grain, perspective, hinges, and brass knob.",
+      "Current large visible head and torso are no longer exposed; they are covered by the opaque door.",
+      "Visible figure content is limited to a tiny cropped fragment through the slit: partial ear, one eye in one eye hole, and narrow snout edge.",
+      "No full mask or fully readable face is visible.",
+      "Any body detail is minimal and corpse-thin, or completely absent if the slit is too narrow.",
+      "Wardrobe interior is near-total black with only faint warm edge light.",
+      "No geometry, lighting, or texture changes outside the masked region."
+    ],
+    "analysis_source": "openai_gpt_pipeline",
+    "change_summary": "Repair only the locked wardrobe region, using the current image as the exact scene and geometry reference. Keep the same wooden wardrobe, perspective, wood grain, hinges, brass knob, warm room lighting, and all architecture. CLOSE the wardrobe door much farther: the right hinge side stays fixed and the door's left edge moves toward the left wardrobe jamb until the visible black vertical slit is only about 18–25 pixels wide on this 1535 px image. It must read as an almost fully closed door, not an open doorway.\n\nRetain the same dirty, mold-covered, pale pink pig mask identity already present, but push the figure deep behind the nearly closed door. Through the 18–25 px slit reveal only a frightening cropped fragment: a small part of one tall pig ear near the top, one human eye staring through one eye hole, and only a narrow partial edge of the snout. Never show the full mask or a readable full face. Below it reveal at most a hair-thin fragment of a severely emaciated adult male body: an unnaturally long bent neck, a sharp clavicle edge, and perhaps the faint edge of one or two ribs dissolving into black. The body must be grotesquely underweight, folded inward, asymmetrical, damp gray loose skin over bone, physically wrong and corpse-like—absolutely no muscular shoulder, broad chest, heroic anatomy, arms, hands, pelvis, buttocks, clothing, or genitals. If the narrow slit cannot fit those body details, prioritize the partial eye and snout and leave the body almost completely invisible.\n\nThe figure is stationary and hidden, not stepping out. The wardrobe interior is near-total blackness with only faint warm edge light catching the eye, mask texture, and one bony neck line. Remove the current large visible head and torso wherever the closing door covers them. Keep the door fully opaque. Preserve every pixel outside the locked selection exactly with no color grading, blur, texture loss, or geometry change. Make the scene photorealistic survival-horror game concept art, subtle and frightening because almost nothing is visible.",
+    "edit_mode_recommendation": "mask_edit",
+    "pipeline_cache": {
+      "cache_key": "784e71c448e2da3106fccb2d",
+      "cache_path": "image_workbench/jobs/job_019fa466cf2439f3b61a7e6f287d408d/prompt_cache/784e71c448e2da3106fccb2d.json",
+      "cache_scope": {
+        "job_id": "job_019fa466cf2439f3b61a7e6f287d408d"
+      },
+      "cache_status": "miss",
+      "version": "edit-plan-v2-coherent-scene"
+    },
+    "preserve_contract": [
+      "Preserve source camera perspective.",
+      "Preserve architecture, large furniture, object placement, lighting direction, and mood outside the requested change.",
+      "Keep all pixels outside the selected mask visually stable unless the instruction says this is a global change."
+    ],
+    "prompt_bundle": {
+      "edit_prompt": "Use the source image as the exact scene, camera, geometry, and lighting reference. Edit only the masked wardrobe region. Keep the same wooden wardrobe/closet door, same perspective, same wood grain, same hinges on the right side, same brass knob, same jambs, and the same warm hotel-room lighting. Close the wardrobe door much farther so it appears almost fully shut: the right hinge side stays fixed and the left edge of the door moves toward the left wardrobe jamb until the remaining visible black vertical slit is only about 18 to 25 pixels wide in this 1535 px wide image. It must clearly read as a nearly closed door, not an open doorway.\n\nBehind the nearly closed door, keep the same dirty, mold-covered, pale pink pig mask identity already present, but push the figure deep back into the darkness. Through the narrow slit reveal only a frightening cropped fragment: near the top, a small part of one tall pig ear; around mid-height, one human eye staring through one mask eye hole; and only a narrow partial edge of the snout. Never show the full mask, full head, or a readable full face. Below that, reveal at most an extremely thin fragment of a severely emaciated adult male body: an unnaturally long bent neck, a sharp clavicle edge, and maybe the faint edge of one or two ribs fading into black. The body must be grotesquely underweight, folded inward, asymmetrical, corpse-like, with damp gray loose skin over bone. If the slit is too narrow to fit those body details, prioritize the partial eye and snout and leave the body almost completely invisible.\n\nRemove the currently visible large head and torso wherever the closing door would cover them. The figure is stationary and hidden, not stepping out. The wardrobe interior should be near-total blackness with only faint warm edge light catching the eye, mask texture, and maybe one bony neck line. Preserve all architecture and everything outside the mask exactly. Photorealistic survival-horror game concept art mood: subtle and frightening because almost nothing is visible.",
+      "mask_guidance": "Restrict semantic edits to the selected mask.",
+      "negative_prompt": "do not change unrelated objects, room layout, camera perspective, lighting direction, text, watermark",
+      "review_prompt": "Check that the wardrobe door is now almost closed with a remaining vertical black slit roughly 18–25 px wide. Confirm the right hinge side remains fixed and the door still matches the original wood grain, knob, perspective, and lighting. Confirm that only tiny fragments of the pig mask are visible through the slit: a bit of one ear, one eye through an eye hole, and a thin snout edge, with no full face visible. Confirm the interior is near-black and any body visibility is limited to a barely perceptible emaciated neck/clavicle/rib hint or less. Confirm all pixels outside the masked wardrobe region are unchanged."
+    },
+    "provider_requirements": {
+      "instructions": [
+        "Use the current image as the exact spatial and lighting reference.",
+        "Constrain generation strictly to the provided edit mask.",
+        "Do not reinterpret the room, wardrobe placement, camera angle, or architecture.",
+        "Favor minimal-delta inpainting over creative regeneration.",
+        "Door motion must read as rotation around the right hinge side, not a sliding panel or reshaped wardrobe."
+      ],
+      "model_candidates": [
+        "gemini-3-pro-image",
+        "gpt-image-2"
+      ],
+      "provider": "auto_best"
+    },
+    "review_questions": [],
+    "risk_flags": [
+      "Narrow 18–25 px slit may be difficult for some models to respect precisely.",
+      "Model may over-reveal the figure unless negative constraints are enforced strongly.",
+      "Model may slightly alter door grain or knob placement during inpainting.",
+      "Potential safety-policy sensitivity around horror body depiction; keep body mostly hidden and non-graphic."
+    ],
+    "setup_blockers": []
+  },
+  "vision_model": "gpt-5.4"
+}

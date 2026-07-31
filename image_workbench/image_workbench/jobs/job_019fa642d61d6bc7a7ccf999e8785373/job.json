@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-07-28T01:07:06+00:00",
+  "height": 1024,
+  "job_id": "job_019fa642d61d6bc7a7ccf999e8785373",
+  "mime_type": "image/png",
+  "sha256": "379b8a4766ebd7c630aa1f4408d07505f7edebea7ce18fad1d5fea702039383d",
+  "source_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa642d61d6bc7a7ccf999e8785373/source/original.png",
+  "source_uri": "image_workbench/jobs/job_019fa642d61d6bc7a7ccf999e8785373/source/original.png",
+  "status": "review_required",
+  "thumbnail_path": "/Users/binary-ho/Desktop/Area/jinho/hotel/image_workbench/image_workbench/jobs/job_019fa642d61d6bc7a7ccf999e8785373/source/thumbnail.png",
+  "thumbnail_uri": "image_workbench/jobs/job_019fa642d61d6bc7a7ccf999e8785373/source/thumbnail.png",
+  "title": "Room 105 exact mask source - moderate narrow reveal",
+  "updated_at": "2026-07-28T01:11:09+00:00",
+  "width": 1535
+}

@@ -1,0 +1,80 @@
+{
+  "analysis_source": "openai_gpt_vision",
+  "atmosphere_profile": {
+    "mood": [
+      "dim",
+      "colorful",
+      "warm"
+    ],
+    "title": "Room 105 wardrobe stage 2 - replace woman with moldy pig-mask man"
+  },
+  "camera_profile": {
+    "aspect_ratio": 1.499,
+    "lens_guess": "unknown without GPT vision",
+    "orientation": "landscape"
+  },
+  "created_at": "2026-07-27T15:40:24+00:00",
+  "image_type": "uploaded_photo",
+  "job_id": "job_019fa43b517468958f67f119b06a7b2e",
+  "lighting_profile": {
+    "color_temperature": "warm",
+    "overall": "dim",
+    "shadow_readability": "moderate"
+  },
+  "local_metrics": {
+    "aspect_ratio": 1.499,
+    "brightness": 53.81,
+    "color_temperature": "warm",
+    "contrast": 46.09,
+    "dominant_palette": [
+      "#56331d",
+      "#100502",
+      "#986d50",
+      "#250e05",
+      "#371c0d"
+    ],
+    "height": 1024,
+    "mean_rgb": [
+      75.82,
+      47.21,
+      30.22
+    ],
+    "orientation": "landscape",
+    "saturation": 0.695,
+    "width": 1535
+  },
+  "objects": [],
+  "pipeline_plan": {
+    "ai_pipeline": "openai_gpt_vision_analysis",
+    "model": "gpt-5.4",
+    "setup_status": {
+      "detail": "OPENAI_API_KEY detected. Vision model: gpt-5.4; image model: gpt-image-2.",
+      "state": "ready"
+    }
+  },
+  "review_questions": [],
+  "scene_summary": "1535x1024 image with dim exposure, medium contrast, vivid saturation, and warm color temperature.",
+  "spatial_relationships": [],
+  "tone_profile": {
+    "brightness": "dim",
+    "color_temperature": "warm",
+    "contrast": "medium",
+    "dominant_palette": [
+      "#56331d",
+      "#100502",
+      "#986d50",
+      "#250e05",
+      "#371c0d"
+    ],
+    "palette": [
+      "#56331d",
+      "#100502",
+      "#986d50",
+      "#250e05",
+      "#371c0d"
+    ],
+    "saturation": "vivid"
+  },
+  "uncertainty": [],
+  "updated_at": "2026-07-27T15:40:24+00:00"
+}

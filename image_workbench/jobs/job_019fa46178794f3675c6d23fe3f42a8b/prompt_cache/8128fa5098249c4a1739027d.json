@@ -1,0 +1,64 @@
+{
+  "cache_type": "openai_edit_plan",
+  "created_at": "2026-07-27T16:22:47+00:00",
+  "plan": {
+    "acceptance_checks": [
+      "The rectangular pig-card, forest background, hard edges, black coat, and previous face are fully removed.",
+      "The wardrobe door looks native to the room and matches surrounding wood tone, grain, perspective, and hardware placement.",
+      "The door is almost closed, with only a very narrow vertical black gap along its left edge.",
+      "No more than about 20–25% of the mask and less than 15% of the upper body are visible.",
+      "Visible figure details are limited to: part of one tall ear, one eye hole with human eye, partial snout, elongated neck, one hunched narrow shoulder, clavicle, and faint two ribs.",
+      "The figure remains deep behind the door in near-total darkness with only weak warm edge light.",
+      "The body reads as severely emaciated and abnormal, not muscular or posed.",
+      "No sexual anatomy or explicit nudity is visible.",
+      "No blood, gore, text, extra objects, extra doors, glowing eyes, or room geometry changes appear.",
+      "Pixels outside the masked region remain unchanged in content, exposure, color, and grain."
+    ],
+    "analysis_source": "openai_gpt_pipeline",
+    "change_summary": "Edit only the masked wardrobe/door region: remove the pasted pig-mask identity card and fully reconstruct the original wooden wardrobe door geometry and finish, keeping it almost closed with a very narrow vertical black gap. Deep inside that gap, add only a thin, mostly occluded sliver of an adult male wearing the same dirty mold-covered pink pig mask, with minimal visible anatomy and weak warm edge light. Preserve all pixels outside the mask exactly.",
+    "edit_mode_recommendation": "mask_edit",
+    "pipeline_cache": {
+      "cache_key": "8128fa5098249c4a1739027d",
+      "cache_path": "image_workbench/jobs/job_019fa46178794f3675c6d23fe3f42a8b/prompt_cache/8128fa5098249c4a1739027d.json",
+      "cache_scope": {
+        "job_id": "job_019fa46178794f3675c6d23fe3f42a8b"
+      },
+      "cache_status": "miss",
+      "version": "edit-plan-v2-coherent-scene"
+    },
+    "preserve_contract": [
+      "Preserve source camera perspective.",
+      "Preserve architecture, large furniture, object placement, lighting direction, and mood outside the requested change.",
+      "Keep all pixels outside the selected mask visually stable unless the instruction says this is a global change."
+    ],
+    "prompt_bundle": {
+      "edit_prompt": "Repair only the masked wardrobe/door region in this hotel room photo. Remove the temporary rectangular pig-mask identity card completely, including the forest background, rectangular edges, black coat, and every trace of the former woman's face. Reconstruct the original wooden wardrobe door at the exact original size and perspective, matching the surrounding source: same hinge axis, same knob position if visible, same warm brown wood grain, and same almost-closed angle. The door should remain nearly shut relative to the viewer, leaving only a very narrow vertical black gap along its left edge.\n\nInside that narrow gap, place an adult male entity wearing the same dirty, mold-covered pink pig mask seen on the removed card. The figure must be deep behind the door and mostly hidden in darkness. Reveal only a thin cropped sliver: part of one tall pig ear, one small eye hole with a human eye staring directly toward camera, about half of the long rounded snout, and below it only a crooked elongated bare neck, one sharply hunched narrow shoulder, a sunken clavicle, and the faint edge of two ribs fading into darkness. Keep visibility extremely limited: at most 20 to 25 percent of the mask readable and less than 15 percent of the upper body readable. The door edge must physically occlude the rest.\n\nThe body is nude but nonsexual and abnormal: severely emaciated, too narrow for the head, asymmetrical hunched shoulder, stretched neck, loose grayish damp skin over protruding bone, and an impossible inward bend of the upper torso as if folded inside the wardrobe. Do not show a broad chest, muscles, normal proportions, upright posture, full shoulders, full torso, arms, hands, pelvis, genitals, buttocks, or pubic detail. Do not show him stepping out or standing openly in the room.\n\nKeep the gap interior almost pure black. Use only weak warm edge light from the room to catch a little mask texture, the staring eye, clavicle, and two ribs. Preserve the mask texture: porous dirty pink surface, black-green fungal grime, large ear shape, rounded snout, and small eye opening. The mood should feel like the viewer notices something impossible hiding inside the gap, not a posed portrait.\n\nDo not change anything outside the mask. Preserve all room elements, exposure, color, and grain exactly.",
+      "mask_guidance": "Edit strictly within the provided rectangular mask covering the wardrobe/card area. Prioritize reconstructing the door first, then place the hidden masked figure only within the narrow left-edge gap. Keep mask boundary alignment clean so adjacent unmasked wall, bathroom trim, TV edge, and carpet pixels remain unchanged.",
+      "negative_prompt": "do not change unrelated objects, room layout, camera perspective, lighting direction, text, watermark",
+      "review_prompt": "Check that the card is fully gone and replaced by a believable original wooden wardrobe door. Verify the door is almost closed with only a very narrow black gap on the left. Confirm only a tiny sliver of the pig-masked male is visible inside the gap: one ear fragment, one eye hole with a human eye, partial snout, thin neck, one hunched shoulder, clavicle, and faint ribs only. Ensure the figure is deep in darkness, nonsexual, emaciated, heavily occluded, and not posed. Confirm all unmasked room pixels are unchanged."
+    },
+    "provider_requirements": {
+      "preferred_provider": "auto_best",
+      "requirements": [
+        "Strict inpaint/local-edit behavior inside mask only.",
+        "Preserve surrounding pixels and global grading exactly.",
+        "Favor structure preservation over creativity.",
+        "Respect fine occlusion: figure must remain mostly hidden behind the door edge.",
+        "No text or added objects."
+      ],
+      "target_models": [
+        "gemini-3-pro-image",
+        "gpt-image-2"
+      ]
+    },
+    "review_questions": [],
+    "risk_flags": [
+      "Exact original wardrobe appearance is inferred from surrounding pixels; source before the card overlay is not provided.",
+      "Request includes a nude adult figure; keep framing strictly nonsexual and heavily occluded.",
+      "Model may over-open the door or reveal too much of the figure unless occlusion is strongly enforced.",
+      "Model may try to re-render nearby room areas; strict local preservation is required."
+    ],
+    "setup_blockers": []
+  },
+  "vision_model": "gpt-5.4"
+}

@@ -1,0 +1,74 @@
+{
+  "cache_type": "openai_edit_plan",
+  "created_at": "2026-07-27T15:53:40+00:00",
+  "plan": {
+    "acceptance_checks": [
+      "Only the masked wardrobe figure region is edited.",
+      "The pig mask remains the same dirty pink mold-covered mask with both ears, round snout, small eye holes, human eyes, same mud/mold pattern, same scale, and same stare.",
+      "All black coat elements are completely removed with no visible collar, buttons, sleeves, seams, or fabric traces.",
+      "A realistic bare adult male upper body is present: neck, shoulders, chest, arms, and upper abdomen only.",
+      "Skin tone appears ordinary pale-to-medium and consistent with dim warm tungsten room lighting.",
+      "The body remains inside the wardrobe behind the existing door; figure scale and depth match the original.",
+      "The wardrobe door angle and frame remain unchanged.",
+      "Everything below the upper abdomen is hidden by the door and darkness; no pelvis, genitals, buttocks, or pubic detail visible.",
+      "No underwear or substitute clothing is added.",
+      "No blood, wounds, gore, or animal-head transformation appears.",
+      "Perspective, shadows, edge softness, color temperature, and film grain match the original.",
+      "No visible changes exist in the bathroom doorway, wall, bed, lamp, television, desk, ceiling, or overall room geometry and lighting."
+    ],
+    "analysis_source": "openai_gpt_pipeline",
+    "change_summary": "Edit only the locked wardrobe region. Preserve the exact same mold-covered dirty pink pig mask identity, including both large ears, round snout, small eye holes, human eyes, black mold, mud pattern, head size, head position, and stare. Remove the entire black coat and every trace of collar, buttons, sleeves, and fabric. Replace it with the bare upper body of an adult man standing inside the wardrobe: realistic uncovered neck, shoulders, chest, arms, and upper abdomen, with ordinary pale-to-medium skin under the room's dim warm tungsten light. This is nonsexual horror nudity. The wooden wardrobe door, its current hinge angle, and the deep darkness must occlude the body below the upper abdomen; show absolutely no pelvis, genitals, buttocks, or pubic detail. Do not add underwear or other clothing. Keep the man behind the door and do not enlarge him or bring him closer. Match natural door-frame occlusion, shadow, contact, perspective, color, softness, and film grain. Preserve every pixel and all geometry outside the locked selection, especially the bathroom doorway, wall, bed, lamp, television, desk, ceiling, and room lighting. Do not change the pig mask into a real animal head and do not add blood or wounds.",
+    "edit_mode_recommendation": "mask_edit",
+    "pipeline_cache": {
+      "cache_key": "4ab3019997145f5f896ddf70",
+      "cache_path": "image_workbench/jobs/job_019fa447424f6365560e15ce7a92154a/prompt_cache/4ab3019997145f5f896ddf70.json",
+      "cache_scope": {
+        "job_id": "job_019fa447424f6365560e15ce7a92154a"
+      },
+      "cache_status": "miss",
+      "version": "edit-plan-v2-coherent-scene"
+    },
+    "preserve_contract": [
+      "Do not change anything outside the locked wardrobe selection.",
+      "Preserve the bathroom doorway, wall, bed, lamp, television, desk, ceiling, and all room lighting exactly.",
+      "Keep the wardrobe door, hinge angle, frame, and deep interior darkness unchanged except where needed to occlude the new torso naturally.",
+      "Keep the figure in the same position and scale inside the wardrobe; do not enlarge or move him closer.",
+      "Keep the pig mask exactly the same identity: dirty pink molded surface, black mold, mud pattern, both large ears, round snout, small eye holes, visible human eyes, same head size, same head position, same forward stare.",
+      "Do not convert the mask into a real pig head or animal.",
+      "Do not add blood, wounds, gore, underwear, jewelry, tattoos, or new props.",
+      "Match original shadows, edge softness, color temperature, tungsten warmth, contact with darkness, and film grain."
+    ],
+    "prompt_bundle": {
+      "edit_prompt": "Edit only the masked wardrobe figure region. Keep the room, camera, wardrobe door, doorway, furniture, lighting, and all unmasked pixels unchanged. Preserve the exact same pig mask identity and placement: the same dirty pink mask with black mold and mud staining, both large ears, round snout, small eye holes, visible human eyes, same head size, same head position, and the same direct stare. Remove the entire black coat completely, including all collar, buttons, sleeves, folds, hem, and any remaining fabric. Replace it with the realistic bare upper body of an adult man standing in the wardrobe behind the partially open wooden door. Show an uncovered human neck, shoulders, chest, arms, and only the upper abdomen, with ordinary pale-to-medium skin lit by the room's dim warm tungsten light. This must read as nonsexual horror nudity. The wardrobe door and the deep interior darkness must naturally occlude everything below the upper abdomen; show absolutely no pelvis, genitals, pubic hair, buttocks, or lower torso. Do not add underwear or any clothing. Keep the body at the same depth and scale as the original figure, still behind the door, without moving him closer. Match the original perspective, door-frame occlusion, shadowing, darkness, color, softness, texture, and film grain. Do not alter the mask into a real animal head. Do not add blood, wounds, or gore.",
+      "mask_guidance": "Use the provided rectangular mask over the wardrobe figure as the editable region. Prioritize edits within the coat/body area while preserving the head, door edges, and surrounding frame alignment. If the mask includes small portions of door or darkness, only modify them minimally for realistic occlusion and edge blending.",
+      "negative_prompt": "do not change unrelated objects, room layout, camera perspective, lighting direction, text, watermark",
+      "review_prompt": "Verify that only the wardrobe figure region changed. Confirm the pig mask is identical in identity, size, position, and stare. Confirm the black coat is fully gone with no remaining collar, buttons, sleeves, or fabric. Confirm a realistic bare adult male neck, shoulders, chest, arms, and upper abdomen are visible under warm tungsten light. Confirm the wardrobe door and darkness hide everything below the upper abdomen with no explicit anatomy visible. Confirm the figure remains behind the door at the original scale and depth. Confirm no changes occurred to the bathroom doorway, wall, bed, lamp, television, desk, ceiling, or overall room lighting."
+    },
+    "provider_requirements": {
+      "model_candidates": [
+        "gemini-3-pro-image",
+        "gpt-image-2"
+      ],
+      "provider": "auto_best",
+      "requirements": [
+        "Use masked inpainting/local edit only; do not recompose the full image.",
+        "Respect the supplied edit mask as the primary editable area.",
+        "Preserve unmasked pixels exactly.",
+        "Maintain the original camera viewpoint, scale, perspective, lens feel, room lighting, and grain.",
+        "Render a nonsexual horror image; avoid explicit nudity by ensuring natural occlusion below the upper abdomen."
+      ],
+      "uncertainty": [
+        "Provider safety behavior may vary for horror nudity; the prompt should emphasize nonsexual framing and full occlusion of any explicit anatomy."
+      ]
+    },
+    "review_questions": [],
+    "risk_flags": [
+      "{'type': 'safety_policy_variance', 'detail': 'Some providers may be cautious about nudity even when nonsexual and fully occluded.'}",
+      "{'type': 'identity_drift', 'detail': 'The model may alter the pig mask texture, eye placement, or head scale unless explicitly constrained.'}",
+      "{'type': 'spill_outside_mask', 'detail': 'The model may unintentionally modify the wardrobe door edges or nearby room pixels during inpainting.'}",
+      "{'type': 'occlusion_failure', 'detail': 'The body may be shown too low or too clearly, exposing prohibited anatomy unless occlusion is strongly enforced.'}"
+    ],
+    "setup_blockers": []
+  },
+  "vision_model": "gpt-5.4"
+}
