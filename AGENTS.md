@@ -27,3 +27,10 @@
 - Never force-push unless the user explicitly authorizes it.
 - If a conflict or overlapping intent cannot be resolved confidently, stop before committing or pushing, identify the exact files and competing changes, and ask the user for direction.
 - After pushing, verify the remote commit SHA and report the branch, commit, validation results, and whether the change is merged into the default branch.
+
+## Presentation Restraint
+
+- Do not add explanatory popups, toast messages, banners, or confirmation dialogue for routine pickups, item use, inventory changes, or other state changes that are already clear from the world or UI.
+- Avoid “짜치는” presentation: unnecessary UI interruptions, redundant narration, forced transitions, celebratory confirmations, or synthetic effects that weaken the intended atmosphere.
+- Prefer restrained in-world, audio, animation, and persistent-state feedback. Add a modal or explanatory message only when the user explicitly requests it or the interaction would otherwise be genuinely unreadable.
+- Preserve authored diegetic dialogue, meaningful choices, and explicitly designed horror or death sequences; these are not routine action explanations.

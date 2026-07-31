@@ -731,7 +731,6 @@ func _build_anomaly_runtime() -> void:
 	anomaly_content_runtime.state_changed.connect(_on_content_anomaly_state_changed)
 	anomaly_content_runtime.event_started.connect(_on_anomaly_event_started)
 	anomaly_content_runtime.event_resolved.connect(_on_content_anomaly_resolved)
-	anomaly_content_runtime.narrative_requested.connect(_show_system_message)
 	anomaly_content_runtime.choice_requested.connect(_on_content_choice_requested)
 	anomaly_content_runtime.choice_closed.connect(_on_content_choice_closed)
 	anomaly_content_runtime.fatal_narrative_requested.connect(_on_content_fatal_narrative_requested)

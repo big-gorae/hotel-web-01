@@ -6,6 +6,13 @@ const InventoryModel := preload("res://scripts/items/inventory_model.gd")
 const ItemCatalog := preload("res://scripts/items/item_catalog.gd")
 
 
+func test_runtime_has_no_generic_action_explanation_popup_channel() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	add_child(runtime)
+
+	assert_bool(runtime.has_signal("narrative_requested")).is_false()
+
+
 func test_start_day_clears_external_anomaly_lock() -> void:
 	var runtime = auto_free(ContentRuntime.new())
 	add_child(runtime)

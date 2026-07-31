@@ -44,9 +44,13 @@ func _run() -> void:
 	if doll_hotspot.is_empty():
 		_fail("cute doll did not appear on the laundry-room table")
 		return
+	main._hide_transient_dialogue()
 	main._on_hotspot_pressed(doll_hotspot)
 	if not main.inventory_model.has_item_id("cute_doll"):
 		_fail("cute doll pickup did not enter inventory")
+		return
+	if main.transient_dialogue_panel.visible:
+		_fail("cute doll pickup opened an explanatory popup")
 		return
 	var cute_doll = main.inventory_model.find_item_by_id("cute_doll")
 	if not cute_doll.can_equip or not main.inventory_model.equip_item(cute_doll):
@@ -92,6 +96,7 @@ func _run() -> void:
 	if main.choice_dialogue_overlay._prompt_label.text != "윌터가 누구야?":
 		_fail("Walter follow-up prompt did not open")
 		return
+	main._hide_transient_dialogue()
 	main._on_content_choice_selected("doll_friend")
 	if not main.anomaly_content_runtime.current_event_id.is_empty():
 		_fail("giving Walter did not resolve the hanging girl")
@@ -101,6 +106,9 @@ func _run() -> void:
 		return
 	if main.choice_dialogue_overlay.visible:
 		_fail("choice overlay remained open after survival")
+		return
+	if main.transient_dialogue_panel.visible:
+		_fail("giving Walter opened an explanatory popup")
 		return
 
 	main.anomaly_content_runtime.force_event("room_107_hanging_girl")

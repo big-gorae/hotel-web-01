@@ -6,7 +6,6 @@ signal event_started(event_id: String)
 signal event_resolved(event_id: String)
 signal death_requested(event_id: String)
 signal sound_requested(cue_id: String)
-signal narrative_requested(message: String)
 signal hold_started(mode: String, focus_position: Vector2)
 signal hold_progress_changed(progress: float)
 signal hold_ended
@@ -356,7 +355,6 @@ func handle_choice(choice_id: String) -> bool:
 				return false
 			_hanging_girl_dialogue_open = false
 			choice_closed.emit()
-			narrative_requested.emit("윌터를 건넸다.")
 			_resolve_current()
 		"fun_yes", "changed_mind", "you_play", "doll_play", "hide_and_seek", "your_mom_game", "your_mom_walter":
 			_begin_hanging_girl_fatal_narrative()
@@ -688,7 +686,6 @@ func _complete_mirror_transfer() -> void:
 	if not inventory_model.replace_item_by_id("small_mirror", "hell_mirror", true):
 		return
 	sound_requested.emit("soul_scream")
-	narrative_requested.emit("작은 거울로 끔찍한 형상이 옮겨졌다. 들고 있으면 영혼의 절규가 들려온다.")
 	_resolve_current()
 
 
@@ -765,7 +762,6 @@ func _take_hanging_girl_doll() -> bool:
 		return false
 	inventory_model.add_item_by_id(HANGING_GIRL_DOLL_ITEM_ID)
 	_hanging_girl_doll_taken = true
-	narrative_requested.emit("세탁실 탁자에 놓인 귀여운 목각 인형을 주웠다.")
 	state_changed.emit()
 	return true
 
