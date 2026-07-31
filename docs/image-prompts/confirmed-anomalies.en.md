@@ -85,11 +85,11 @@ Preserve the sign’s dimensions, angle, frame, and the surrounding phone, bell,
 
 - Event ID: `corridor_red_room_light`
 - Source: `resource/images/corridor.png`
-- Deliverables: one `active` state for each of rooms 105–108
+- Deliverable: one `active` state fixed at Room 105
 - Status: Canon confirmed.
 
 ```text
-Change only the wall lamp beside the designated TARGET_ROOM number to a deep, saturated red. The bulb and glass housing must emit light like a real red lamp, with physically plausible falloff across the nearby aged wall, doorframe, door surface, and floor beneath the door. The core may clip into an overexposed red center, but it must not erase all wall texture or the room number.
+Change only the wall lamp beside the Room 105 number to a deep, saturated red. The bulb and glass housing must emit light like a real red lamp, with physically plausible falloff across the nearby aged wall, doorframe, door surface, and floor beneath the door. The core may clip into an overexposed red center, but it must not erase all wall texture or the room number.
 
 Preserve the warm-white color of every other room lamp, the distant corridor lights, night sky, and global exposure. Do not apply a red grade to the whole image or invent additional light sources beneath other doors or railings. Add no flame, alarm beacon, blood, human shadow, or smoke. The affected room must be immediately identifiable at a distance while remaining integrated as one real, malfunctioning fixture in the existing space.
 ```
@@ -98,11 +98,11 @@ Preserve the warm-white color of every other room lamp, the distant corridor lig
 
 - Event ID: `corridor_blood_puddle`
 - Source: `resource/images/corridor.png`
-- Deliverables: one `active` state for each of rooms 105–108
+- Deliverable: one `active` state fixed beneath Room 105
 - Status: Canon confirmed.
 
 ```text
-Show dark-red viscous liquid seeping from the narrow gap beneath the closed door of TARGET_ROOM and forming a shallow, irregular puddle on the corridor floor. The thickest accumulation must sit directly at the threshold. Thin tongue-shaped edges should spread sideways and forward along the floor’s subtle slope and seams. Render the center as nearly black burgundy and the thin edges as wet red reflecting the existing wall lamps. The liquid must connect exactly to the under-door gap, implying that its source remains inside the room.
+Show dark-red viscous liquid seeping from the narrow gap beneath the closed Room 105 door and forming a shallow, irregular puddle on the corridor floor. The thickest accumulation must sit directly at the threshold. Thin tongue-shaped edges should spread sideways and forward along the floor’s subtle slope and seams. Render the center as nearly black burgundy and the thin edges as wet red reflecting the existing wall lamps. The liquid must connect exactly to the under-door gap, implying that its source remains inside the room.
 
 Keep the puddle shallow and motionless. It must not flood the corridor or drip through the railing. Do not open the door or reveal the room interior. Add no footprints, handprints, corpse, organs, hair, or drag marks. Preserve all other guest-room doors and existing floor reflections. The puddle must be discoverable at gameplay scale without becoming a flat patch of oversaturated red paint.
 ```
@@ -233,7 +233,7 @@ Preserve the mirror’s edge, grime, and existing surface gloss while giving the
 - Event ID: `room_108_entrails_bathtub`
 - Source: `resource/images/room_108_bathroom.png`
 - Deliverable: `active`
-- Status: The appearance filling the bathtub is canon confirmed. The treatment mechanic remains undecided.
+- Status: The full-tub appearance and its resolution by holding the whole tub for 4.2 seconds before it drains are canon confirmed.
 
 ```text
 Fill the interior of room 108’s bathtub with dark-red water and a large mass of intertwined, photoreal fictional entrails. Do not render cheap red noodles or one repeated tube. Create premium practical-effects material with pale gray-pink intestinal coils of varied thickness, dark maroon tissue masses, thin membranes, clotted blood, and clearly submerged portions. Some material should pile just below the rim, compressed and folded under its own weight. Small wet highlights and the viscous dark-red liquid must respond exactly to the bathroom’s existing light. At first glance, the impossible quantity and complicated organic material must read immediately.

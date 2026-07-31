@@ -155,6 +155,10 @@ func _stream_for_cue(cue_id: String) -> AudioStream:
 			stream = _make_door_stream()
 		"room_109_passing_footstep":
 			stream = _make_thump_stream()
+		"bathtub_drain":
+			stream = _make_bathtub_drain_stream()
+		"hell_mirror_washer_destroy":
+			stream = _make_hell_mirror_washer_stream()
 		_:
 			stream = _make_sting_stream()
 	_cue_cache[cue_id] = stream
@@ -189,7 +193,55 @@ func _volume_for_cue(cue_id: String) -> float:
 			return -17.0
 		"girl_visit_laugh":
 			return -10.0
+		"bathtub_drain":
+			return -5.0
+		"hell_mirror_washer_destroy":
+			return -6.0
 	return -9.0
+
+
+func _make_bathtub_drain_stream() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 4.4
+	var samples := int(mix_rate * duration)
+	var data := PackedByteArray()
+	data.resize(samples * 2)
+	var noise_state := 0x4D3A2B1C
+	var smoothed_noise := 0.0
+	for index in samples:
+		var time := float(index) / mix_rate
+		noise_state = int((noise_state * 1103515245 + 12345) & 0x7fffffff)
+		var noise := (float(noise_state) / 1073741824.0) - 1.0
+		smoothed_noise = lerpf(smoothed_noise, noise, 0.075)
+		var flow_envelope := (1.0 - smoothstep(duration - 0.8, duration, time)) * minf(time / 0.18, 1.0)
+		var gurgle_rate := lerpf(3.2, 8.6, time / duration)
+		var gurgle := sin(TAU * gurgle_rate * time + sin(TAU * 0.47 * time) * 2.4)
+		var pipe := sin(TAU * 83.0 * time + gurgle * 0.7) * 0.16
+		var value := (smoothed_noise * 0.62 + gurgle * 0.22 + pipe) * flow_envelope
+		data.encode_s16(index * 2, clampi(int(value * 16500.0), -32768, 32767))
+	return _make_wav(data, mix_rate, false)
+
+
+func _make_hell_mirror_washer_stream() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 3.8
+	var samples := int(mix_rate * duration)
+	var data := PackedByteArray()
+	data.resize(samples * 2)
+	var noise_state := 0x1327A95
+	for index in samples:
+		var time := float(index) / mix_rate
+		noise_state = int((noise_state * 1664525 + 1013904223) & 0x7fffffff)
+		var noise := (float(noise_state) / 1073741824.0) - 1.0
+		var motor_ramp := smoothstep(0.0, 1.1, time)
+		var motor := sin(TAU * lerpf(38.0, 71.0, motor_ramp) * time) * 0.34
+		var drum := sin(TAU * 2.1 * time) * sin(TAU * 94.0 * time) * 0.15
+		var crack_time := fmod(time, 0.43)
+		var crack := noise * exp(-crack_time * 38.0) * (0.34 if time > 1.25 else 0.0)
+		var trapped_voice := sin(TAU * (310.0 + sin(TAU * 1.7 * time) * 90.0) * time) * exp(-maxf(time - 2.0, 0.0) * 2.2) * 0.08
+		var value := (motor + drum + crack + trapped_voice) * minf(time / 0.08, 1.0)
+		data.encode_s16(index * 2, clampi(int(value * 15000.0), -32768, 32767))
+	return _make_wav(data, mix_rate, false)
 
 
 func _ensure_bus() -> void:

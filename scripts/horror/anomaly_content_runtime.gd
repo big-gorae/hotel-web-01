@@ -29,6 +29,12 @@ const MAX_PRODUCTION_EVENTS_PER_DAY := 1
 const SHADOW_EVENT_ID := "hotel_following_shadow"
 const HANGING_GIRL_EVENT_ID := "room_107_hanging_girl"
 const HANGING_GIRL_DOLL_ITEM_ID := "cute_doll"
+const SHOWER_BATHROOM_SCENE_IDS: Array[String] = [
+	"room_105_bathroom",
+	"room_106_bathroom",
+	"room_107_bathroom",
+	"room_108_bathroom",
+]
 
 var definitions: Dictionary = {}
 var scheduler = null
@@ -553,9 +559,9 @@ func _on_scheduled_event_started(event_id: String) -> void:
 	var definition: Dictionary = definitions[event_id]
 	_fatal_seconds_remaining = float(definition.get("fatal_seconds", 0.0))
 	if event_id == "bathroom_shower_legs":
-		# The MVP photo variant currently matches Room 105. Add per-room
-		# manifests before restoring randomized bathroom placement.
-		_current_scene_override = "room_105_bathroom"
+		_current_scene_override = SHOWER_BATHROOM_SCENE_IDS[
+			_rng.randi_range(0, SHOWER_BATHROOM_SCENE_IDS.size() - 1)
+		]
 		_curtain_target_count = _rng.randi_range(3, 5)
 		_curtain_has_legs = true if _debug_force_pending else _rng.randi_range(0, 1) == 1
 		current_state = "curtain_closed"
@@ -608,6 +614,8 @@ func _on_hold_completed(_hold_id: String) -> void:
 	if current_event_id == "room_106_horrific_mirror":
 		_complete_mirror_transfer()
 	else:
+		if current_event_id == "room_108_entrails_bathtub":
+			sound_requested.emit("bathtub_drain")
 		_resolve_current()
 
 

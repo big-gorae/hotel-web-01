@@ -2,7 +2,7 @@
 
 ## 범위
 
-이 문서는 바이블에서 확정된 외형과 해결법을 실제 제작 단위로 나눈다. [구현 문서 README](README.md)에 적힌 보류 네 결정을 임의로 채우지 않는다.
+이 문서는 바이블에서 확정된 외형과 해결법을 실제 제작 단위로 나눈다. 현재 보류된 Day 3의 109호 초기 조우 해결법을 임의로 채우지 않는다.
 
 산출물 종류:
 
@@ -50,9 +50,7 @@
 full-scene variant로 연결했다. 생성 목록, 프롬프트 의도와 교체 규칙은
 [ImageGen MVP 자산 기록](imagegen-mvp-assets-2026-07-26.md)을 따른다.
 
-모니터 귀신, 유리문 얼굴, 곰팡이 돼지 가면 남자, 지옥의 거울은 얼굴 최종 해석을
-생성 모델에 맡기지 않고 검은 사각형 placeholder로 남겼다. 전화와 그림자는
-각각 소리 중심, 비가시 엔티티이므로 별도 평상시 장면 이미지를 만들지 않는다.
+2026-08-01에 모니터 존재, 유리문 존재의 두 상태와 지옥의 거울 RGBA 아이콘을 최종 이미지로 교체했다. 곰팡이 돼지 가면 남자는 승인된 기존 참조 사진을 객실 합성과 점프스케어에 사용한다. 전화와 그림자는 각각 소리 중심, 비가시 엔티티이므로 별도 평상시 장면 이미지를 만들지 않는다.
 
 ### MVP SceneLock 작업 기록 — 2026-07-25
 
@@ -106,7 +104,7 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
 | `room_107_bathroom_entry` | 1448×1086 | 객실 전화와 옷장 상태 |
 | `room_107_bathroom` | 1448×1086 | 인간 가죽 수건, 샤워 커튼과 다리 |
 | `room_108_bed_window` | 1448×1086 | 이불 속 아이 배치 후보 |
-| `room_108_bathroom_entry` | 1448×1086 | TV 귀신 |
+| `room_108_bathroom_entry` | 1448×1086 | 108호 욕실 입구 일반 장면(TV 귀신은 105호에서 재생) |
 | `room_108_bathroom` | 1448×1086 | 샤워 커튼과 다리, 내장 욕조 |
 
 ## 기현상
@@ -156,29 +154,29 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
 
 - ID: `corridor_red_room_light`
 - Scene: `corridor`
-- Logic: 사건 시작 때 대상 객실 `105..108` 하나를 저장
-- Hotspot: 선택된 객실등과 주변 광번짐을 포함한 큰 영역
+- Logic: 승인된 105호 위치에 고정하며 대상 객실을 재추첨하지 않음
+- Hotspot: 105호 객실등과 주변 광번짐을 포함한 큰 영역
 - Input: 마우스 홀드
 - Visual:
-  - 객실별 적색 조명과 벽·문 아래 광번짐 오버레이 4장
+  - 105호 적색 조명과 벽·문 아래 광번짐 full-scene variant 1장
   - 홀드 중 깜빡임은 alpha와 정상 사진 교차
 - Audio: 전기 buzz와 완료 click
-- SceneLock: 객실등별 selection으로 `tone_light`; 기본 사진 전체 노출과 다른 방 조명 보존
-- QA: 대상 객실 안 사진은 바뀌지 않고 복도만 변하는지 확인
+- SceneLock: 105호 객실등 selection으로 `tone_light`; 기본 사진 전체 노출과 다른 방 조명 보존
+- QA: 105호 안 사진은 바뀌지 않고 복도만 변하며 저장·재시작에도 위치가 바뀌지 않는지 확인
 
 ### 5. 문 아래 피 웅덩이
 
 - ID: `corridor_blood_puddle`
 - Scene: `corridor`
-- Logic: 사건 시작 때 대상 객실 `105..108` 하나 저장
-- Hotspot: 문 아래 바닥의 넓은 영역
+- Logic: 승인된 105호 문 아래 위치에 고정하며 대상 객실을 재추첨하지 않음
+- Hotspot: 105호 문 아래 바닥의 넓은 영역
 - Input: `cleaning_cloth` 장착 후 `F` 홀드
 - Visual:
-  - 객실별 피 웅덩이 오버레이 4장
+  - 105호 피 웅덩이 full-scene variant 1장
   - 홀드 진행도에 따라 아래에서 위로 mask를 줄여 문 밑으로 되빨려 들어가는 것처럼 표현
 - Audio: 젖은 닦임, 문 안쪽으로 빨려 들어가는 소리
 - SceneLock: 바닥 원근과 반사를 보존한 `object_insert`
-- QA: 109호, 전화 금지 객실과 활성 엔티티 점유 객실은 후보에서 제외
+- QA: 105호 동선 점유 사건과 동시에 활성화되지 않고 다른 객실 위치로 이동하지 않는지 확인
 
 ### 6. 아기 얼굴 벽지
 
@@ -236,7 +234,7 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
 ### 10. TV 귀신
 
 - ID: `room_108_tv_ghost`
-- Scene: `room_108_bathroom_entry`
+- Scene: `room_105_bathroom_entry` (`room_108_tv_ghost`는 세이브 호환용 레거시 ID)
 - Logic: `active -> holding -> hostile -> resolved`
 - Hotspot: TV 전체
 - Input: 마우스 홀드, 원형 진행 바
@@ -251,10 +249,11 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
 
 ### 11. 닫힌 샤워 커튼과 다리
 
-- ID: `bathroom_closed_shower_curtain`
+- ID: `bathroom_shower_legs`
 - Scene: `room_105_bathroom`부터 `room_108_bathroom`까지
 - Logic:
   - 발생 시 `result=empty|legs`
+  - 105~108호 욕실 중 한 곳을 한 번 추첨하고 Day 저장 상태에 고정
   - `legs`이면 `required_open_count=3..5`를 한 번 저장
   - 열기 횟수 누적 후 빈 욕조로 전환
 - Hotspot: 기존 샤워 커튼 대형 영역
@@ -316,24 +315,26 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
   - 일반 완료 메시지는 없고 확정 대사만 표시
   - 변환 직후 Hand에 `hell_mirror`
   - 내려놓으면 loop 정지
-  - 추가 사용처는 구현하지 않음
+  - Hand에 12초 유지 시 사망, 내려놓으면 시간 초기화
+  - 두 번째 세탁기에 사용하면 문이 닫히고 파손음과 함께 제거
+  - 근무 종료까지 인벤토리에 남으면 사망
 
 ### 15. 내장으로 가득한 욕조
 
 - ID: `room_108_entrails_bathtub`
 - Scene: `room_108_bathroom`
-- 확정 제작 범위: 외형과 발견 상태만 제작한다. 해결 입력과 resolved 전이는 만들지 않는다.
+- 확정 제작 범위: 외형, 욕조 전체 4.2초 hold, resolved 전이와 배수음을 제작한다.
 - Visual:
   - 욕조 전체를 채운 검붉은 물과 끔찍한 내장
   - 실시간으로 미끄러지거나 움직이는 내장 애니메이션 없음
   - 작은 배수 마개·수도꼭지 오브젝트 추가 없음
-- Hotspot: 나중에 해결법이 확정되더라도 욕조 전체의 기존 대형 영역을 사용한다.
-- Audio: 발견용 짧은 cue와 정적인 욕실 ambience 후보만 제작하며 처리음은 보류한다.
+- Hotspot: 욕조 전체의 기존 대형 영역을 사용한다.
+- Audio: hold 완료 시 4.4초 물 배수·배관 gurgle cue를 재생한다.
 - SceneLock: 욕조와 물 표면 selection을 잠근 `structural_edit`; 변기·세면대·거울·커튼은 protect한다.
 - QA:
   - 108호 욕실 원근과 조명 유지
   - 내장이 욕조 바깥 바닥으로 움직이거나 플레이어를 붙잡지 않음
-  - debug preview 외 본편 스케줄에는 해결법 확정 전 등록하지 않음
+  - Day 3부터 production queue에 포함하며 하루 한 번의 기현상 제한을 따름
 
 ## 확정 엔티티
 
@@ -558,7 +559,7 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
 - 작은 거울 획득 hook만 마련
 - 끔찍한 화장실 거울
 - 지옥의 거울 Hand 위험
-- 획득처와 추가 사용처는 결정 후 데이터만 연결
+- 지옥의 거울 두 번째 세탁기 폐기와 근무 종료 fatal 연결
 
 ### 4. 확정 엔티티
 
@@ -572,8 +573,6 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
 
 ### 5. 보류 항목
 
-- 내장 욕조와 109호의 **확정 시각·음향·위험 상태**는 위 명세대로 debug 제작할 수 있다.
-- 이 두 사건을 본편에서 성공 가능한 사건으로 등록하는 작업은 각 해결법이 확정된 뒤 별도 milestone으로 추가한다.
-- 그림자는 성공 handler와 전용 연출 및 QA가 완료되어 Day 3부터 production queue에 포함한다.
-- 그전에는 placeholder 해결, 임시 퇴치 버튼과 자동 해제를 넣지 않는다.
-- `지옥의 거울`은 확정 변환과 Hand 위험까지만 구현하고 추가 사용처는 연결하지 않는다.
+- Day 3의 109호 초기 조우 성공 처리법만 보류한다.
+- Day 7의 109호 통과, 내장 욕조, 그림자, 지옥의 거울 사용처는 production handler와 QA까지 연결했다.
+- 초기 109호 사건에는 placeholder 해결, 임시 퇴치 버튼과 자동 해제를 넣지 않는다.

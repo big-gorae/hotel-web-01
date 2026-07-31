@@ -2,6 +2,8 @@ extends GdUnitTestSuite
 
 const NightAnomalyDirector := preload("res://scripts/horror/night_anomaly_director.gd")
 const EyeCloseController := preload("res://scripts/systems/eye_close_controller.gd")
+const InventoryModel := preload("res://scripts/items/inventory_model.gd")
+const ItemCatalog := preload("res://scripts/items/item_catalog.gd")
 
 
 func test_start_day_clears_external_anomaly_lock() -> void:
@@ -51,22 +53,17 @@ func test_answered_phone_expires_then_completes_the_only_daily_entity() -> void:
 	assert_array(survived).contains_exactly([NightAnomalyDirector.PHONE_EVENT_ID])
 
 
-func test_each_day_plans_at_most_one_eligible_entity() -> void:
-	var selected: Dictionary = {}
-	for seed in range(20):
+func test_each_story_day_plans_its_single_fixed_entity() -> void:
+	var expected := {
+		4: NightAnomalyDirector.PHONE_EVENT_ID,
+		5: NightAnomalyDirector.LAUNDRY_EVENT_ID,
+		6: NightAnomalyDirector.CHILD_EVENT_ID,
+		7: NightAnomalyDirector.ROOM_109_PASSAGE_EVENT_ID,
+	}
+	for day in expected:
 		var director = auto_free(NightAnomalyDirector.new())
-		director.set_random_seed(seed)
-		director.start_day(6)
-		var event_id: String = director.get_planned_event_id()
-		assert_array([
-			NightAnomalyDirector.PHONE_EVENT_ID,
-			NightAnomalyDirector.BLANKET_CHILD_EVENT_ID,
-			NightAnomalyDirector.LAUNDRY_EVENT_ID,
-			NightAnomalyDirector.CHILD_EVENT_ID,
-		]).contains([event_id])
-		selected[event_id] = true
-
-	assert_int(selected.size()).is_greater(1)
+		director.start_day(day)
+		assert_str(director.get_planned_event_id()).is_equal(expected[day])
 
 
 func test_room_109_hotspot_only_exists_while_the_passage_event_is_active() -> void:
@@ -175,8 +172,12 @@ func test_day_seven_room_109_passage_forbids_turning_until_footsteps_end() -> vo
 	var deaths: Array[String] = []
 	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
 	director.start_day(7)
-	director.room_109_passage_state = NightAnomalyDirector.ROOM_109_PASSAGE_WAITING
-	director._room_109_passage_seconds = director.room_109_passage_wait_seconds
+	assert_str(director.get_planned_event_id()).is_equal(NightAnomalyDirector.ROOM_109_PASSAGE_EVENT_ID)
+	director.enter_scene("corridor")
+	assert_str(director.room_109_passage_state).is_equal(NightAnomalyDirector.ROOM_109_PASSAGE_WAITING)
+	assert_bool(director.can_change_scene("front_desk")).is_false()
+	assert_array(deaths).contains_exactly([NightAnomalyDirector.ROOM_109_EVENT_ID])
+	deaths.clear()
 	director.advance(director.room_109_passage_wait_seconds)
 
 	assert_str(director.room_109_passage_state).is_equal(NightAnomalyDirector.ROOM_109_PASSAGE_FOOTSTEPS)
@@ -186,3 +187,22 @@ func test_day_seven_room_109_passage_forbids_turning_until_footsteps_end() -> vo
 	director.set_lethal_outcomes_enabled(false)
 	director.advance(director.room_109_passage_footstep_seconds)
 	assert_str(director.room_109_passage_state).is_equal(NightAnomalyDirector.ROOM_109_PASSAGE_DONE)
+	assert_bool(director.is_daily_schedule_complete()).is_true()
+
+
+func test_hell_mirror_is_destroyed_only_in_idle_laundry_washer() -> void:
+	var inventory := InventoryModel.new()
+	ItemCatalog.register_defaults(inventory)
+	inventory.add_item_by_id(NightAnomalyDirector.HELL_MIRROR_ITEM_ID)
+	var director = auto_free(NightAnomalyDirector.new())
+	var cues: Array[String] = []
+	director.sound_requested.connect(func(cue_id: String): cues.append(cue_id))
+	director.start_day(3)
+
+	director.enter_scene("front_desk")
+	assert_bool(director.destroy_hell_mirror_in_washer(inventory)).is_false()
+	director.enter_scene("laundry_room")
+	assert_bool(director.destroy_hell_mirror_in_washer(inventory)).is_true()
+
+	assert_bool(inventory.has_item_id(NightAnomalyDirector.HELL_MIRROR_ITEM_ID)).is_false()
+	assert_array(cues).contains_exactly(["hell_mirror_washer_destroy"])

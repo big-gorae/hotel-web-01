@@ -144,7 +144,7 @@ The initial inventory now includes Mold Remover. Equip it in Hand and press `F` 
 
 ## Controls
 
-- `E`: close or open your eyes. Closing your eyes masks the screen except for a cursor-sized viewing area.
+- `E`: close or open your eyes. Closing your eyes darkens the screen to a thin horizontal slit; VHS noise disappears while the eyes are closed.
 - `F`: use the item currently equipped in Hand. When a regular hotspot is under the cursor, the equipped item is applied to that hotspot.
 - `Esc`: open the menu. The Controls tab repeats the current shortcuts in game.
 
@@ -152,19 +152,19 @@ The closed-eye view uses an injectable profile in `scripts/systems/eye_close_pro
 
 ## Progressive Night Rules
 
-Starting a new shift opens directly on the Front Desk photo with gameplay paused. The unclaimed-wages call, the player's debt, and the missing older sister who worked under the player's name are revealed in a raised, borderless dialogue layer whose black background fades toward the bottom. Text types from the upper-left with short punctuation pauses; clicking while it types reveals the whole line, and clicking again advances. A pulsing downward arrow appears only when the current line is complete. The Day 1 Rule Book page opens after the final line, and gameplay begins when that page is closed.
+Starting a new shift opens directly on the Front Desk photo with gameplay paused. A short story sequence appears at the start of every Day: the unclaimed-wages call and debt on Day 1, the prior employee record and two contacts on Days 2–3, the older sister's identity and investigation on Days 4–5, her warning on Day 6, and the player's recognition on Day 7. The sequence uses a raised, borderless dialogue layer whose black background fades toward the bottom. Text types from the upper-left with short punctuation pauses; clicking while it types reveals the whole line, and clicking again advances. Completed beats and the current step are saved so loading resumes at a safe boundary without replaying finished story.
 
 The Rule Book is split into one page per day. Each page contains only the rules newly issued that day, the latest page opens automatically whenever a day starts, and arrow navigation keeps earlier pages available. Day 1 begins with three ordinary housekeeping rules; later days reveal mold, Room 108 phone, Room 109, red washer, and abandoned-child rules. Day 7 ends with three short Room 109 instructions.
 
 Rule Book presentation is image-ready. Drop photographed or scanned handwritten pages into `resource/images/rule_book/` as `day_01.png` through `day_07.png`; the matching image automatically replaces that Day's generated text cards. Locale-specific files such as `resource/images/rule_book/ko/day_01.png` take priority, and missing images fall back to the current localized text UI. See `resource/images/rule_book/README.md` for the complete convention.
 
-The current anomalies are prototype encounters. Their visuals and interactions remain available for testing, but all runtime death, game-over, and jumpscare presentation paths are disabled.
+The production anomaly runtime allows only one active encounter at a time. Day 4–7 use the fixed main sequence of unanswered call, red washer, unregistered child, and the Room 109 passage; Day 2 onward can also schedule at most one separate production anomaly after conflicts clear. Runtime death, game-over, and jumpscare presentation are enabled.
 
 - Room 105 mold waits through a randomized long initial cooldown, then grows at a fixed interval from stack 1 through stack 6.
 - Calls originate from Room 108. The front desk phone must be answered before its thirteenth bell, and an answered light-repair request makes Room 108 unsafe to enter.
-- The open Room 109 door appears in the corridor from Day 3.
+- The unresolved Day 3 Room 109 encounter remains debug-only. On Day 7, first entry into the corridor starts the completed wait-and-footsteps passage; touching the door or leaving early is fatal.
 - A red washer must be stopped; its door and the laundry-room exit remain dangerous until the completion music finishes. The resulting load is discarded while the player's eyes are closed.
-- The Room 106 child encounter starts singing automatically when the player closes their eyes. After the crying stops, the child can be held; interrupted or incorrect actions do not kill the player in the current prototype.
+- The Room 106 child encounter starts singing automatically when the player closes their eyes. After the crying stops, the child can be held; fatal branches are connected to the game-over presentation.
 
 ## Gameplay Systems Plan
 
@@ -194,7 +194,7 @@ The current anomalies are prototype encounters. Their visuals and interactions r
 ## Localization
 
 - `scripts/localization.gd` owns language state and translation lookup.
-- English is the default and current language.
+- Korean is the default language. English is the complete fallback locale.
 - Supported language slots are English, Korean, Japanese, Russian, and Chinese.
 - Scene, hotspot, exit, UI text, item names/descriptions, rule book text, and scene photo paths are routed through localization keys with the current English text/path as fallback.
 - Item text uses `item.<item_id>.name` and `item.<item_id>.description`.

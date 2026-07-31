@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "bathroom_shower_legs",
+  "source_scene_id": "room_108_bathroom",
+  "source_path": "res://resource/images/room_108_bathroom.png",
+  "source_sha256": "668ddd1c70b50b78507bf3ceec9d2a4b25c50142df9c37e55399672d73b1c999",
+  "canvas": { "width": 1448, "height": 1086 },
+  "states": {
+    "curtain_closed": { "base_only": true },
+    "legs": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/bathroom_shower_legs/room_108_bathroom/visible.png",
+        "sha256": "92580fca9f952774977c1addbd66ffb1bcbfc72fa54879652b22a06e76699ce9",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "resolved": { "base_only": true }
+  }
+}

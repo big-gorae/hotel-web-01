@@ -13,7 +13,8 @@ enum Language {
 	CHINESE,
 }
 
-const DEFAULT_LANGUAGE := Language.ENGLISH
+const DEFAULT_LANGUAGE := Language.KOREAN
+const FALLBACK_LANGUAGE := Language.ENGLISH
 const SUPPORTED_LANGUAGES := [
 	Language.ENGLISH,
 	Language.KOREAN,
@@ -64,6 +65,15 @@ var translations := {
 		"ui.intro.dialogue.5": "The employee photograph showed my missing older sister.\nShe had worked here under my name while investigating rumors of disappearances and abductions.",
 		"ui.intro.dialogue.6": "On the back of the record, she had written one line.\n‘Do not say you came looking for your younger sister.’",
 		"ui.intro.dialogue.7": "But I am her younger sister.",
+		"story.day.1.line.1": "At 12:47 a.m., an unfamiliar number called.\n‘Unclaimed wages remain under your name. Come collect them in person.’",
+		"story.day.1.line.2": "I had never worked at this hotel. But after months spent hiding from gambling debt and illegal work, money left under my name was difficult to ignore.",
+		"story.day.2.line.1": "A previous employee record was filed under my name. Two contact numbers had been written beneath it.",
+		"story.day.3.line.1": "The second contact number was mine. It was the number I had changed after going into hiding.",
+		"story.day.4.line.1": "The photograph attached to the record was my missing older sister. She had worked here under my name.",
+		"story.day.5.line.1": "Dates and room numbers filled the margins of her record. She had been tracing rumors of people disappearing from this hotel.",
+		"story.day.6.line.1": "One sentence remained on the back, in my sister’s handwriting.\n‘Do not say you came looking for your younger sister.’",
+		"story.day.7.line.1": "She came here looking for her younger sister.\nI am that sister.",
+		"night.phone.room_108_repair_call": "Room 108. The light is out. Come repair it. The line goes dead.",
 		"ui.lobby.continue": "Continue",
 		"ui.lobby.continue.available": "Choose a saved day to continue.",
 		"ui.lobby.continue.disabled": "No saved days yet.",
@@ -149,7 +159,7 @@ var translations := {
 		"item.small_mirror.name": "Small Mirror",
 		"item.small_mirror.description": "A small hand mirror. Its surface is unusually clear.",
 		"item.hell_mirror.name": "Mirror of Hell",
-		"item.hell_mirror.description": "It feels wrong to keep this in your hand.",
+		"item.hell_mirror.description": "The trapped screaming swells while it is held. A washer drum may be the only place deep enough to break it.",
 		"item.cute_doll.name": "Cute Doll",
 		"item.cute_doll.description": "A small wooden doll found on the laundry-room table. It can be held, but only needs to be in your inventory to offer it.",
 		"item.collected_trash.name": "Collected Trash",
@@ -249,6 +259,15 @@ var translations := {
 		"ui.intro.dialogue.5": "직원 사진 속 사람은 실종된 친언니였다.\n언니는 이곳의 실종·납치 소문을 조사하며 내 이름으로 근무했다.",
 		"ui.intro.dialogue.6": "기록 뒤편에는 언니 글씨로 한 줄이 남아 있었다.\n“동생을 찾으러 왔다고 말하지 마.”",
 		"ui.intro.dialogue.7": "동생은 나인데.",
+		"story.day.1.line.1": "새벽 12시 47분, 처음 보는 번호로 전화가 왔다.\n“미지급 급여가 남아 있습니다. 직접 오셔서 찾아가십시오.”",
+		"story.day.1.line.2": "나는 이 호텔에서 일한 적이 없다. 하지만 도박 빚과 불법적인 일을 피해 몇 달째 숨어 지내던 내게, 내 이름으로 남은 돈은 외면하기 어려웠다.",
+		"story.day.2.line.1": "내 이름으로 작성된 이전 직원 기록이 있었다. 그 아래에는 연락처 두 개가 적혀 있었다.",
+		"story.day.3.line.1": "두 번째 연락처는 내 번호였다. 잠적한 뒤 바꾼, 지금 쓰는 번호였다.",
+		"story.day.4.line.1": "기록에 붙은 사진은 실종된 친언니였다. 언니는 내 이름으로 이곳에서 일했다.",
+		"story.day.5.line.1": "언니의 기록 가장자리에는 날짜와 객실 번호가 빼곡했다. 언니는 이 호텔에서 사람들이 사라진다는 소문을 추적하고 있었다.",
+		"story.day.6.line.1": "기록 뒷면에는 언니 글씨로 한 문장만 남아 있었다.\n“동생을 찾으러 왔다고 말하지 마.”",
+		"story.day.7.line.1": "언니는 여동생을 찾으러 이곳에 왔다.\n그 동생은 나다.",
+		"night.phone.room_108_repair_call": "108호입니다. 전등이 나갔습니다. 수리하러 오세요. 통화가 끊겼다.",
 		"ui.lobby.continue": "계속하기",
 		"ui.lobby.continue.available": "저장된 day를 골라 이어서 시작합니다.",
 		"ui.lobby.continue.disabled": "아직 저장된 day가 없습니다.",
@@ -313,6 +332,12 @@ var translations := {
 		"ui.rule_book.rule.18": "누군가 따라온다면 벨을 여러 번 빠르게 울리고 도망치십시오.",
 		"ui.debug.days.title": "Day",
 		"ui.debug.days.tooltip": "현재 day를 자동 저장하고 이 day로 이동합니다.",
+		"ui.debug.hotspots.show": "클릭 영역 표시",
+		"ui.debug.hotspots.hide": "클릭 영역 숨기기",
+		"ui.debug.dialogue.show": "대화 패널 표시",
+		"ui.debug.dialogue.hide": "대화 패널 숨기기",
+		"ui.debug.navigation.show": "빠른 이동 버튼 표시",
+		"ui.debug.navigation.hide": "빠른 이동 버튼 숨기기",
 		"item.room_105_key.name": "105호 열쇠",
 		"item.room_105_key.description": "프론트 서랍에서 나온 낡은 황동 열쇠입니다.",
 		"item.small_flashlight.name": "손전등",
@@ -328,7 +353,7 @@ var translations := {
 		"item.small_mirror.name": "작은 거울",
 		"item.small_mirror.description": "손에 들어오는 작은 거울입니다. 표면이 이상할 정도로 선명합니다.",
 		"item.hell_mirror.name": "지옥의 거울",
-		"item.hell_mirror.description": "손에 들고 있으면 안될 것 같다",
+		"item.hell_mirror.description": "들고 있는 동안 갇힌 절규가 커진다. 세탁기 드럼이라면 이 거울을 부술 수 있을지도 모른다.",
 		"item.cute_doll.name": "귀여운 인형",
 		"item.cute_doll.description": "세탁실 탁자에서 발견한 작은 목각 인형입니다. 손에 들 수 있으며, 건넬 때는 인벤토리에 있기만 하면 됩니다.",
 		"item.collected_trash.name": "수거한 쓰레기",
@@ -757,7 +782,7 @@ func translate(key: String, fallback: String = "") -> String:
 	if table.has(key):
 		return table[key]
 
-	var english_table: Dictionary = translations.get(DEFAULT_LANGUAGE, {})
+	var english_table: Dictionary = translations.get(FALLBACK_LANGUAGE, {})
 	if english_table.has(key):
 		return english_table[key]
 

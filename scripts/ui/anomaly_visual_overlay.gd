@@ -85,7 +85,7 @@ func _draw() -> void:
 		"front_monitor_ghost":
 			_draw_screen_ghost(Rect2(0.405, 0.285, 0.185, 0.205), state)
 		"front_glass_face":
-			_draw_face(_map_rect(Rect2(0.735, 0.155, 0.085, 0.170)), state == "hostile")
+			_draw_face(_map_rect(Rect2(0.485, 0.145, 0.095, 0.365)), state == "hostile")
 		"front_die_sign":
 			_draw_die_sign()
 		"corridor_red_room_light":

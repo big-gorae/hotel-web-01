@@ -43,6 +43,7 @@ func _run() -> void:
 		return
 	main._end_shift()
 	await process_frame
+	_finish_story(main)
 	if main.day_save_manager.current_day != 2:
 		_fail("end-shift action did not advance to day two")
 		return
@@ -50,6 +51,7 @@ func _run() -> void:
 
 	main._start_day(3, false, false)
 	await process_frame
+	_finish_story(main)
 	if not _latest_rule_page_is_open(main, 3, 4):
 		_fail("day three did not automatically open its four new rules")
 		return
@@ -222,6 +224,7 @@ func _run() -> void:
 
 	main._start_day(4, false, false)
 	await process_frame
+	_finish_story(main)
 	main._hide_menu()
 	main.night_anomaly_director.force_blanket_child("room_108_bed_window")
 	main.show_scene("room_108_bed_window", false)
@@ -252,6 +255,7 @@ func _run() -> void:
 
 	main._start_day(5, false, false)
 	await process_frame
+	_finish_story(main)
 	main._hide_menu()
 	main.show_scene("laundry_room", false)
 	main.night_anomaly_director.force_red_laundry()
@@ -273,6 +277,7 @@ func _run() -> void:
 
 	main._start_day(6, false, false)
 	await process_frame
+	_finish_story(main)
 	main._hide_menu()
 	main.show_scene("room_106_bathroom", false)
 	main.night_anomaly_director.force_child_encounter()
@@ -317,8 +322,34 @@ func _run() -> void:
 
 	main._start_day(7, false, false)
 	await process_frame
+	_finish_story(main)
 	if not _latest_rule_page_is_open(main, 7, 3):
 		_fail("day seven did not automatically open its three new rules")
+		return
+	main._hide_menu()
+	main.show_scene("corridor", false)
+	if main.night_anomaly_director.room_109_passage_state != main.night_anomaly_director.ROOM_109_PASSAGE_WAITING:
+		_fail("day seven Room 109 passage did not start on corridor entry")
+		return
+	main.night_anomaly_director.advance(main.night_anomaly_director.room_109_passage_wait_seconds)
+	main.night_anomaly_director.advance(main.night_anomaly_director.room_109_passage_footstep_seconds)
+	if not main.night_anomaly_director.is_daily_schedule_complete():
+		_fail("day seven Room 109 passage did not complete after the footsteps")
+		return
+
+	main.inventory_model.add_item_by_id("hell_mirror")
+	main.inventory_model.equip_item_by_id("hell_mirror")
+	main.show_scene("laundry_room", false)
+	main.system_message_panel.visible = false
+	if not main._try_dispose_equipped_hell_mirror("laundry_second_washer"):
+		_fail("hell mirror could not be destroyed in the second washer")
+		return
+	if main.inventory_model.has_item_id("hell_mirror") or main.system_message_panel.visible:
+		_fail("washer disposal kept the mirror or opened an explanatory popup")
+		return
+	main.inventory_model.add_item_by_id("hell_mirror")
+	if not main._must_die_from_hell_mirror_at_shift_end():
+		_fail("keeping the hell mirror until shift end was not lethal")
 		return
 
 	_restore_save()
@@ -334,6 +365,11 @@ func _find_dynamic_hotspot(main, hotspot_id: String) -> Dictionary:
 		if String(hotspot.get("id", "")) == hotspot_id:
 			return hotspot
 	return {}
+
+
+func _finish_story(main) -> void:
+	while main.is_intro_dialogue_active():
+		main._advance_intro_dialogue()
 
 
 func _find_dynamic_or_editor_hotspot(main, hotspot_id: String) -> Dictionary:

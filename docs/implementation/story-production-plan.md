@@ -15,7 +15,21 @@
 7. `"동생을 찾으러 왔다고 말하지 마"`라는 문장은 플레이어 자신이 그 동생이라는 모순을 만든다.
 8. 관리자는 정체가 드러나지 않으며 룰북 규칙만 계속 추가한다.
 
-이 사실을 한 통화에서 전부 설명하지 않는다. 전화, 숙박부·근무 기록, 연락처 기록, 룰북과 Day 종료 단서를 나눠 사용한다.
+이 사실을 한 통화에서 전부 설명하지 않는다. 현재 구현은 Day 시작마다 한 조각씩 전달하며, 이후 기록지·사진 같은 실물 자산으로 교체해도 같은 beat ID와 저장 진행도를 유지한다.
+
+## 현재 Day별 전달표
+
+| Day | beat ID | 전달 내용 |
+| --- | --- | --- |
+| 1 | `story.unpaid_wages_call`, `story.debt_forces_acceptance` | 밀린 임금 전화와 빚·불법 일 때문에 제안을 무시할 수 없는 사정 |
+| 2 | `story.previous_shift_under_player_name` | 플레이어 이름의 이전 근무 기록과 두 연락처 |
+| 3 | `story.second_contact_matches_player` | 두 번째 연락처가 잠적 후 바꾼 플레이어 번호임을 확인 |
+| 4 | `story.previous_worker_was_sister` | 기록 사진 속 이전 근무자가 실종된 언니임을 확인 |
+| 5 | `story.sister_investigated_disappearance` | 언니가 호텔의 실종 소문을 추적했다는 흔적 |
+| 6 | `story.do_not_say_looking_for_sibling` | `동생을 찾으러 왔다고 말하지 마`라는 언니의 문장 |
+| 7 | `story.younger_sister_recognition` | 플레이어가 바로 그 동생이라는 인식 |
+
+한국어·영어 문장은 `story.day.{day}.line.{line}` locale key로 분리한다. 기본 언어는 한국어이고 영어는 누락 key의 fallback이자 선택 가능한 locale이다.
 
 ## 도입 흐름
 
@@ -47,39 +61,32 @@
 - UI가 의미를 풀이해 주지 않는다.
 - 플레이어가 “동생은 나인데?”라고 스스로 연결할 수 있도록 바로 앞이나 뒤에 과도한 해설을 붙이지 않는다.
 
-정확한 Day와 전달 매체는 결말 구조가 확정될 때 조정할 수 있는 story timeline 데이터로 둔다.
+정확한 Day와 현재 대화형 전달 순서는 위 표로 확정해 `HotelStoryDeliveryManager.DAY_BEATS`에서 관리한다. 전달 매체를 나중에 전화·기록지·사진으로 교체할 때도 beat ID와 Day 순서는 유지한다.
 
-## `StoryBeatDefinition`
+## 현재 데이터 계약
 
-스토리 전달을 `main.gd`의 날짜 분기로 직접 작성하지 않고 다음 데이터로 관리한다.
+스토리 전달은 `main.gd`의 날짜 분기에 문장을 직접 넣지 않고 `scripts/story/story_delivery_manager.gd`의 Day별 beat 데이터로 관리한다.
 
 ```text
 id
-min_day
-trigger: day_start | scene_enter | hotspot | day_end
-scene_id
-hotspot_id
-prerequisite_beat_ids
-required_flag_ids
-presentation_type: phone | dialogue | inspectable | rule_page | cutscene
 content_key
 fallback_content
-evidence_id
-once_per_save
 ```
 
 예시 ID:
 
 ```text
 story.unpaid_wages_call
+story.debt_forces_acceptance
 story.previous_shift_under_player_name
 story.second_contact_matches_player
 story.previous_worker_was_sister
 story.sister_investigated_disappearance
 story.do_not_say_looking_for_sibling
+story.younger_sister_recognition
 ```
 
-텍스트와 음성은 beat ID를 유지한 채 locale별 자산만 교체한다. 컷신을 나중에 이미지·영상으로 바꿔도 evidence flag와 진행 조건은 그대로 둔다.
+텍스트와 음성은 beat ID를 유지한 채 locale별 자산만 교체한다. 컷신을 나중에 이미지·영상으로 바꿔도 완료 beat와 진행 step은 그대로 둔다.
 
 ## 저장과 재생
 

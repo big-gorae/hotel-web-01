@@ -19,6 +19,7 @@ const LAUNDRY_EVENT_ID := "laundry_red_washer"
 const CHILD_EVENT_ID := "room_106_abandoned_child"
 const BLANKET_CHILD_EVENT_ID := "vacant_room_blanket_child"
 const ROOM_109_PASSAGE_EVENT_ID := "room_109_day7_passage"
+const HELL_MIRROR_ITEM_ID := "hell_mirror"
 
 const LAUNDRY_IDLE := "idle"
 const LAUNDRY_WASHING := "washing"
@@ -200,6 +201,16 @@ func start_day(day: int) -> void:
 
 func enter_scene(scene_id: String) -> void:
 	current_scene_id = scene_id
+	if (
+		_can_start_planned_event(ROOM_109_PASSAGE_EVENT_ID)
+		and scene_id == "corridor"
+		and room_109_passage_state == ROOM_109_PASSAGE_IDLE
+	):
+		room_109_passage_state = ROOM_109_PASSAGE_WAITING
+		_room_109_passage_seconds = room_109_passage_wait_seconds
+		_room_109_footstep_cue_seconds = 0.0
+		_mark_planned_event_started(ROOM_109_PASSAGE_EVENT_ID)
+		state_changed.emit()
 	if scene_id == "laundry_room" and laundry_state == LAUNDRY_RED:
 		sound_requested.emit("washer_small_scream")
 	if external_anomaly_active:
@@ -210,7 +221,6 @@ func enter_scene(scene_id: String) -> void:
 		_mark_planned_event_started(LAUNDRY_EVENT_ID)
 		if _audio_playback_allowed() and _washer_spin_player != null:
 			_washer_spin_player.play()
-		dialogue_requested.emit("The second washer is already running.")
 		state_changed.emit()
 	if _can_start_planned_event(CHILD_EVENT_ID) and scene_id == "room_106_bathroom" and child_state == CHILD_IDLE:
 		child_state = CHILD_WAITING
@@ -264,7 +274,7 @@ func can_change_scene(target_scene_id: String) -> bool:
 	if current_scene_id == "room_106_bathroom" and child_state in [CHILD_CRYING, CHILD_SONG_DONE] and target_scene_id != "room_106_bathroom":
 		death_requested.emit(CHILD_EVENT_ID)
 		return false
-	if room_109_passage_state == ROOM_109_PASSAGE_FOOTSTEPS and target_scene_id != "corridor":
+	if room_109_passage_state in [ROOM_109_PASSAGE_WAITING, ROOM_109_PASSAGE_FOOTSTEPS] and target_scene_id != "corridor":
 		death_requested.emit(ROOM_109_EVENT_ID)
 		return false
 	return true
@@ -288,6 +298,21 @@ func handle_hotspot(hotspot_id: String) -> bool:
 				death_requested.emit(BLANKET_CHILD_EVENT_ID)
 			return true
 	return false
+
+
+func destroy_hell_mirror_in_washer(target_inventory) -> bool:
+	if (
+		current_scene_id != "laundry_room"
+		or laundry_state not in [LAUNDRY_IDLE, LAUNDRY_DISCARDED]
+		or target_inventory == null
+		or not target_inventory.has_item_id(HELL_MIRROR_ITEM_ID)
+	):
+		return false
+	if not target_inventory.remove_item_by_id(HELL_MIRROR_ITEM_ID):
+		return false
+	sound_requested.emit("hell_mirror_washer_destroy")
+	state_changed.emit()
+	return true
 
 
 func get_dynamic_hotspots(scene_id: String) -> Array:
@@ -522,7 +547,6 @@ func _advance_phone(delta: float) -> void:
 		phone_ringing = true
 		phone_bell_count = 1
 		_mark_planned_event_started(PHONE_EVENT_ID)
-		dialogue_requested.emit("The front desk phone is ringing.")
 	else:
 		phone_bell_count += 1
 	phone_bell_changed.emit(phone_bell_count, PHONE_MAX_BELLS)
@@ -553,7 +577,7 @@ func _answer_phone() -> bool:
 	_phone_forbidden_seconds = phone_forbidden_duration
 	_phone_fatal_pending = false
 	phone_bell_changed.emit(0, PHONE_MAX_BELLS)
-	dialogue_requested.emit("Room 108. The light is out. Come repair it. The line goes dead.")
+	dialogue_requested.emit("night.phone.room_108_repair_call")
 	state_changed.emit()
 	return true
 
@@ -590,7 +614,6 @@ func _advance_laundry(delta: float) -> void:
 func _handle_washer() -> bool:
 	match laundry_state:
 		LAUNDRY_WASHING:
-			dialogue_requested.emit("The washer is still running.")
 			return true
 		LAUNDRY_RED:
 			laundry_state = LAUNDRY_MUSIC
@@ -600,7 +623,6 @@ func _handle_washer() -> bool:
 				_washer_spin_player.stop()
 			if _audio_playback_allowed() and _completion_music_player != null:
 				_completion_music_player.play()
-			dialogue_requested.emit("The washer stops. Its completion music begins.")
 			state_changed.emit()
 			return true
 		LAUNDRY_MUSIC:
@@ -612,7 +634,6 @@ func _handle_washer() -> bool:
 				death_requested.emit(LAUNDRY_EVENT_ID)
 				return true
 			laundry_state = LAUNDRY_DISCARDED
-			dialogue_requested.emit("Without looking, you discard the entire load.")
 			_complete_planned_event(LAUNDRY_EVENT_ID)
 			state_changed.emit()
 			return true
@@ -626,7 +647,6 @@ func _on_completion_music_finished() -> void:
 		return
 	laundry_state = LAUNDRY_READY
 	_laundry_seconds = 0.0
-	dialogue_requested.emit("The completion music ends. The red laundry is still inside.")
 	state_changed.emit()
 
 
@@ -729,7 +749,7 @@ func _advance_room_109_passage(delta: float) -> void:
 		_room_109_footstep_cue_seconds = 0.72
 	if _room_109_passage_seconds <= 0.0:
 		room_109_passage_state = ROOM_109_PASSAGE_DONE
-		event_survived.emit(ROOM_109_PASSAGE_EVENT_ID)
+		_complete_planned_event(ROOM_109_PASSAGE_EVENT_ID)
 		state_changed.emit()
 
 
@@ -756,14 +776,16 @@ func set_random_seed(seed: int) -> void:
 
 
 func _eligible_daily_events() -> Array[String]:
-	var eligible: Array[String] = []
-	if current_day >= 4:
-		eligible.append_array([PHONE_EVENT_ID, BLANKET_CHILD_EVENT_ID])
-	if current_day >= 5:
-		eligible.append(LAUNDRY_EVENT_ID)
-	if current_day >= 6:
-		eligible.append(CHILD_EVENT_ID)
-	return eligible
+	match current_day:
+		4:
+			return [PHONE_EVENT_ID]
+		5:
+			return [LAUNDRY_EVENT_ID]
+		6:
+			return [CHILD_EVENT_ID]
+		7:
+			return [ROOM_109_PASSAGE_EVENT_ID]
+	return []
 
 
 func _pick_daily_event() -> String:

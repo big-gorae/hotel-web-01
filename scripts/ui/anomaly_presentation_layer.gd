@@ -34,7 +34,11 @@ func reload_manifests() -> void:
 			var result := Manifest.load_and_validate("%s/%s" % [MANIFEST_ROOT, filename], false)
 			if bool(result.get("is_valid", false)):
 				var manifest: Dictionary = result.get("manifest", {})
-				_manifests_by_event[String(manifest.get("event_id", ""))] = manifest
+				var event_id := String(manifest.get("event_id", ""))
+				var scene_id := String(manifest.get("source_scene_id", ""))
+				var manifests_by_scene: Dictionary = _manifests_by_event.get(event_id, {})
+				manifests_by_scene[scene_id] = manifest
+				_manifests_by_event[event_id] = manifests_by_scene
 		filename = directory.get_next()
 	directory.list_dir_end()
 	_rebuild()
@@ -70,9 +74,10 @@ func _rebuild() -> void:
 	visible = false
 	if _active_event_id.is_empty() or not _manifests_by_event.has(_active_event_id):
 		return
-	var manifest: Dictionary = _manifests_by_event[_active_event_id]
-	if String(manifest.get("source_scene_id", "")) != _current_scene_id:
+	var manifests_by_scene: Dictionary = _manifests_by_event[_active_event_id]
+	if not manifests_by_scene.has(_current_scene_id):
 		return
+	var manifest: Dictionary = manifests_by_scene[_current_scene_id]
 	var states: Dictionary = manifest.get("states", {})
 	var state: Dictionary = states.get(_active_state_id, states.get("visible", {}))
 	if state.is_empty() or bool(state.get("base_only", false)):

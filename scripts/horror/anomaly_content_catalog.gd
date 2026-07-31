@@ -19,7 +19,7 @@ static func build_definitions() -> Dictionary:
 	var definitions := {}
 	for definition in [
 		_phenomenon("front_monitor_ghost", 3, "front_desk", Rect2(0.775, 0.265, 0.220, 0.405), TREATMENT_HOLD, 2.2),
-		_phenomenon("front_glass_face", 3, "front_desk", Rect2(0.715, 0.115, 0.125, 0.295), TREATMENT_BELL_SEQUENCE, 0.0),
+		_phenomenon("front_glass_face", 3, "front_desk", Rect2(0.485, 0.145, 0.095, 0.365), TREATMENT_BELL_SEQUENCE, 0.0),
 		_phenomenon("front_die_sign", 3, "front_desk", Rect2(0.000, 0.520, 0.150, 0.190), TREATMENT_HOLD, 2.6),
 		_phenomenon("corridor_red_room_light", 2, "corridor", Rect2(0.235, 0.145, 0.075, 0.150), TREATMENT_HOLD, 1.6),
 		_item_phenomenon("corridor_blood_puddle", 2, "corridor", Rect2(0.315, 0.705, 0.155, 0.165), "cleaning_cloth", 2.8),

@@ -29,17 +29,13 @@
 - `room_107_hanging_girl`: 기존 장면을 입력으로 사용해 방·몸·밧줄은 유지하고 얼굴과 시선만 카메라 정면으로 수정했다.
 - `room_108_tv_ghost`: 높은 TV가 있던 108호 장면 대신 책상 높이의 CRT가 있는 `room_105_bathroom_entry`로 이전했다. 평상 상태는 정적 속 흐린 형상, 길게 누르는 중반 이후에는 잡음과 미소가 강해지는 적대 상태를 사용한다.
 
-## 생성하지 않은 자산
+## 2026-08-01 최종 교체
 
-아래 네 항목은 얼굴 해석과 이미지 검열 문제 때문에 생성하지 않았다.
-
-- `front_monitor_ghost`
-- `front_glass_face`
-- `room_105_closet_woman` — 곰팡이 돼지 가면 남자(세이브 호환용 레거시 ID)
-- `hell_mirror`
-
-앞의 세 장면은 기존 사진 위 검은 사각형 full-scene variant로 연결했다.
-`hell_mirror`는 512×512 검은 아이콘으로 교체했다.
+- `front_monitor_ghost`: 모니터 안에만 비대칭 연골 주름과 관절진 목을 가진 비인간 존재를 배치했다. 대칭적인 첫 외계인형 후보는 폐기했다.
+- `front_glass_face`: 중앙 유리문 밖에 같은 개체의 원거리 `visible`과 근거리 `hostile` 상태를 만들었다. 핫스폿도 실제 유리문 위치로 옮겼다.
+- `hell_mirror`: 접힌 태아형 동물-인간 존재가 불가능한 깊이에 갇힌 512×512 RGBA 아이콘으로 교체했다.
+- `room_105_closet_woman`: 별도 생성하지 않고 승인된 `reference_pig_mask_01.png`를 합성한 기존 `stage_2.png`와 점프스케어 원본을 계속 사용한다.
+- `bathroom_shower_legs`: 네 욕실이 동일 촬영 원본을 공유하므로 승인된 105호 다리 합성본을 106~108호 장면별 경로와 manifest로 재사용한다.
 
 ## 직접 합성
 

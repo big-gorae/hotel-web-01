@@ -291,6 +291,4 @@ func _toggle_laundry_washer(result) -> void:
 	flag_store.set_value(LAUNDRY_OPEN_FLAG, is_open)
 	result.should_refresh_photo = true
 	result.should_save = true
-	var state_key := "opened" if is_open else "closed"
-	var message := "The second washer door is open." if is_open else "The second washer door is closed."
-	result.set_dialogue("hotspot.laundry_room.laundry_second_washer.%s" % state_key, message)
+	result.consumed = true

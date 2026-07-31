@@ -49,3 +49,17 @@ func test_shadow_bell_echo_scream_and_heartbeat_are_available() -> void:
 	controller.set_shadow_heartbeat_active(false)
 	assert_bool(controller.is_shadow_heartbeat_active()).is_false()
 	assert_object(controller._shadow_heartbeat_player.stream).is_null()
+
+
+func test_bathtub_drain_and_mirror_washer_cues_are_substantial_one_shots() -> void:
+	var controller = auto_free(AnomalyAudioController.new())
+	add_child(controller)
+	var drain := controller._stream_for_cue("bathtub_drain") as AudioStreamWAV
+	var washer := controller._stream_for_cue("hell_mirror_washer_destroy") as AudioStreamWAV
+
+	assert_object(drain).is_not_null()
+	assert_object(washer).is_not_null()
+	assert_int(drain.data.size()).is_greater(180000)
+	assert_int(washer.data.size()).is_greater(150000)
+	assert_int(drain.loop_mode).is_equal(AudioStreamWAV.LOOP_DISABLED)
+	assert_int(washer.loop_mode).is_equal(AudioStreamWAV.LOOP_DISABLED)

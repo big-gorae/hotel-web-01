@@ -93,6 +93,26 @@ func test_shower_legs_resolve_between_third_and_fifth_opening() -> void:
 	assert_int(cues.count("curtain_legs_reveal")).is_equal(1)
 
 
+func test_shower_room_is_randomized_once_and_persists_through_save() -> void:
+	var selected_rooms: Dictionary = {}
+	for seed in range(12):
+		var runtime = auto_free(ContentRuntime.new())
+		add_child(runtime)
+		runtime.set_random_seed(seed)
+		runtime.start_day(4)
+		runtime.force_event("bathroom_shower_legs")
+		var scene_id: String = runtime.get_active_scene_id()
+		assert_array(ContentRuntime.SHOWER_BATHROOM_SCENE_IDS).contains([scene_id])
+		selected_rooms[scene_id] = true
+
+		var restored = auto_free(ContentRuntime.new())
+		add_child(restored)
+		restored.import_state(runtime.export_state())
+		assert_str(restored.get_active_scene_id()).is_equal(scene_id)
+
+	assert_int(selected_rooms.size()).is_greater(1)
+
+
 func test_empty_shower_curtain_resolves_on_first_opening() -> void:
 	var runtime = auto_free(ContentRuntime.new())
 	add_child(runtime)
@@ -269,6 +289,8 @@ func test_shadow_distress_and_escape_progress_survive_save_restore() -> void:
 
 func test_entrails_bathtub_uses_replaceable_mvp_hold_treatment() -> void:
 	var runtime = auto_free(ContentRuntime.new())
+	var cues: Array[String] = []
+	runtime.sound_requested.connect(func(cue_id: String): cues.append(cue_id))
 	add_child(runtime)
 	runtime.force_event("room_108_entrails_bathtub")
 	var hotspots: Array = runtime.get_dynamic_hotspots("room_108_bathroom")
@@ -278,6 +300,7 @@ func test_entrails_bathtub_uses_replaceable_mvp_hold_treatment() -> void:
 	runtime.advance(4.3)
 
 	assert_str(runtime.current_event_id).is_empty()
+	assert_array(cues).contains_exactly(["bathtub_drain"])
 
 
 func test_hanging_girl_doll_unlocks_only_survival_choice_and_is_consumed() -> void:

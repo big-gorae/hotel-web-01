@@ -29,3 +29,19 @@ func test_baby_wallpaper_uses_generated_scene_and_restores_each_clicked_surface(
 		if child.has_meta("normalized_rect"):
 			restored_surface_count += 1
 	assert_int(restored_surface_count).is_equal(2)
+
+
+func test_shower_event_selects_the_manifest_for_its_saved_room() -> void:
+	var layer = auto_free(PresentationLayer.new())
+	add_child(layer)
+	layer.reload_manifests()
+	layer.set_scene("room_107_bathroom")
+	layer.set_photo_rect(Rect2(0.0, 0.0, 1000.0, 700.0))
+
+	assert_bool(layer.apply_presentation_state({
+		"event_id": "bathroom_shower_legs",
+		"state": "legs",
+		"scene_id": "room_107_bathroom",
+		"curtain_legs_visible": true,
+	})).is_true()
+	assert_int(layer.get_child_count()).is_equal(1)

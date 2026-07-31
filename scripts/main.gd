@@ -37,6 +37,7 @@ const HotelJumpscareLabScript = preload("res://scripts/ui/jumpscare_lab.gd")
 const HotelAnomalyAudioControllerScript = preload("res://scripts/horror/anomaly_audio_controller.gd")
 const HotelEquippedItemHazardControllerScript = preload("res://scripts/horror/equipped_item_hazard_controller.gd")
 const HotelChoiceDialogueOverlayScript = preload("res://scripts/ui/choice_dialogue_overlay.gd")
+const HotelStoryDeliveryManagerScript = preload("res://scripts/story/story_delivery_manager.gd")
 
 const START_SCENE_ID := "front_desk"
 const PARALLAX_PADDING := 48.0
@@ -67,15 +68,6 @@ const MVP_NIGHT_DEBUG_EVENT_IDS := [
 	"laundry_red_washer",
 	"room_106_abandoned_child",
 	"vacant_room_blanket_child",
-]
-const INTRO_DIALOGUE_FALLBACK_LINES := [
-	"At 12:47 a.m., an unfamiliar number called.\n‘Unclaimed wages remain under your name. Come collect them in person.’",
-	"I had never worked at this hotel.\nBut the employee record carried my name and two phone numbers.",
-	"The second number was mine.",
-	"I had been hiding from gambling debt and illegal work for a long time.\nMoney left under my name was difficult to ignore.",
-	"The employee photograph showed my missing older sister.\nShe had worked here under my name while investigating rumors of disappearances and abductions.",
-	"On the back of the record, she had written one line.\n‘Do not say you came looking for your younger sister.’",
-	"But I am her younger sister.",
 ]
 const DIALOGUE_GRADIENT_SHADER_CODE := "shader_type canvas_item;\nuniform vec4 top_color : source_color = vec4(0.0, 0.0, 0.0, 0.94);\nuniform vec4 bottom_color : source_color = vec4(0.0, 0.0, 0.0, 0.10);\nvoid fragment() {\n\tfloat fade = smoothstep(0.0, 1.0, UV.y);\n\tCOLOR = mix(top_color, bottom_color, fade);\n}\n"
 
@@ -114,6 +106,7 @@ var mold_growth_system = null
 var night_anomaly_director = null
 var anomaly_content_runtime = null
 var equipped_item_hazard_controller = null
+var story_delivery_manager = null
 var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
@@ -205,6 +198,7 @@ func _ready() -> void:
 	playback_pause_manager = HotelPlaybackPauseManagerScript.new()
 	day_save_manager = HotelDaySaveManagerScript.new()
 	meta_progress_save_manager = HotelMetaProgressSaveManagerScript.new()
+	story_delivery_manager = HotelStoryDeliveryManagerScript.new()
 	flag_store = HotelFlagStoreScript.new()
 	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
 	shower_curtain_state = HotelShowerCurtainStateScript.new()
@@ -707,7 +701,7 @@ func _build_anomaly_runtime() -> void:
 	gameplay_layer.add_child(night_anomaly_director)
 	night_anomaly_director.setup(eye_close_controller)
 	night_anomaly_director.set_lethal_outcomes_enabled(LETHAL_GIMMICKS_ENABLED)
-	night_anomaly_director.dialogue_requested.connect(_show_system_message)
+	night_anomaly_director.dialogue_requested.connect(_on_night_dialogue_requested)
 	if LETHAL_GIMMICKS_ENABLED:
 		night_anomaly_director.death_requested.connect(_trigger_game_over_event)
 	night_anomaly_director.phone_bell_changed.connect(_on_phone_bell_changed)
@@ -883,6 +877,7 @@ func _show_lobby() -> void:
 
 func _start_shift() -> void:
 	day_save_manager.start_new_shift()
+	story_delivery_manager.start_new_run()
 	HotelItemCatalogScript.reset_to_initial_items(inventory_model)
 	horror_event_manager.start_new_run()
 	task_manager.start_new_run()
@@ -895,11 +890,8 @@ func _start_shift() -> void:
 	mold_growth_system.import_state({})
 	mold_growth_system.register_room("room_105")
 	mold_growth_system.set_enabled(false)
-	night_anomaly_director.start_day(1)
-	anomaly_content_runtime.start_day(1)
 	eye_close_controller.open_eyes()
 	_start_day(1, false, false)
-	_begin_intro_dialogue()
 
 
 func _start_saved_day(day: int) -> void:
@@ -927,7 +919,16 @@ func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) ->
 	show_scene(target_scene_id, play_transition_sound)
 	_save_current_day()
 	_update_day_display()
-	call_deferred("_present_latest_rule_page")
+	call_deferred("_present_day_opening")
+
+
+func _present_day_opening() -> void:
+	if not game_started or intro_dialogue_active or _is_lobby_open():
+		return
+	if story_delivery_manager != null and story_delivery_manager.has_active_sequence():
+		_begin_intro_dialogue()
+		return
+	_present_latest_rule_page()
 
 
 func _present_latest_rule_page() -> void:
@@ -960,6 +961,7 @@ func _capture_day_state() -> Dictionary:
 		"mold": mold_growth_system.export_state(),
 		"night_anomalies": night_anomaly_director.export_state(),
 		"content_anomalies": anomaly_content_runtime.export_state(),
+		"story_delivery": story_delivery_manager.export_state(),
 	}
 
 
@@ -996,6 +998,10 @@ func _restore_day_state(day: int) -> String:
 		anomaly_content_runtime.import_state(slot.get("content_anomalies", {}))
 	else:
 		anomaly_content_runtime.start_day(day)
+	if slot.has("story_delivery"):
+		story_delivery_manager.import_state(slot.get("story_delivery", {}))
+	else:
+		story_delivery_manager.prepare_day(day)
 	var saved_scene_id := String(slot.get("scene_id", START_SCENE_ID))
 	if not HOTEL_SCENES.has(saved_scene_id):
 		return START_SCENE_ID
@@ -1017,6 +1023,7 @@ func _reset_day_runtime_state() -> void:
 	mold_growth_system.set_enabled(day_save_manager.current_day >= 2)
 	night_anomaly_director.start_day(day_save_manager.current_day)
 	anomaly_content_runtime.start_day(day_save_manager.current_day)
+	story_delivery_manager.prepare_day(day_save_manager.current_day)
 	eye_close_controller.open_eyes()
 	if brightness_slider != null:
 		brightness_slider.value = game_brightness
@@ -1171,6 +1178,8 @@ func _use_equipped_item() -> void:
 			continue
 		var anomaly_hotspot: Dictionary = button.get_meta("hotspot")
 		var anomaly_hotspot_id := String(anomaly_hotspot.get("id", ""))
+		if _try_dispose_equipped_hell_mirror(anomaly_hotspot_id):
+			return
 		if anomaly_hotspot_id.begins_with("anomaly_hold:") and anomaly_content_runtime != null:
 			anomaly_content_runtime.begin_item_hold(anomaly_hotspot_id, item_id, get_viewport().get_mouse_position())
 			return
@@ -1193,6 +1202,24 @@ func _use_equipped_item() -> void:
 			if result.consumed or result.has_dialogue():
 				_apply_interaction_result(result, false)
 				return
+
+
+func _try_dispose_equipped_hell_mirror(hotspot_id: String) -> bool:
+	if (
+		inventory_model == null
+		or inventory_model.equipped_item == null
+		or String(inventory_model.equipped_item.id) != HotelNightAnomalyDirectorScript.HELL_MIRROR_ITEM_ID
+		or hotspot_id != "laundry_second_washer"
+		or night_anomaly_director == null
+		or not night_anomaly_director.destroy_hell_mirror_in_washer(inventory_model)
+	):
+		return false
+	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, false)
+	laundry_second_washer_open = false
+	_refresh_current_scene_photo()
+	_build_hotspots(_scene_hotspots(current_scene_id, HOTEL_SCENES[current_scene_id]))
+	_save_current_day()
+	return true
 
 
 func _on_anomaly_hotspot_button_down(hotspot: Dictionary) -> void:
@@ -1296,9 +1323,6 @@ func _toggle_laundry_washer() -> void:
 	if current_scene_id == "laundry_room":
 		_refresh_current_scene_photo()
 
-	var state_key := "opened" if laundry_second_washer_open else "closed"
-	var message := "The second washer door is open." if laundry_second_washer_open else "The second washer door is closed."
-	_show_transient_dialogue(localization.translate("hotspot.laundry_room.laundry_second_washer.%s" % state_key, message))
 
 
 func _refresh_current_scene_photo() -> void:
@@ -1334,9 +1358,6 @@ func _toggle_shower_curtain() -> void:
 		anomaly_content_runtime.handle_curtain_toggled(current_scene_id, closed)
 	_refresh_current_scene_photo()
 	_build_hotspots(_scene_hotspots(current_scene_id, scene_data))
-	var state_key := "closed" if closed else "opened"
-	var message := "The shower curtain is closed." if closed else "The shower curtain is open."
-	_show_transient_dialogue(localization.translate("hotspot.%s.shower_curtain.%s" % [current_scene_id, state_key], message))
 	_save_current_day()
 
 
@@ -1774,6 +1795,10 @@ func _show_system_message(message: String) -> void:
 	system_message_tween.finished.connect(func(): system_message_panel.visible = false)
 
 
+func _on_night_dialogue_requested(message_key: String) -> void:
+	_show_system_message(localization.translate(message_key, message_key))
+
+
 func _position_runtime_status() -> void:
 	var viewport_size := get_viewport_rect().size
 	if phone_bell_panel != null:
@@ -1954,8 +1979,11 @@ func _on_persistent_dialogue_input(event: InputEvent) -> void:
 
 
 func _begin_intro_dialogue() -> void:
+	if story_delivery_manager == null or not story_delivery_manager.has_active_sequence():
+		_present_latest_rule_page()
+		return
 	intro_dialogue_active = true
-	intro_dialogue_index = 0
+	intro_dialogue_index = story_delivery_manager.get_current_step() - 1
 	show_persistent_dialogue = true
 	if equipment_hud != null:
 		equipment_hud.visible = false
@@ -1971,16 +1999,24 @@ func _advance_intro_dialogue() -> void:
 		return
 	if typewriter_dialogue_controller != null and typewriter_dialogue_controller.reveal_all():
 		return
-	if intro_dialogue_index >= INTRO_DIALOGUE_FALLBACK_LINES.size() - 1:
+	if not story_delivery_manager.advance():
+		_save_current_day()
 		_finish_intro_dialogue()
 		return
-	intro_dialogue_index += 1
+	intro_dialogue_index = story_delivery_manager.get_current_step() - 1
+	_save_current_day()
 	_refresh_intro_dialogue()
 
 
 func _refresh_intro_dialogue() -> void:
-	var line_number := intro_dialogue_index + 1
-	var line := localization.translate("ui.intro.dialogue.%d" % line_number, INTRO_DIALOGUE_FALLBACK_LINES[intro_dialogue_index])
+	var beat: Dictionary = story_delivery_manager.get_current_beat()
+	if beat.is_empty():
+		_finish_intro_dialogue()
+		return
+	var line := localization.translate(
+		String(beat.get("content_key", "")),
+		String(beat.get("fallback_content", "")),
+	)
 	current_persistent_dialogue_text = line
 	_apply_persistent_dialogue_display()
 	typewriter_dialogue_controller.play_line(line)
@@ -2403,6 +2439,9 @@ func _end_shift() -> void:
 	_update_shift_end_button()
 	if end_shift_button == null or not end_shift_button.visible:
 		return
+	if _must_die_from_hell_mirror_at_shift_end():
+		_trigger_game_over_event("hell_mirror")
+		return
 	_save_current_day()
 	if day_save_manager.current_day >= HotelDaySaveManagerScript.TOTAL_DAYS:
 		_show_lobby()
@@ -2410,6 +2449,10 @@ func _end_shift() -> void:
 	var next_day: int = day_save_manager.current_day + 1
 	day_save_manager.unlock_day(next_day)
 	_start_day(next_day, false, true)
+
+
+func _must_die_from_hell_mirror_at_shift_end() -> bool:
+	return inventory_model != null and inventory_model.has_item_id(HotelNightAnomalyDirectorScript.HELL_MIRROR_ITEM_ID)
 
 
 func _refresh_debug_day_buttons() -> void:
