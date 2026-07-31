@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "vacant_room_blanket_child",
+  "source_scene_id": "room_108_bed_window",
+  "source_path": "res://resource/images/room_108_bed_window.png",
+  "source_sha256": "b96cab3b0ad0a50c97703b4c73c5060d80e6caebbab54cfc3e392cbd5febcfcb",
+  "canvas": {
+    "width": 1448,
+    "height": 1086
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/vacant_room_blanket_child/room_108_bed_window/visible.png",
+        "sha256": "b8d9ed86899c7c97d8576baa3027cde633f1a239432d8a5f146b2ca80756e522",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}

@@ -4,6 +4,7 @@ extends PanelContainer
 signal activated
 
 var icon_label: Label
+var icon_texture_rect: TextureRect
 var name_label: Label
 var localization = null
 
@@ -27,6 +28,14 @@ func _ready() -> void:
 	icon_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.42))
 	layout.add_child(icon_label)
 
+	icon_texture_rect = TextureRect.new()
+	icon_texture_rect.custom_minimum_size = Vector2(48.0, 48.0)
+	icon_texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_texture_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon_texture_rect.visible = false
+	layout.add_child(icon_texture_rect)
+
 	name_label = Label.new()
 	name_label.text = _text("equipment.empty", "Empty")
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -47,9 +56,16 @@ func set_equipped_item(item) -> void:
 		return
 
 	if item == null:
+		icon_texture_rect.texture = null
+		icon_texture_rect.visible = false
+		icon_label.visible = true
 		icon_label.text = "✋"
 		name_label.text = _text("equipment.empty", "Empty")
 	else:
+		var item_icon := _load_item_icon(item)
+		icon_texture_rect.texture = item_icon
+		icon_texture_rect.visible = item_icon != null
+		icon_label.visible = item_icon == null
 		icon_label.text = item.icon_text
 		name_label.text = item.get_display_name(localization)
 
@@ -78,3 +94,10 @@ func _text(key: String, fallback: String) -> String:
 		return fallback
 
 	return localization.translate("ui.%s" % key, fallback)
+
+
+func _load_item_icon(item) -> Texture2D:
+	var icon_path := String(item.icon_path)
+	if icon_path.is_empty() or not ResourceLoader.exists(icon_path):
+		return null
+	return load(icon_path) as Texture2D

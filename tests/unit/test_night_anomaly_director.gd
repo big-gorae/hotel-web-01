@@ -14,6 +14,8 @@ func test_room_108_phone_kills_on_thirteenth_bell_and_blocks_room_after_answer()
 		director.advance(director.phone_bell_interval)
 	assert_that(deaths).is_empty()
 	director.advance(director.phone_bell_interval)
+	assert_that(deaths).is_empty()
+	director.advance(director.phone_death_delay)
 	assert_that(deaths).is_equal([NightAnomalyDirector.PHONE_EVENT_ID])
 
 	deaths.clear()
@@ -24,16 +26,50 @@ func test_room_108_phone_kills_on_thirteenth_bell_and_blocks_room_after_answer()
 	assert_that(deaths).is_equal([NightAnomalyDirector.PHONE_EVENT_ID])
 
 
-func test_room_109_only_appears_from_third_day() -> void:
+func test_answered_phone_expires_then_completes_the_only_daily_entity() -> void:
 	var director = auto_free(NightAnomalyDirector.new())
-	director.start_day(2)
-	assert_that(director.get_dynamic_hotspots("corridor")).is_empty()
+	var survived: Array[String] = []
+	director.event_survived.connect(func(event_id: String): survived.append(event_id))
+	director.start_day(4)
+	director.force_phone_ring()
+	director.handle_hotspot("phone")
+
+	assert_bool(director.has_active_anomaly()).is_true()
+	director.advance(director.phone_forbidden_duration)
+
+	assert_bool(director.room_108_forbidden).is_false()
+	assert_bool(director.is_daily_schedule_complete()).is_true()
+	assert_array(survived).contains_exactly([NightAnomalyDirector.PHONE_EVENT_ID])
+
+
+func test_each_day_plans_at_most_one_eligible_entity() -> void:
+	var selected: Dictionary = {}
+	for seed in range(20):
+		var director = auto_free(NightAnomalyDirector.new())
+		director.set_random_seed(seed)
+		director.start_day(6)
+		var event_id: String = director.get_planned_event_id()
+		assert_array([
+			NightAnomalyDirector.PHONE_EVENT_ID,
+			NightAnomalyDirector.BLANKET_CHILD_EVENT_ID,
+			NightAnomalyDirector.LAUNDRY_EVENT_ID,
+			NightAnomalyDirector.CHILD_EVENT_ID,
+		]).contains([event_id])
+		selected[event_id] = true
+
+	assert_int(selected.size()).is_greater(1)
+
+
+func test_room_109_hotspot_only_exists_while_the_passage_event_is_active() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
 	director.start_day(3)
+	assert_that(director.get_dynamic_hotspots("corridor")).is_empty()
+	director.room_109_passage_state = NightAnomalyDirector.ROOM_109_PASSAGE_WAITING
 	assert_that(director.get_dynamic_hotspots("corridor").size()).is_equal(1)
 	assert_that(director.get_dynamic_hotspots("corridor")[0].get("id", "")).is_equal("room_109_open_door")
 
 
-func test_child_song_starts_when_eyes_close_and_opening_early_is_fatal() -> void:
+func test_child_song_only_runs_while_f_is_held_and_silence_counts_toward_death() -> void:
 	var eyes = auto_free(EyeCloseController.new())
 	var director = auto_free(NightAnomalyDirector.new())
 	var deaths := []
@@ -43,8 +79,13 @@ func test_child_song_starts_when_eyes_close_and_opening_early_is_fatal() -> void
 	director.force_child_encounter()
 
 	eyes.close_eyes()
+	assert_bool(eyes.is_song_active()).is_false()
+	assert_bool(director.begin_hand_action()).is_true()
 	assert_that(eyes.is_song_active()).is_true()
-	eyes.open_eyes()
+	director.release_hand_action()
+	assert_bool(eyes.is_song_active()).is_false()
+	assert_that(deaths).is_empty()
+	director.advance(director.child_response_seconds)
 	assert_that(deaths).is_equal([NightAnomalyDirector.CHILD_EVENT_ID])
 
 
@@ -66,5 +107,73 @@ func test_nonlethal_mode_keeps_anomalies_but_never_requests_death() -> void:
 	director.start_day(6)
 	director.force_child_encounter()
 	eyes.close_eyes()
+	director.begin_hand_action()
 	eyes.open_eyes()
 	assert_that(deaths).is_empty()
+
+
+func test_blanket_child_pauses_danger_while_eyes_are_closed_in_its_room() -> void:
+	var eyes = auto_free(EyeCloseController.new())
+	var director = auto_free(NightAnomalyDirector.new())
+	director.setup(eyes)
+	director.set_lethal_outcomes_enabled(false)
+	director.start_day(4)
+	director.force_blanket_child("room_108_bed_window")
+	director.enter_scene("room_108_bed_window")
+	assert_str(director.blanket_state).is_equal(NightAnomalyDirector.BLANKET_VISIBLE)
+
+	eyes.close_eyes()
+	director.advance(director.blanket_eye_close_duration)
+
+	assert_str(director.blanket_state).is_equal(NightAnomalyDirector.BLANKET_RESOLVED)
+
+
+func test_blanket_child_plays_found_cue_before_delayed_death() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	var deaths: Array[String] = []
+	var cues: Array[String] = []
+	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
+	director.sound_requested.connect(func(cue_id: String): cues.append(cue_id))
+	director.start_day(4)
+	director.force_blanket_child("room_108_bed_window")
+	director.enter_scene("room_108_bed_window")
+
+	director.advance(director.blanket_response_seconds)
+	assert_array(cues).contains(["blanket_found_japanese"])
+	assert_array(deaths).is_empty()
+	director.advance(director.blanket_death_delay)
+
+	assert_array(deaths).contains_exactly([NightAnomalyDirector.BLANKET_CHILD_EVENT_ID])
+
+
+func test_red_washer_neglect_finishes_music_then_requests_death() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	var deaths: Array[String] = []
+	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
+	director.start_day(5)
+	director.force_red_laundry()
+
+	director.advance(director.laundry_neglect_duration)
+	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_MUSIC)
+	assert_array(deaths).is_empty()
+	director.advance(director.laundry_music_duration + director.laundry_post_music_death_delay)
+
+	assert_array(deaths).contains_exactly([NightAnomalyDirector.LAUNDRY_EVENT_ID])
+
+
+func test_day_seven_room_109_passage_forbids_turning_until_footsteps_end() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	var deaths: Array[String] = []
+	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
+	director.start_day(7)
+	director.room_109_passage_state = NightAnomalyDirector.ROOM_109_PASSAGE_WAITING
+	director._room_109_passage_seconds = director.room_109_passage_wait_seconds
+	director.advance(director.room_109_passage_wait_seconds)
+
+	assert_str(director.room_109_passage_state).is_equal(NightAnomalyDirector.ROOM_109_PASSAGE_FOOTSTEPS)
+	assert_bool(director.can_change_scene("front_desk")).is_false()
+	assert_array(deaths).contains_exactly([NightAnomalyDirector.ROOM_109_EVENT_ID])
+
+	director.set_lethal_outcomes_enabled(false)
+	director.advance(director.room_109_passage_footstep_seconds)
+	assert_str(director.room_109_passage_state).is_equal(NightAnomalyDirector.ROOM_109_PASSAGE_DONE)

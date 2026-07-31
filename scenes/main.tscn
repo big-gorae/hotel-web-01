@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://bsbls80jr3d8y" path="res://resource/images/corridor.png" id="2_muem4"]
 [ext_resource type="Texture2D" uid="uid://vv8lmyy7dwks" path="res://resource/images/exterior_stairs.png" id="4_dp3eg"]
 [ext_resource type="Texture2D" uid="uid://3to4gtkbpa3a" path="res://resource/images/front_desk.png" id="5_0ld40"]
-[ext_resource type="Texture2D" uid="uid://c1erqspxnm0cr" path="res://resource/images/laundry_room.png" id="6_gqmmt"]
+[ext_resource type="Texture2D" path="res://resource/images/laundry_room_washer_closed.png" id="6_gqmmt"]
 [ext_resource type="Texture2D" uid="uid://dmvp4g5by24w0" path="res://resource/images/room_105_bathroom.png" id="7_yc10j"]
 [ext_resource type="Texture2D" uid="uid://bx1fll146f8nx" path="res://resource/images/room_105_bathroom_entry.png" id="8_jscy8"]
 [ext_resource type="Texture2D" uid="uid://bwhjy1j58yk35" path="res://resource/images/room_105_door_window.png" id="9_pm3ni"]

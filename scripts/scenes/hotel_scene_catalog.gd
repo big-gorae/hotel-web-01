@@ -31,6 +31,10 @@ const SCENES := {
 	"laundry_room": {
 		"title": "Laundry Room",
 		"photo": "res://resource/images/laundry_room.png",
+		"photo_variants": [
+			"res://resource/images/laundry_room.png",
+			"res://resource/images/laundry_room_washer_closed.png",
+		],
 		"intro": "The laundry room hums under fluorescent light. Machines line the walls and the exit is behind you.",
 		"exits": [{"label": "Front Desk", "target": "front_desk"}],
 	},

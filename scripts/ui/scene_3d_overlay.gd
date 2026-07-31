@@ -30,6 +30,8 @@ func show_scene_overlay(scene_id: String) -> void:
 	if not definitions_by_scene.has(scene_id):
 		clear_overlay()
 		return
+	if visible and current_overlay_scene_id == scene_id and get_model_count() > 0:
+		return
 
 	current_overlay_scene_id = scene_id
 	visible = true

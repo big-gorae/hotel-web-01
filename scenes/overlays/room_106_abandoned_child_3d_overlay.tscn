@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://bfj6w2khhsk7u" path="res://resource/3d_models/dripping_gaze/dripping_gaze.glb" id="1_child"]
+
+[node name="Room106AbandonedChild3DOverlay" type="Node3D"]
+
+[node name="room_106_abandoned_child" type="Node3D" parent="."]
+transform = Transform3D(1.05619, 0, 0, 0, 1.05619, 0, 0, 0, 1.05619, 2.05, -0.58, 0)
+
+[node name="DrippingGaze" parent="room_106_abandoned_child" instance=ExtResource("1_child")]
+transform = Transform3D(-0.044967365, -0.4146622, 0.090071596, 0.49878374, -0.037161637, 0.011266976, -0.002144103, 0.051594708, 0.7320134, -4.0649233, 2.011661, -0.9011062)

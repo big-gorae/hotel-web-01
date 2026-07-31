@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "corridor_blood_puddle",
+  "source_scene_id": "corridor",
+  "source_path": "res://resource/images/corridor.png",
+  "source_sha256": "a715b594a0abbf4502e2751d991f76d5331b44a9c57850cfad8898f0e459d867",
+  "canvas": {
+    "width": 1536,
+    "height": 1024
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/corridor_blood_puddle/corridor/visible.png",
+        "sha256": "c200d2883ca458089e15405206666ad65682b76a521516cb820e2a04ffffd7b8",
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}

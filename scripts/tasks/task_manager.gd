@@ -41,6 +41,10 @@ func get_task_state(task_id: String) -> String:
 	return TaskDefinition.STATE_DONE if completed_task_ids.has(task_id) else TaskDefinition.STATE_PENDING
 
 
+func is_all_complete() -> bool:
+	return not definitions_by_id.is_empty() and completed_task_ids.size() >= definitions_by_id.size()
+
+
 func complete_task(task_id: String) -> bool:
 	if not definitions_by_id.has(task_id) or completed_task_ids.has(task_id):
 		return false

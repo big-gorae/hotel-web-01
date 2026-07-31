@@ -33,6 +33,54 @@ func add_item_by_id(item_id: String) -> void:
 		add_item(item)
 
 
+func has_item_id(item_id: String) -> bool:
+	return find_item_by_id(item_id) != null
+
+
+func remove_item_by_id(item_id: String) -> bool:
+	var item = find_item_by_id(item_id)
+	if item == null:
+		return false
+
+	var was_equipped: bool = equipped_item == item
+	items.erase(item)
+	if was_equipped:
+		equipped_item = null
+		equipped_item_changed.emit(equipped_item)
+	items_changed.emit()
+	return true
+
+
+func find_item_by_id(item_id: String):
+	for item in items:
+		if String(item.id) == item_id:
+			return item
+	return null
+
+
+func equip_item_by_id(item_id: String) -> bool:
+	return equip_item(find_item_by_id(item_id))
+
+
+func replace_item_by_id(current_item_id: String, replacement_item_id: String, equip_replacement := false) -> bool:
+	var current_item = find_item_by_id(current_item_id)
+	var replacement_item = create_item(replacement_item_id)
+	if current_item == null or replacement_item == null:
+		return false
+
+	var item_index := items.find(current_item)
+	var was_equipped := equipped_item == current_item
+	items[item_index] = replacement_item
+
+	if equip_replacement or was_equipped:
+		equipped_item = replacement_item
+
+	items_changed.emit()
+	if equip_replacement or was_equipped:
+		equipped_item_changed.emit(equipped_item)
+	return true
+
+
 func create_item(item_id: String):
 	var definition = item_catalog.get(item_id)
 	if definition == null:

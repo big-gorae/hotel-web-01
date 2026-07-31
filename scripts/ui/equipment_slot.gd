@@ -2,14 +2,17 @@ class_name HotelEquipmentSlot
 extends PanelContainer
 
 signal item_dropped(item)
+signal clear_requested
 
 const DRAG_KIND := "hotel_inventory_item"
 
 var icon_label: Label
+var icon_texture_rect: TextureRect
 var name_label: Label
 var status_label: Label
 var use_hint_label: Label
 var localization = null
+var _has_equipped_item := false
 
 
 func setup(new_localization) -> void:
@@ -59,6 +62,14 @@ func _ready() -> void:
 	icon_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.42))
 	item_row.add_child(icon_label)
 
+	icon_texture_rect = TextureRect.new()
+	icon_texture_rect.custom_minimum_size = Vector2(68.0, 68.0)
+	icon_texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_texture_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon_texture_rect.visible = false
+	item_row.add_child(icon_texture_rect)
+
 	var item_details := VBoxContainer.new()
 	item_details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	item_details.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -86,6 +97,10 @@ func set_equipped_item(item) -> void:
 		return
 
 	if item == null:
+		_has_equipped_item = false
+		icon_texture_rect.texture = null
+		icon_texture_rect.visible = false
+		icon_label.visible = true
 		icon_label.text = "✋"
 		name_label.text = _text("inventory.hand.empty", "Nothing equipped")
 		status_label.text = _text("inventory.hand.status.empty", "○ EMPTY")
@@ -93,12 +108,25 @@ func set_equipped_item(item) -> void:
 		use_hint_label.text = _text("inventory.hand.empty_hint", "Drop or select an item")
 		_apply_panel_style(false)
 	else:
+		_has_equipped_item = true
+		var item_icon := _load_item_icon(item)
+		icon_texture_rect.texture = item_icon
+		icon_texture_rect.visible = item_icon != null
+		icon_label.visible = item_icon == null
 		icon_label.text = item.icon_text
 		name_label.text = item.get_display_name(localization)
 		status_label.text = _text("inventory.hand.status.equipped", "● EQUIPPED")
 		status_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.28))
-		use_hint_label.text = _text("inventory.hand.use_hint", "Press F to use")
+		use_hint_label.text = _text("inventory.hand.use_hint", "Press F to use · Click HAND to put it down")
 		_apply_panel_style(true)
+
+
+func _gui_input(event: InputEvent) -> void:
+	if not _has_equipped_item:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		clear_requested.emit()
+		accept_event()
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
@@ -133,3 +161,10 @@ func _text(key: String, fallback: String) -> String:
 		return fallback
 
 	return localization.translate("ui.%s" % key, fallback)
+
+
+func _load_item_icon(item) -> Texture2D:
+	var icon_path := String(item.icon_path)
+	if icon_path.is_empty() or not ResourceLoader.exists(icon_path):
+		return null
+	return load(icon_path) as Texture2D

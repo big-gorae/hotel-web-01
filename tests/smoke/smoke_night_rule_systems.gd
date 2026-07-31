@@ -34,10 +34,24 @@ func _run() -> void:
 		_fail("mold remover was not added to the initial inventory")
 		return
 
+	for task_id in main.task_manager.definitions_by_id.keys():
+		main.task_manager.complete_task(String(task_id))
+	main.show_scene("front_desk", false)
+	main._update_shift_end_button()
+	if not main.end_shift_button.visible:
+		_fail("completed first shift did not expose the front-desk end-shift action")
+		return
+	main._end_shift()
+	await process_frame
+	if main.day_save_manager.current_day != 2:
+		_fail("end-shift action did not advance to day two")
+		return
+	main._hide_menu()
+
 	main._start_day(3, false, false)
 	await process_frame
-	if not _latest_rule_page_is_open(main, 3, 2):
-		_fail("day three did not automatically open its two new rules")
+	if not _latest_rule_page_is_open(main, 3, 4):
+		_fail("day three did not automatically open its four new rules")
 		return
 	main.menu_overlay.rule_book_screen.show_page(2)
 	if main.menu_overlay.rule_book_screen.get_page_rule_count() != 1:
@@ -54,11 +68,13 @@ func _run() -> void:
 	main._hide_menu()
 	main.show_scene("corridor", false)
 	await process_frame
-	if main.rule_book_manager.get_visible_rules().size() != 6:
+	if main.rule_book_manager.get_visible_rules().size() != 8:
 		_fail("day three rules did not unlock")
 		return
-	if _find_dynamic_hotspot(main, "room_109_open_door").is_empty() or not main.room_109_overlay.visible:
-		_fail("open Room 109 was not visible on day three")
+	main.anomaly_content_runtime.force_event("room_109_open_door")
+	main._on_content_anomaly_state_changed()
+	if _find_dynamic_or_editor_hotspot(main, "room_109_open_door").is_empty() or not main.room_109_overlay.visible:
+		_fail("forced Room 109 entity was not visible on day three")
 		return
 
 	main.show_scene("room_105_bathroom_entry", false)
@@ -67,8 +83,8 @@ func _run() -> void:
 		_fail("debug mold stage did not display to the right of the Room 105 closet")
 		return
 	main._set_debug_mold_stage(6)
-	if main.mold_closet_timer != null:
-		_fail("closet death timer should not exist while gimmicks are test-only")
+	if main.mold_closet_timer == null or not main.mold_closet_timer.is_stopped():
+		_fail("debug mold preview should prepare but not start the closet death timer")
 		return
 	var remover = _find_inventory_item(main, "mold_remover")
 	main.inventory_model.equip_item(remover)
@@ -91,6 +107,60 @@ func _run() -> void:
 		_fail("mold remover spray sound was not prepared")
 		return
 
+	main.anomaly_content_runtime.force_event("laundry_baby_face_surfaces")
+	main.show_scene("laundry_room", false)
+	if not main.anomaly_presentation_layer.is_rendering_artifact() or main.anomaly_presentation_layer.get_child_count() != 1:
+		_fail("generated baby-face wallpaper was not rendered in the laundry room")
+		return
+	var baby_hotspots: Array = main.anomaly_content_runtime.get_dynamic_hotspots("laundry_room")
+	main._on_hotspot_pressed(baby_hotspots[0])
+	if main.anomaly_presentation_layer.get_child_count() != 2:
+		_fail("clicked baby-wallpaper surface did not restore the original room area")
+		return
+	if main.anomaly_audio_controller._stream_for_cue("baby_short_cry").resource_path != main.anomaly_audio_controller.BABY_WALLPAPER_CRY_PATH:
+		_fail("baby-wallpaper interaction did not use the recorded cry")
+		return
+
+	var shadow_cues: Array[String] = []
+	main.anomaly_content_runtime.sound_requested.connect(func(cue_id: String): shadow_cues.append(cue_id))
+	main.anomaly_content_runtime.force_event("hotel_following_shadow")
+	main._play_transition_footsteps()
+	if main.anomaly_content_runtime._shadow_echo_queue.size() != 1:
+		_fail("one shadow movement preview did not queue exactly one repeated footstep sequence")
+		return
+	main.anomaly_content_runtime.advance(main.anomaly_content_runtime.SHADOW_ECHO_DELAY_SECONDS + 0.01)
+	if shadow_cues.count("footstep_echo") != 1:
+		_fail("shadow movement preview did not replay the footstep sequence")
+		return
+	main.footstep_timer.stop()
+	for player in main.footstep_players:
+		player.stop()
+	main.show_scene("front_desk", false)
+	var desk_bell: Dictionary = _find_dynamic_or_editor_hotspot(main, "desk_bell")
+	for _index in main.anomaly_content_runtime.SHADOW_BELL_PRESS_TARGET:
+		main._on_hotspot_pressed(desk_bell)
+	if main.anomaly_content_runtime.current_state != "bell_distressed":
+		_fail("rapid front-desk bell presses did not distress the following shadow")
+		return
+	if not main.anomaly_audio_controller.is_shadow_heartbeat_active():
+		_fail("shadow distress did not start the player heartbeat")
+		return
+	main.anomaly_visual_overlay._process(0.08)
+	if main.anomaly_visual_overlay.get_shadow_flicker_alpha() <= 0.0:
+		_fail("shadow distress did not start screen flicker")
+		return
+	main.show_scene("corridor", false)
+	main.show_scene("room_105_door_window", false)
+	main.show_scene("corridor", false)
+	main.show_scene("room_105_door_window", false)
+	main.show_scene("corridor", false)
+	if not main.anomaly_content_runtime.current_event_id.is_empty():
+		_fail("fast repeated room transitions did not resolve the following shadow")
+		return
+	if main.anomaly_audio_controller.is_shadow_heartbeat_active():
+		_fail("shadow heartbeat continued after the shadow disappeared")
+		return
+
 	main.eye_close_controller.close_eyes()
 	if not main.eye_close_controller.is_closed() or not main.eye_close_controller.visible:
 		_fail("eye close controller did not enable its mask")
@@ -104,6 +174,17 @@ func _run() -> void:
 	main._start_day(4, false, false)
 	await process_frame
 	main._hide_menu()
+	main.night_anomaly_director.force_blanket_child("room_108_bed_window")
+	main.show_scene("room_108_bed_window", false)
+	if not main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("blanket-child MVP image was not rendered")
+		return
+	main.eye_close_controller.close_eyes()
+	main.night_anomaly_director.advance(main.night_anomaly_director.blanket_eye_close_duration)
+	main.eye_close_controller.open_eyes()
+	if main.night_anomaly_director.blanket_state != main.night_anomaly_director.BLANKET_RESOLVED:
+		_fail("blanket child did not resolve after the closed-eye hold")
+		return
 	main.show_scene("front_desk", false)
 	main.night_anomaly_director.force_phone_ring()
 	main._on_hotspot_pressed(_find_dynamic_or_editor_hotspot(main, "phone"))
@@ -116,6 +197,9 @@ func _run() -> void:
 	main._hide_menu()
 	main.show_scene("laundry_room", false)
 	main.night_anomaly_director.force_red_laundry()
+	if not main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("red washer MVP image was not rendered")
+		return
 	main._on_hotspot_pressed(_find_dynamic_or_editor_hotspot(main, "laundry_second_washer"))
 	if main.night_anomaly_director.laundry_state != main.night_anomaly_director.LAUNDRY_MUSIC:
 		_fail("red washer did not enter completion-music lock")
@@ -134,9 +218,18 @@ func _run() -> void:
 	main._hide_menu()
 	main.show_scene("room_106_bathroom", false)
 	main.night_anomaly_director.force_child_encounter()
+	if not main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("fake-mother MVP image was not rendered")
+		return
+	if not main.scene_3d_overlay.visible or main.scene_3d_overlay.get_model_count() != 1:
+		_fail("registered child 3D model was not layered over the fake mother")
+		return
 	main.eye_close_controller.close_eyes()
-	if not main.eye_close_controller.is_song_active():
-		_fail("closing eyes did not automatically start the child song")
+	if main.eye_close_controller.is_song_active():
+		_fail("closing eyes started the child song without holding F")
+		return
+	if not main.night_anomaly_director.begin_hand_action() or not main.eye_close_controller.is_song_active():
+		_fail("holding F with closed eyes did not start the child song")
 		return
 	main.eye_close_controller._process(main.night_anomaly_director.child_song_duration)
 	if main.night_anomaly_director.child_state != main.night_anomaly_director.CHILD_SONG_DONE:
@@ -146,6 +239,22 @@ func _run() -> void:
 	main._on_hotspot_pressed(_find_dynamic_hotspot(main, "abandoned_child"))
 	if main.night_anomaly_director.child_state != main.night_anomaly_director.CHILD_HELD:
 		_fail("rule thirteen child embrace did not complete")
+		return
+
+	main.anomaly_content_runtime.force_event("room_108_tv_ghost")
+	main.show_scene("room_105_bathroom_entry", false)
+	var tv_hotspots: Array = main.anomaly_content_runtime.get_dynamic_hotspots("room_105_bathroom_entry")
+	if tv_hotspots.size() != 1 or not main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("TV ghost MVP encounter did not render with its hold hotspot")
+		return
+	main._on_anomaly_hotspot_button_down(tv_hotspots[0])
+	main.anomaly_content_runtime.advance(2.0)
+	if main.anomaly_content_runtime.current_state != "hostile":
+		_fail("TV ghost did not switch to its hostile image during the hold")
+		return
+	main.anomaly_content_runtime.advance(2.0)
+	if not main.anomaly_content_runtime.current_event_id.is_empty():
+		_fail("TV ghost hold did not resolve")
 		return
 
 	main._start_day(7, false, false)

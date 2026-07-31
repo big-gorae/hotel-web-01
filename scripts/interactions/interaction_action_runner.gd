@@ -25,17 +25,6 @@ func execute_hotspot(hotspot: Dictionary, context):
 	if hotspot.is_empty():
 		return result
 
-	var item_result = _try_execute_item_actions(hotspot, context)
-	if item_result != null:
-		return item_result
-
-	if context != null and not String(context.equipped_item_id).is_empty() and hotspot.has("item_actions"):
-		result.set_blocked(
-			String(hotspot.get("blocked_text_key", "")),
-			String(hotspot.get("blocked_text", "That does not work here.")),
-		)
-		return result
-
 	if hotspot.has("actions"):
 		return execute_actions(hotspot["actions"], context)
 
@@ -97,6 +86,17 @@ func execute_action(action, context):
 			result.consumed = true
 			if action.has("fallback_text") or action.has("text_key"):
 				result.set_dialogue(String(action.get("text_key", "")), String(action.get("fallback_text", "")))
+		"replace_item":
+			_replace_item(
+				String(action.get("current_item_id", "")),
+				String(action.get("replacement_item_id", "")),
+				bool(action.get("equip_replacement", false)),
+				result,
+			)
+		"equip_item":
+			_equip_item(String(action.get("item_id", "")), result)
+		"clear_equipped_item":
+			_clear_equipped_item(result)
 		"complete_task":
 			_complete_task(String(action.get("task_id", "")), context, result)
 		"use_equipped_item_on_task":
@@ -152,6 +152,33 @@ func _add_item(item_id: String) -> void:
 		return
 
 	inventory_model.add_item_by_id(item_id)
+
+
+func _replace_item(current_item_id: String, replacement_item_id: String, equip_replacement: bool, result) -> void:
+	if inventory_model == null or current_item_id.is_empty() or replacement_item_id.is_empty():
+		return
+	if not inventory_model.replace_item_by_id(current_item_id, replacement_item_id, equip_replacement):
+		return
+
+	result.should_save = true
+	result.consumed = true
+
+
+func _equip_item(item_id: String, result) -> void:
+	if inventory_model == null or item_id.is_empty() or not inventory_model.equip_item_by_id(item_id):
+		return
+
+	result.should_save = true
+	result.consumed = true
+
+
+func _clear_equipped_item(result) -> void:
+	if inventory_model == null or inventory_model.equipped_item == null:
+		return
+
+	inventory_model.clear_equipped_item()
+	result.should_save = true
+	result.consumed = true
 
 
 func _complete_task(task_id: String, context, result) -> void:

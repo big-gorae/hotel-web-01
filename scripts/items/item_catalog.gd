@@ -10,6 +10,7 @@ const INITIAL_ITEM_IDS: Array[String] = [
 	"guest_note",
 	"cleaning_cloth",
 	"mold_remover",
+	"small_mirror",
 ]
 
 
@@ -20,6 +21,32 @@ static func register_defaults(inventory_model) -> void:
 	_register_item(inventory_model, "revealed_guest_note", "Revealed Note", "The flashlight reveals faint writing under the room number: Do not return it after midnight.", "📄")
 	_register_item(inventory_model, "cleaning_cloth", "Cleaning Cloth", "A rough cloth for wiping sinks, floors, and anything that should not be touched directly.", "🧽")
 	_register_item(inventory_model, "mold_remover", "Mold Remover", "A hotel-issued spray for removing black mold from guest rooms.", "🧴")
+	_register_item(
+		inventory_model,
+		"small_mirror",
+		"Small Mirror",
+		"A small hand mirror. Its surface is unusually clear.",
+		"🪞",
+		true,
+		"res://resource/images/items/small_mirror.png",
+	)
+	_register_item(
+		inventory_model,
+		"hell_mirror",
+		"Mirror of Hell",
+		"It feels wrong to keep this in your hand.",
+		"🪞",
+		true,
+		"res://resource/images/items/hell_mirror.png",
+	)
+	_register_item(
+		inventory_model,
+		"cute_doll",
+		"Cute Doll",
+		"A small wooden doll found on the laundry-room table. It cannot be used by hand.",
+		"🪆",
+		false,
+	)
 	_register_item(inventory_model, "collected_trash", "Collected Trash", "Loose papers and trash gathered during room work.", "🗑", false)
 	inventory_model.add_combination_rule(_make_combination_rule(
 		"reveal_guest_note",
@@ -37,7 +64,15 @@ static func reset_to_initial_items(inventory_model) -> void:
 	inventory_model.reset_items(INITIAL_ITEM_IDS)
 
 
-static func _register_item(inventory_model, item_id: String, item_name: String, item_description: String, item_icon_text: String, item_can_equip := true) -> void:
+static func _register_item(
+	inventory_model,
+	item_id: String,
+	item_name: String,
+	item_description: String,
+	item_icon_text: String,
+	item_can_equip := true,
+	item_icon_path := "",
+) -> void:
 	var item := ItemDefinition.new()
 	item.id = item_id
 	item.name_key = "item.%s.name" % item_id
@@ -45,6 +80,7 @@ static func _register_item(inventory_model, item_id: String, item_name: String, 
 	item.fallback_display_name = item_name
 	item.fallback_description = item_description
 	item.icon_text = item_icon_text
+	item.icon_path = item_icon_path
 	item.can_equip = item_can_equip
 	inventory_model.register_item_definition(item)
 

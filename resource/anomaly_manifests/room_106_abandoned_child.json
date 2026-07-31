@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "event_id": "room_106_abandoned_child",
+  "source_scene_id": "room_106_bathroom",
+  "source_path": "res://resource/images/room_106_bathroom.png",
+  "source_sha256": "668ddd1c70b50b78507bf3ceec9d2a4b25c50142df9c37e55399672d73b1c999",
+  "canvas": {
+    "width": 1448,
+    "height": 1086
+  },
+  "states": {
+    "crying": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/room_106_abandoned_child/room_106_bathroom/crying.png",
+        "sha256": "0078b38f9594dc3a957bc25a20be251d1bfd33c53f8727e451c849a842017094",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "song_done": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/room_106_abandoned_child/room_106_bathroom/crying.png",
+        "sha256": "0078b38f9594dc3a957bc25a20be251d1bfd33c53f8727e451c849a842017094",
+        "width": 1448,
+        "height": 1086
+      }
+    },
+    "held": {
+      "base_only": true
+    }
+  }
+}

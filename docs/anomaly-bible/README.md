@@ -6,6 +6,8 @@
 
 이상현상 처리에 사용되거나 처리 이후 위험 상태로 변하는 아이템은 [이상현상 아이템](items/README.md)에서 관리한다.
 
+확정된 내용을 코드와 이미지로 옮기는 구조, 제작 순서와 SceneLock 인수인계 방식은 [이상현상 구현 문서](../implementation/README.md)에서 관리한다.
+
 ## 분류
 
 이상현상은 **엔티티**와 **기현상** 두 묶음으로만 나눈다.
@@ -29,14 +31,14 @@
 
 | 이상현상 | 장소 | 핵심 압박 | 문서 |
 | --- | --- | --- | --- |
-| 문틈의 여자 | 105호 | 곰팡이 6스택 이후 전역 사망 타이머 | [door-crack-woman.md](entities/door-crack-woman.md) |
+| 곰팡이 돼지 가면 남자 | 105호 | 곰팡이 6스택 이후 전역 사망 타이머 | [pig-mask-man.md](entities/pig-mask-man.md) |
 | 받지 못한 전화 | 프런트·지목된 객실 | 전화를 늦게 받거나 통화 후 지목된 방에 진입하면 사망 | [unanswered-call.md](entities/unanswered-call.md) |
 | 붉은 세탁기 | 세탁실 | 붉은 유리, 완료 음악, 세탁물 폐기 순서 준수 | [red-washer.md](entities/red-washer.md) |
 | 등록되지 않은 아이 | 106호 화장실 | 외면하지 않고 눈을 감아 노래한 뒤 안아 주기 | [unregistered-child.md](entities/unregistered-child.md) |
 | 109호의 열린 문 | 109호·복도 | 들여다보지 않기, 마지막 날 나오는 존재를 보내기. 초기 해결법 미정 | [room-109-open-door.md](entities/room-109-open-door.md) |
-| 그림자 | 객실 구역·복도 | 같은 간격으로 반복되는 이동음을 듣고 방치시간 전에 대응. 해결법 미정 | [shadow.md](entities/shadow.md) |
+| 그림자 | 객실 구역·복도·프런트 | 같은 간격으로 반복되는 이동음과 벨소리를 듣고, 벨 연타 후 방을 빠르게 오가며 떼어 내기 | [shadow.md](entities/shadow.md) |
 | 이불 속 아이 | 비어 있는 객실 | 이불을 건드리지 않고 해당 방에서 눈을 감아 버티기 | [child-under-blanket.md](entities/child-under-blanket.md) |
-| 매달린 여자아이 | 107호 | 길어지는 팔과 다리가 최종 단계에 도달하기 전에 대응. 해결법 미정 | [hanging-girl.md](entities/hanging-girl.md) |
+| 목을 맨 목각 여자 인형 | 107호 | 세탁실의 귀여운 인형을 챙긴 뒤 올바른 대화 선택지에서 건넨다 | [hanging-girl.md](entities/hanging-girl.md) |
 
 ## 기현상
 

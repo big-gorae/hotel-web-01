@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "event_id": "front_glass_face",
+  "source_scene_id": "front_desk",
+  "source_path": "res://resource/images/front_desk.png",
+  "source_sha256": "9fc6b06e7f7f9fa0fdf909ef569c7be6e8b36446db87e8202f838192179f9f60",
+  "canvas": {
+    "width": 1535,
+    "height": 1024
+  },
+  "states": {
+    "visible": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/front_glass_face/front_desk/visible.png",
+        "sha256": "d8b89e3f0978deda31a69255ad7b85b804bf82746647d419454232379043ecbd",
+        "width": 1535,
+        "height": 1024
+      }
+    },
+    "hostile": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/front_glass_face/front_desk/hostile.png",
+        "sha256": "d8b89e3f0978deda31a69255ad7b85b804bf82746647d419454232379043ecbd",
+        "width": 1535,
+        "height": 1024
+      }
+    },
+    "resolved": {
+      "base_only": true
+    }
+  }
+}
