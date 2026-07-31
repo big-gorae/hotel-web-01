@@ -241,7 +241,9 @@ func get_dynamic_hotspots(scene_id: String) -> Array:
 			return [{
 				"id": "anomaly_choice:hanging_girl",
 				"label": "Hanging Wooden Girl",
-				"rect": Rect2(0.355, 0.045, 0.215, 0.620),
+				# Match the approved full-scene image: the hanging figure occupies
+				# the right side of the bed, not the old center-left placeholder.
+				"rect": Rect2(0.625, 0.185, 0.165, 0.725),
 				"anomaly_input": "click",
 			}]
 		return []

@@ -26,6 +26,8 @@ var lunge_zoom := 2.05
 var focus_point := Vector2(0.5, 0.5)
 var initial_shake := 9.0
 var lunge_shake := 14.0
+var source_texture: Texture2D
+var source_rect := Rect2(0.0, 0.0, 1.0, 1.0)
 
 
 func _ready() -> void:
@@ -44,11 +46,15 @@ func play(definition, _localization = null) -> void:
 		finished.emit()
 		return
 
-	subject.texture = load(image_path) as Texture2D
-	if subject.texture == null:
+	source_texture = load(image_path) as Texture2D
+	if source_texture == null:
 		push_warning("Jumpscare source is not a texture: %s" % image_path)
 		finished.emit()
 		return
+	source_rect = Rect2(definition.jumpscare_source_rect).intersection(
+		Rect2(0.0, 0.0, 1.0, 1.0)
+	)
+	subject.texture = _build_subject_texture(source_texture, source_rect)
 	backdrop_subject.texture = subject.texture
 	subject.stretch_mode = (
 		TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -100,6 +106,25 @@ func play(definition, _localization = null) -> void:
 	).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
 	active_tween.tween_interval(maxf(duration - hold_seconds - lunge_seconds, 0.0))
 	active_tween.tween_callback(_finish)
+
+
+func _build_subject_texture(texture: Texture2D, normalized_rect: Rect2) -> Texture2D:
+	if (
+		normalized_rect.size.x <= 0.0
+		or normalized_rect.size.y <= 0.0
+		or (
+			normalized_rect.position.is_equal_approx(Vector2.ZERO)
+			and normalized_rect.size.is_equal_approx(Vector2.ONE)
+		)
+	):
+		return texture
+	var atlas := AtlasTexture.new()
+	atlas.atlas = texture
+	atlas.region = Rect2(
+		normalized_rect.position * texture.get_size(),
+		normalized_rect.size * texture.get_size(),
+	)
+	return atlas
 
 
 func stop() -> void:

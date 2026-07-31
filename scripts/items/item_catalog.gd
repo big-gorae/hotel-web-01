@@ -43,9 +43,9 @@ static func register_defaults(inventory_model) -> void:
 		inventory_model,
 		"cute_doll",
 		"Cute Doll",
-		"A small wooden doll found on the laundry-room table. It cannot be used by hand.",
+		"A small wooden doll found on the laundry-room table. It can be held, but only needs to be in your inventory to offer it.",
 		"🪆",
-		false,
+		true,
 	)
 	_register_item(inventory_model, "collected_trash", "Collected Trash", "Loose papers and trash gathered during room work.", "🗑", false)
 	inventory_model.add_combination_rule(_make_combination_rule(

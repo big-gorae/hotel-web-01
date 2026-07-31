@@ -285,10 +285,19 @@ func test_hanging_girl_doll_unlocks_only_survival_choice_and_is_consumed() -> vo
 	assert_array(doll_hotspots).has_size(1)
 	assert_bool(runtime.handle_click(String(doll_hotspots[0]["id"]))).is_true()
 	assert_bool(inventory.has_item_id(ContentRuntime.HANGING_GIRL_DOLL_ITEM_ID)).is_true()
-	assert_bool(inventory.find_item_by_id(ContentRuntime.HANGING_GIRL_DOLL_ITEM_ID).can_equip).is_false()
+	var cute_doll = inventory.find_item_by_id(ContentRuntime.HANGING_GIRL_DOLL_ITEM_ID)
+	assert_bool(cute_doll.can_equip).is_true()
+	assert_bool(inventory.equip_item(cute_doll)).is_true()
+	assert_object(inventory.equipped_item).is_same(cute_doll)
+	# Offering Walter is inventory-gated, not equipment-gated.
+	inventory.clear_equipped_item()
+	assert_object(inventory.equipped_item).is_null()
 
 	runtime.enter_scene("room_107_bed_nightstand")
 	var girl_hotspot: Dictionary = runtime.get_dynamic_hotspots("room_107_bed_nightstand")[0]
+	var girl_rect: Rect2 = girl_hotspot["rect"]
+	assert_bool(girl_rect.has_point(Vector2(0.70, 0.40))).is_true()
+	assert_bool(girl_rect.has_point(Vector2(0.45, 0.40))).is_false()
 	runtime.handle_click(String(girl_hotspot["id"]))
 	assert_bool(runtime.handle_choice("entry_talk")).is_true()
 	assert_bool(runtime.handle_choice("fun_no")).is_true()

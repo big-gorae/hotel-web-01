@@ -21,6 +21,7 @@ var jumpscare_duration := 1.2
 var jumpscare_outcome := OUTCOME_CONTINUE
 var presentation_scene_path := ""
 var jumpscare_image_path := ""
+var jumpscare_source_rect := Rect2(0.0, 0.0, 1.0, 1.0)
 var jumpscare_audio_path := ""
 var jumpscare_audio_profile := "shared_shock_v1"
 var jumpscare_fit_mode := "cover"
@@ -64,6 +65,7 @@ func copy():
 	definition.jumpscare_outcome = jumpscare_outcome
 	definition.presentation_scene_path = presentation_scene_path
 	definition.jumpscare_image_path = jumpscare_image_path
+	definition.jumpscare_source_rect = jumpscare_source_rect
 	definition.jumpscare_audio_path = jumpscare_audio_path
 	definition.jumpscare_audio_profile = jumpscare_audio_profile
 	definition.jumpscare_fit_mode = jumpscare_fit_mode

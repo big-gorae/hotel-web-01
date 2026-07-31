@@ -48,11 +48,19 @@ func _run() -> void:
 	if not main.inventory_model.has_item_id("cute_doll"):
 		_fail("cute doll pickup did not enter inventory")
 		return
-	if main.inventory_model.find_item_by_id("cute_doll").can_equip:
-		_fail("cute doll became hand-usable")
+	var cute_doll = main.inventory_model.find_item_by_id("cute_doll")
+	if not cute_doll.can_equip or not main.inventory_model.equip_item(cute_doll):
+		_fail("cute doll could not be held in hand")
 		return
-	if not String(main.inventory_model.find_item_by_id("cute_doll").icon_path).is_empty():
+	if main.inventory_model.equipped_item != cute_doll:
+		_fail("equipping the cute doll did not update the held item")
+		return
+	if not String(cute_doll.icon_path).is_empty():
 		_fail("cute doll referenced a newly generated image")
+		return
+	main.inventory_model.clear_equipped_item()
+	if main.inventory_model.equipped_item != null:
+		_fail("cute doll could not be put away before the conversation")
 		return
 	await process_frame
 	if main.current_scene_id != "room_107_bed_nightstand":
@@ -116,9 +124,12 @@ func _run() -> void:
 	if main.jumpscare_controller.current_presentation == null:
 		_fail("hanging girl jumpscare presentation was missing")
 		return
-	var texture_path := String(main.jumpscare_controller.current_presentation.subject.texture.resource_path)
+	var texture_path := String(main.jumpscare_controller.current_presentation.source_texture.resource_path)
 	if texture_path != HorrorCatalog.HANGING_GIRL_REFERENCE:
 		_fail("hanging girl jumpscare did not use the wooden doll image")
+		return
+	if not main.jumpscare_controller.current_presentation.subject.texture is AtlasTexture:
+		_fail("hanging girl jumpscare still presented the entire room photograph")
 		return
 	if main.jumpscare_controller.current_presentation.lunge_zoom != 7.0:
 		_fail("hanging girl jumpscare did not lunge into the face")
