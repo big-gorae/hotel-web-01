@@ -1,0 +1,16 @@
+{
+  "alpha_path": "/Users/binary-ho/Library/Application Support/com.scenelock.desktop/scenelock-projects/image_workbench/jobs/job_019f9ea8b6316d4049e9185a61c2076c/composites/assets/asset_019f9ea8e903af07b27fc3034902e83b_alpha.png",
+  "alpha_uri": "image_workbench/jobs/job_019f9ea8b6316d4049e9185a61c2076c/composites/assets/asset_019f9ea8e903af07b27fc3034902e83b_alpha.png",
+  "asset_id": "asset_019f9ea8e903af07b27fc3034902e83b",
+  "created_at": "2026-07-26T13:41:38+00:00",
+  "description": "User-provided canonical appearance reference for the Room 105 closet woman. Preserve the exact pale bald face, large black eye sockets with white irises, black smiling mouth, elongated pale neck, and low-resolution uncanny photographic texture. Remove only the surrounding black background during integration; do not redesign or beautify the face.",
+  "has_alpha": false,
+  "height": 1536,
+  "job_id": "job_019f9ea8b6316d4049e9185a61c2076c",
+  "mime_type": "image/png",
+  "sha256": "8006a6d45cdc1e73bbc9d6a22149d0360031f115e03d6c221bdea0caba5ee1c5",
+  "source_path": "/Users/binary-ho/Library/Application Support/com.scenelock.desktop/scenelock-projects/image_workbench/jobs/job_019f9ea8b6316d4049e9185a61c2076c/composites/assets/asset_019f9ea8e903af07b27fc3034902e83b_source.png",
+  "source_uri": "image_workbench/jobs/job_019f9ea8b6316d4049e9185a61c2076c/composites/assets/asset_019f9ea8e903af07b27fc3034902e83b_source.png",
+  "updated_at": "2026-07-26T13:41:38+00:00",
+  "width": 1024
+}

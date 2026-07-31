@@ -1,0 +1,68 @@
+{
+  "cache_type": "openai_edit_plan",
+  "created_at": "2026-07-26T14:00:10+00:00",
+  "plan": {
+    "acceptance_checks": [
+      "The black rectangular pasted-card border is completely removed.",
+      "No flat poster/screen/card appearance remains in the wardrobe area.",
+      "A believable wooden wardrobe door occupies the same exact area and perspective as before.",
+      "The door is opened inward only slightly, approximately 10–15 cm.",
+      "A narrow vertical black gap appears on the knob side only.",
+      "The woman is physically behind the door, not pasted on top of it.",
+      "Only a partial face is visible: tall forehead, one eye with hint of second, part of nose, half smile.",
+      "No hand, torso, full face, or body emerges outside the closet.",
+      "Lighting matches the warm room lamp and deep closet shadow.",
+      "Wood grain, occlusion, edge softness, and film grain appear photographic and coherent.",
+      "Bathroom doorway, bed, TV, wall, trim, lighting, and room geometry remain unchanged outside the mask."
+    ],
+    "analysis_source": "openai_gpt_pipeline",
+    "change_summary": "Repair only the locked wardrobe-door region in this existing Room 105 scene. The source currently contains a temporary rectangular identity-reference paste over the wardrobe. Remove every trace of the pasted-card rectangle, its hard black border, and the flat poster-like appearance. Reconstruct the original wooden wardrobe door in the same exact perspective and position, but make it naturally opened inward by only about 10–15 cm, producing a narrow vertical black gap along the knob side. Inside that gap, reveal only part of the exact same uncanny woman already visible in the temporary paste: preserve her extremely tall chalk-white forehead, huge round white eyes with tiny black pupils, thick smeared black eye rings, asymmetric solid-black nose, wide painted black crescent smile with dark red mouth, pale gray skin, reddish-purple neck stain, and long wet dark hair. She must be physically behind the door, peeking through the narrow opening; show roughly her forehead, one eye plus a hint of the second eye, part of the nose, and half of the smile. Do not show a hand, torso, or full face outside the closet. Match the room's warm lamp direction, deep closet shadow, camera perspective, wood grain, occlusion, edge softness, and film grain. Preserve every pixel outside the locked selection as much as possible, especially the bathroom doorway, bed, television, wall, trim, lighting, and room geometry. The result must read as one coherent photorealistic hotel photograph, not a pasted image, painting, poster, or screen.",
+    "edit_mode_recommendation": "mask_edit",
+    "pipeline_cache": {
+      "cache_key": "eb37f6aab2047aed807f3448",
+      "cache_path": "image_workbench/jobs/job_019f9eabbaaf6d64ee682c7e31465add/prompt_cache/eb37f6aab2047aed807f3448.json",
+      "cache_scope": {
+        "job_id": "job_019f9eabbaaf6d64ee682c7e31465add"
+      },
+      "cache_status": "miss",
+      "version": "edit-plan-v2-coherent-scene"
+    },
+    "preserve_contract": [
+      "Preserve source camera perspective.",
+      "Preserve architecture, large furniture, object placement, lighting direction, and mood outside the requested change.",
+      "Keep all pixels outside the selected mask visually stable unless the instruction says this is a global change."
+    ],
+    "prompt_bundle": {
+      "edit_prompt": "Edit only the masked wardrobe region in this existing hotel-room photograph. Remove every trace of the temporary rectangular identity-reference paste that currently covers the wardrobe, including the hard black border, the flat poster-like plane, and any composited-card look. Reconstruct a photoreal wooden wardrobe door in the exact same position, scale, and perspective as the original wardrobe. The door should be naturally opened inward only slightly, about 10–15 cm, producing a narrow vertical black gap on the knob side. Inside that narrow gap, reveal only a partial view of the same uncanny woman shown in the temporary pasted reference, but make her physically behind the door and mostly hidden in closet shadow. Show roughly: her extremely tall chalk-white forehead, one huge round white eye with a tiny black pupil plus only a hint of the second eye, part of the asymmetric solid-black nose, and about half of the wide painted black crescent smile with dark red mouth. Preserve her pale gray skin, thick smeared black eye rings, reddish-purple neck stain, and long wet dark hair, but keep most of her face occluded by the door and darkness. Do not show a hand, torso, shoulders, or full face outside the closet. Match the room's warm lamp direction, deep interior shadow, wood grain, edge softness, film grain, and photographic realism so the result reads as one coherent hotel photo. Preserve every pixel outside the mask as much as possible, especially the bathroom doorway, bed, television, wall, trim, lighting, and room geometry.",
+      "mask_guidance": "Use the provided rectangular edit mask only. Prioritize reconstruction near the wardrobe edges so the cabinet frame, door seams, and surrounding wall/TV occlusion remain clean and stable. Feather transitions naturally at the mask boundary and minimize any changes outside the selected area.",
+      "negative_prompt": "do not change unrelated objects, room layout, camera perspective, lighting direction, text, watermark",
+      "review_prompt": "Check that the rectangle/paste is fully gone, the wardrobe looks like real wood in correct perspective, the door is only slightly open inward with a narrow dark gap on the knob side, and the uncanny woman is visible only as a partial hidden face behind the door. Verify that the result looks photographic and that all unmasked room elements remain unchanged."
+    },
+    "provider_requirements": {
+      "preferred_models": [
+        "gemini-3-pro-image",
+        "gpt-image-2"
+      ],
+      "provider": "auto_best",
+      "requirements": [
+        "Use masked local inpainting/editing only; do not regenerate the full frame.",
+        "Respect the source camera geometry and preserve pixels outside the mask as much as possible.",
+        "Synthesize photoreal material detail in the wardrobe panel and door edges.",
+        "Avoid any graphic-design, poster, painted, or composited look inside the edited region.",
+        "Keep the revealed figure subordinate to the wardrobe opening and integrated with shadow/occlusion."
+      ],
+      "uncertainties": [
+        "Original exact wardrobe door texture beneath the pasted insert is not directly visible; reconstruct a plausible matching wooden door consistent with the room."
+      ]
+    },
+    "review_questions": [],
+    "risk_flags": [
+      "{'flag': 'reference-identity drift', 'reason': 'The source reference is a temporary pasted insert; the model may alter the woman’s facial proportions or markings unless prompted tightly.'}",
+      "{'flag': 'mask-boundary artifact risk', 'reason': 'A hard rectangular source insert may leave seams or residual border tones if inpainting is weak.'}",
+      "{'flag': 'spatial inconsistency risk', 'reason': 'The model may over-open the door or reposition the wardrobe seam, breaking room realism.'}",
+      "{'flag': 'style mismatch risk', 'reason': 'The revealed face could look painted/composited instead of integrated into the room’s lighting and shadow.'}"
+    ],
+    "setup_blockers": []
+  },
+  "vision_model": "gpt-5.4"
+}
