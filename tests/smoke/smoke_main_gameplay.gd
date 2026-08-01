@@ -1,7 +1,9 @@
 extends SceneTree
 
 const SAVE_PATH := "user://hotel_save.json"
+const INFINITY_SAVE_PATH := "user://hotel_infinity_save.json"
 const META_SAVE_PATH := "user://hotel_meta.json"
+const GameMode := preload("res://scripts/systems/game_mode.gd")
 
 var preserved_files: Dictionary = {}
 
@@ -154,6 +156,59 @@ func _run() -> void:
 	if main.filter_bar.get_filter_button_count() != 3:
 		_fail("unexpected number of filter preset buttons")
 		return
+	if (
+		main.lobby_overlay.story_mode_button == null
+		or main.lobby_overlay.infinity_mode_button == null
+		or main.lobby_overlay.selected_mode != GameMode.STORY
+	):
+		_fail("lobby did not expose Story and Infinity mode tabs")
+		return
+	main.lobby_overlay._select_mode(GameMode.INFINITY)
+	if (
+		main.day_save_manager.get_game_mode() != GameMode.INFINITY
+		or main.lobby_overlay.start_button.text != "Infinity 시작"
+	):
+		_fail("Infinity lobby tab did not select its own mode and Korean copy")
+		return
+	main._start_shift(GameMode.INFINITY)
+	await process_frame
+	if (
+		main.game_mode != GameMode.INFINITY
+		or main.story_delivery_manager.has_active_sequence()
+		or main.rule_book_manager.current_day != main.HotelDaySaveManagerScript.TOTAL_DAYS
+		or main.anomaly_content_runtime.get_planned_event_id().is_empty()
+		or main.night_anomaly_director.get_planned_event_id().is_empty()
+	):
+		_fail("Infinity start did not activate random schedules without story beats")
+		return
+	if main.closet_pig_man_system.enabled != (
+		main.night_anomaly_director.get_planned_event_id()
+		== main.HotelNightAnomalyDirectorScript.CLOSET_PIG_EVENT_ID
+	):
+		_fail("Infinity primary plan did not exclusively control the closet pig event")
+		return
+	main._hide_menu()
+	main._start_day(8, false, false)
+	await process_frame
+	if main.day_save_manager.current_day != 8 or main.story_delivery_manager.has_active_sequence():
+		_fail("Infinity mode was clamped at Day 7 or started a story sequence")
+		return
+	main._hide_menu()
+	for task_id in main.task_manager.definitions_by_id.keys():
+		main.task_manager.complete_task(String(task_id))
+	main.anomaly_content_runtime._resolved_event_ids.append(main.anomaly_content_runtime.get_planned_event_id())
+	main.night_anomaly_director._complete_planned_event(main.night_anomaly_director.get_planned_event_id())
+	main._update_shift_end_button()
+	if not main.end_shift_button.visible:
+		_fail("completed Infinity night did not allow the shift to end")
+		return
+	main._end_shift()
+	await process_frame
+	if main.day_save_manager.current_day != 9 or main.lobby_overlay.visible:
+		_fail("Infinity shift end returned to the lobby instead of continuing to night 9")
+		return
+	main._hide_menu()
+	main._show_lobby()
 
 	main._start_shift()
 	await process_frame
@@ -503,20 +558,20 @@ func _complete_intro_dialogue(main) -> void:
 
 
 func _preserve_save() -> void:
-	for path in [SAVE_PATH, META_SAVE_PATH]:
+	for path in [SAVE_PATH, INFINITY_SAVE_PATH, META_SAVE_PATH]:
 		if FileAccess.file_exists(path):
 			var save_file := FileAccess.open(path, FileAccess.READ)
 			preserved_files[path] = save_file.get_as_text() if save_file != null else ""
 
 
 func _clear_save() -> void:
-	for path in [SAVE_PATH, META_SAVE_PATH]:
+	for path in [SAVE_PATH, INFINITY_SAVE_PATH, META_SAVE_PATH]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func _restore_save() -> void:
-	for path in [SAVE_PATH, META_SAVE_PATH]:
+	for path in [SAVE_PATH, INFINITY_SAVE_PATH, META_SAVE_PATH]:
 		if preserved_files.has(path):
 			var save_file := FileAccess.open(path, FileAccess.WRITE)
 			if save_file != null:

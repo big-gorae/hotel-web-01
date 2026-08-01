@@ -11,6 +11,7 @@ const HotelScene3DOverlayScript = preload("res://scripts/ui/scene_3d_overlay.gd"
 const HotelSceneTransitionFaderScript = preload("res://scripts/ui/scene_transition_fader.gd")
 const HotelPlaybackPauseManagerScript = preload("res://scripts/systems/playback_pause_manager.gd")
 const HotelDaySaveManagerScript = preload("res://scripts/systems/day_save_manager.gd")
+const HotelGameModeScript = preload("res://scripts/systems/game_mode.gd")
 const HotelMetaProgressSaveManagerScript = preload("res://scripts/systems/meta_progress_save_manager.gd")
 const HotelFlagStoreScript = preload("res://scripts/systems/flag_store.gd")
 const HotelPostProcessFilterScript = preload("res://scripts/systems/post_process_filter.gd")
@@ -91,6 +92,7 @@ var localization := HotelLocalization.new()
 var inventory_model = null
 var playback_pause_manager = null
 var day_save_manager = null
+var game_mode := HotelGameModeScript.STORY
 var meta_progress_save_manager = null
 var flag_store = null
 var task_manager = null
@@ -224,6 +226,7 @@ func _ready() -> void:
 	HotelItemCatalogScript.register_defaults(inventory_model)
 	HotelItemCatalogScript.reset_to_initial_items(inventory_model)
 	day_save_manager.load_save_data()
+	game_mode = day_save_manager.get_game_mode()
 	meta_progress_save_manager.load_save_data()
 	horror_event_manager.import_collection_state(meta_progress_save_manager.get_collection_state())
 	_build_ui()
@@ -731,7 +734,7 @@ func _build_anomaly_runtime() -> void:
 	gameplay_layer.add_child(closet_pig_man_system)
 	closet_pig_man_system.set_lethal_outcomes_enabled(LETHAL_GIMMICKS_ENABLED)
 	closet_pig_man_system.state_changed.connect(_on_closet_pig_state_changed)
-	closet_pig_man_system.event_started.connect(_on_anomaly_event_started)
+	closet_pig_man_system.event_started.connect(_on_closet_pig_started)
 	closet_pig_man_system.event_resolved.connect(_on_closet_pig_resolved)
 	closet_pig_man_system.hold_started.connect(_on_anomaly_hold_started)
 	closet_pig_man_system.hold_progress_changed.connect(_on_anomaly_hold_progress_changed)
@@ -876,7 +879,9 @@ func _show_lobby() -> void:
 	_set_game_paused(true)
 
 
-func _start_shift() -> void:
+func _start_shift(mode_id := HotelGameModeScript.STORY) -> void:
+	game_mode = HotelGameModeScript.normalize(String(mode_id))
+	day_save_manager.set_game_mode(game_mode)
 	day_save_manager.start_new_shift()
 	story_delivery_manager.start_new_run()
 	HotelItemCatalogScript.reset_to_initial_items(inventory_model)
@@ -888,12 +893,13 @@ func _start_shift() -> void:
 	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
 	laundry_second_washer_open = _is_laundry_second_washer_open()
 	game_brightness = DEFAULT_BRIGHTNESS
-	closet_pig_man_system.start_day(1)
+	closet_pig_man_system.start_day(1, false)
 	eye_close_controller.open_eyes()
 	_start_day(1, false, false)
 
 
 func _start_saved_day(day: int) -> void:
+	game_mode = day_save_manager.get_game_mode()
 	_start_day(day, true, false)
 
 
@@ -901,7 +907,7 @@ func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) ->
 	_clear_intro_dialogue_state()
 	game_started = true
 	day_save_manager.set_current_day(day)
-	rule_book_manager.set_current_day(day)
+	rule_book_manager.set_current_day(_rule_book_day(day))
 	if lobby_overlay != null:
 		lobby_overlay.close()
 
@@ -947,6 +953,7 @@ func _save_current_day() -> void:
 func _capture_day_state() -> Dictionary:
 	laundry_second_washer_open = _is_laundry_second_washer_open()
 	return {
+		"game_mode": game_mode,
 		"scene_id": current_scene_id,
 		"laundry_second_washer_open": laundry_second_washer_open,
 		"game_brightness": game_brightness,
@@ -964,6 +971,9 @@ func _capture_day_state() -> Dictionary:
 
 func _restore_day_state(day: int) -> String:
 	var slot: Dictionary = day_save_manager.get_day_state(day)
+	game_mode = HotelGameModeScript.normalize(String(slot.get("game_mode", day_save_manager.get_game_mode())))
+	night_anomaly_director.set_game_mode(game_mode)
+	anomaly_content_runtime.set_game_mode(game_mode)
 	if slot.has("flags"):
 		flag_store.import_state(slot.get("flags", {}))
 	else:
@@ -980,23 +990,28 @@ func _restore_day_state(day: int) -> String:
 	horror_event_manager.import_state(slot.get("horror", {}))
 	meta_progress_save_manager.save_collection_state(horror_event_manager.export_collection_state())
 	rule_book_manager.import_state(slot.get("rules", {}))
-	rule_book_manager.set_current_day(day)
-	if slot.has("closet_pig_man"):
-		closet_pig_man_system.import_state(slot.get("closet_pig_man", {}))
-	else:
-		closet_pig_man_system.start_day(day)
+	rule_book_manager.set_current_day(_rule_book_day(day))
 	if slot.has("night_anomalies"):
 		night_anomaly_director.import_state(slot.get("night_anomalies", {}))
 	else:
 		night_anomaly_director.start_day(day)
+	if slot.has("closet_pig_man"):
+		closet_pig_man_system.import_state(slot.get("closet_pig_man", {}))
+	else:
+		closet_pig_man_system.start_day(
+			day,
+			night_anomaly_director.get_planned_event_id() == HotelNightAnomalyDirectorScript.CLOSET_PIG_EVENT_ID,
+		)
 	if slot.has("content_anomalies"):
 		anomaly_content_runtime.import_state(slot.get("content_anomalies", {}))
 	else:
 		anomaly_content_runtime.start_day(day)
 	if slot.has("story_delivery"):
 		story_delivery_manager.import_state(slot.get("story_delivery", {}))
-	else:
+	if game_mode == HotelGameModeScript.STORY and not slot.has("story_delivery"):
 		story_delivery_manager.prepare_day(day)
+	elif game_mode == HotelGameModeScript.INFINITY:
+		story_delivery_manager.prepare_day(0)
 	var saved_scene_id := String(slot.get("scene_id", START_SCENE_ID))
 	if not HOTEL_SCENES.has(saved_scene_id):
 		return START_SCENE_ID
@@ -1012,11 +1027,16 @@ func _reset_day_runtime_state() -> void:
 	task_manager.start_new_run()
 	horror_event_manager.start_new_run()
 	rule_book_manager.import_state({})
-	rule_book_manager.set_current_day(day_save_manager.current_day)
-	closet_pig_man_system.start_day(day_save_manager.current_day)
+	rule_book_manager.set_current_day(_rule_book_day(day_save_manager.current_day))
+	night_anomaly_director.set_game_mode(game_mode)
 	night_anomaly_director.start_day(day_save_manager.current_day)
+	closet_pig_man_system.start_day(
+		day_save_manager.current_day,
+		night_anomaly_director.get_planned_event_id() == HotelNightAnomalyDirectorScript.CLOSET_PIG_EVENT_ID,
+	)
+	anomaly_content_runtime.set_game_mode(game_mode)
 	anomaly_content_runtime.start_day(day_save_manager.current_day)
-	story_delivery_manager.prepare_day(day_save_manager.current_day)
+	story_delivery_manager.prepare_day(day_save_manager.current_day if game_mode == HotelGameModeScript.STORY else 0)
 	eye_close_controller.open_eyes()
 	if brightness_slider != null:
 		brightness_slider.value = game_brightness
@@ -1032,7 +1052,13 @@ func _change_day(day: int) -> void:
 
 
 func _day_name(day: int) -> String:
+	if game_mode == HotelGameModeScript.INFINITY:
+		return _ui_text("infinity.day.label", "Night %d") % day
 	return _ui_text("day.label", "Day %d") % day
+
+
+func _rule_book_day(day: int) -> int:
+	return HotelDaySaveManagerScript.TOTAL_DAYS if game_mode == HotelGameModeScript.INFINITY else day
 
 
 func _refresh_lobby_continue_state() -> void:
@@ -1543,12 +1569,20 @@ func _on_closet_pig_state_changed() -> void:
 	_sync_eye_close_anomaly_context()
 
 
+func _on_closet_pig_started(event_id: String) -> void:
+	if night_anomaly_director != null:
+		night_anomaly_director.notify_external_planned_event_started(event_id)
+	_on_anomaly_event_started(event_id)
+
+
 func _on_closet_pig_resolved(event_id: String) -> void:
 	if debug_anomaly_preview_event_id == event_id:
 		debug_anomaly_preview_event_id = ""
 		debug_closet_pig_previous_state.clear()
 	horror_event_manager.mark_event_seen(event_id)
 	horror_event_manager.resolve_event(event_id)
+	if night_anomaly_director != null:
+		night_anomaly_director.notify_external_planned_event_completed(event_id)
 	_save_current_day()
 
 
@@ -2513,7 +2547,7 @@ func _end_shift() -> void:
 		_trigger_game_over_event("hell_mirror")
 		return
 	_save_current_day()
-	if day_save_manager.current_day >= HotelDaySaveManagerScript.TOTAL_DAYS:
+	if game_mode == HotelGameModeScript.STORY and day_save_manager.current_day >= HotelDaySaveManagerScript.TOTAL_DAYS:
 		_show_lobby()
 		return
 	var next_day: int = day_save_manager.current_day + 1

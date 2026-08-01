@@ -19,6 +19,16 @@ const TREATMENT_UNRESOLVED := "unresolved"
 # The separate Day 7 room_109_day7_passage event is not controlled by this flag.
 const ROOM_109_INITIAL_ENCOUNTER_ENABLED := false
 
+# The authored story route is intentionally edited here as a plain Day table.
+# Events not listed here remain available in Infinity mode.
+const STORY_EVENT_BY_DAY := {
+	2: "corridor_red_room_light",
+	3: "room_107_hanging_girl",
+	4: "hotel_following_shadow",
+	5: "room_108_entrails_bathtub",
+	6: "room_106_horrific_mirror",
+}
+
 
 static func build_definitions() -> Dictionary:
 	var definitions := {}
@@ -70,6 +80,10 @@ static func production_event_ids() -> Array[String]:
 		"room_107_hanging_girl",
 		"hotel_following_shadow",
 	]
+
+
+static func story_event_for_day(day: int) -> String:
+	return String(STORY_EVENT_BY_DAY.get(maxi(day, 1), ""))
 
 
 static func debug_event_ids() -> Array[String]:

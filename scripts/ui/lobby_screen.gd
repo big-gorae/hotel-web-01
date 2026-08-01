@@ -1,18 +1,25 @@
 class_name HotelLobbyScreen
 extends Control
 
-signal start_shift_requested
+signal start_shift_requested(mode_id: String)
 signal day_selected(day: int)
 signal quit_requested
 
 const AnomalyCollectionPanel := preload("res://scripts/ui/anomaly_collection_panel.gd")
+const GameMode := preload("res://scripts/systems/game_mode.gd")
 const LOBBY_BLUR_SHADER_CODE := "shader_type canvas_item;\nuniform float blur_size = 3.5;\nvoid fragment() {\n\tvec2 px = TEXTURE_PIXEL_SIZE * blur_size;\n\tvec4 color = texture(TEXTURE, UV) * 0.18;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, 0.0)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV - vec2(0.0, px.y)) * 0.12;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(-px.x, px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV + vec2(px.x, -px.y)) * 0.11;\n\tcolor += texture(TEXTURE, UV - vec2(px.x, px.y)) * 0.11;\n\tfloat luma = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n\tcolor.rgb = mix(vec3(luma), color.rgb, 0.74);\n\tcolor.rgb = (color.rgb - 0.5) * 1.10 + 0.5 - 0.02;\n\tcolor.rgb = mix(color.rgb, color.rgb * vec3(1.0, 0.91, 0.70), 0.18);\n\tfloat dist = distance(UV, vec2(0.5));\n\tfloat vignette = smoothstep(0.35, 0.82, dist);\n\tcolor.rgb *= 1.0 - vignette * 0.22;\n\tCOLOR = vec4(clamp(color.rgb, vec3(0.0), vec3(1.0)), color.a);\n}\n"
 var localization = null
 var horror_event_manager = null
 var day_save_manager = null
+var selected_mode := GameMode.STORY
+var start_button: Button
 var continue_button: Button
+var story_mode_button: Button
+var infinity_mode_button: Button
+var mode_description_label: Label
 var day_panel: PanelContainer
 var day_grid: GridContainer
+var day_title: Label
 var horror_summary_label: Label
 var anomaly_collection_panel
 
@@ -25,10 +32,12 @@ func setup(new_localization, new_horror_event_manager, new_day_save_manager, bac
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_build(background_photo)
+	_select_mode(day_save_manager.get_game_mode(), false)
 	refresh_continue_state()
 
 
 func open(summary_text: String) -> void:
+	_select_mode(day_save_manager.get_game_mode(), false)
 	refresh_continue_state()
 	refresh_horror_summary(summary_text)
 	visible = true
@@ -73,7 +82,15 @@ func hide_anomaly_collection() -> void:
 func refresh_day_grid() -> void:
 	for child in day_grid.get_children():
 		child.queue_free()
-	for day in range(1, day_save_manager.TOTAL_DAYS + 1):
+	var days: Array[int] = []
+	if selected_mode == GameMode.INFINITY:
+		days = day_save_manager.get_saved_days()
+		while days.size() > day_save_manager.TOTAL_DAYS:
+			days.remove_at(0)
+	else:
+		for day in range(1, day_save_manager.TOTAL_DAYS + 1):
+			days.append(day)
+	for day in days:
 		var day_button := Button.new()
 		day_button.process_mode = Node.PROCESS_MODE_ALWAYS
 		day_button.custom_minimum_size = Vector2(72.0, 48.0)
@@ -88,6 +105,34 @@ func refresh_day_grid() -> void:
 
 func _on_day_selected(day: int) -> void:
 	day_selected.emit(day)
+
+
+func _select_mode(mode_id: String, reload_save := true) -> void:
+	selected_mode = GameMode.normalize(mode_id)
+	if day_save_manager != null:
+		day_save_manager.set_game_mode(selected_mode, reload_save)
+	if story_mode_button == null:
+		return
+	story_mode_button.button_pressed = selected_mode == GameMode.STORY
+	infinity_mode_button.button_pressed = selected_mode == GameMode.INFINITY
+	if selected_mode == GameMode.INFINITY:
+		start_button.text = _text("lobby.start_infinity", "Start Infinity")
+		continue_button.text = _text("lobby.continue_infinity", "Continue Infinity")
+		mode_description_label.text = _text(
+			"lobby.mode.infinity.description",
+			"An endless shift with random reusable anomalies and no fixed story order.",
+		)
+		day_title.text = _text("lobby.choose_infinity_night", "Choose Saved Night")
+	else:
+		start_button.text = _text("lobby.start_story", "Start Story")
+		continue_button.text = _text("lobby.continue_story", "Continue Story")
+		mode_description_label.text = _text(
+			"lobby.mode.story.description",
+			"A seven-night story with a fixed authored anomaly schedule.",
+		)
+		day_title.text = _text("lobby.choose_day", "Choose Day")
+	day_panel.visible = false
+	refresh_continue_state()
 
 
 func _build(background_photo: String) -> void:
@@ -137,7 +182,30 @@ func _build(background_photo: String) -> void:
 	horror_summary_label.add_theme_color_override("font_color", Color(0.82, 0.75, 0.62))
 	layout.add_child(horror_summary_label)
 
-	layout.add_child(_make_button(_text("lobby.start_shift", "Start Shift"), func(): start_shift_requested.emit()))
+	var mode_tabs := HBoxContainer.new()
+	mode_tabs.add_theme_constant_override("separation", 8)
+	layout.add_child(mode_tabs)
+	var mode_group := ButtonGroup.new()
+	story_mode_button = _make_button(_text("lobby.mode.story", "Story"), func(): _select_mode(GameMode.STORY))
+	story_mode_button.toggle_mode = true
+	story_mode_button.button_group = mode_group
+	story_mode_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mode_tabs.add_child(story_mode_button)
+	infinity_mode_button = _make_button(_text("lobby.mode.infinity", "Infinity"), func(): _select_mode(GameMode.INFINITY))
+	infinity_mode_button.toggle_mode = true
+	infinity_mode_button.button_group = mode_group
+	infinity_mode_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mode_tabs.add_child(infinity_mode_button)
+
+	mode_description_label = Label.new()
+	mode_description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mode_description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	mode_description_label.add_theme_font_size_override("font_size", 13)
+	mode_description_label.add_theme_color_override("font_color", Color(0.76, 0.73, 0.66))
+	layout.add_child(mode_description_label)
+
+	start_button = _make_button("", func(): start_shift_requested.emit(selected_mode))
+	layout.add_child(start_button)
 	continue_button = _make_button(_text("lobby.continue", "Continue"), toggle_day_panel)
 	layout.add_child(continue_button)
 
@@ -150,7 +218,7 @@ func _build(background_photo: String) -> void:
 	day_layout.process_mode = Node.PROCESS_MODE_ALWAYS
 	day_layout.add_theme_constant_override("separation", 10)
 	day_panel.add_child(day_layout)
-	var day_title := Label.new()
+	day_title = Label.new()
 	day_title.text = _text("lobby.choose_day", "Choose Day")
 	day_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	day_title.add_theme_font_size_override("font_size", 16)
@@ -183,6 +251,8 @@ func _make_button(text_value: String, callback: Callable) -> Button:
 
 
 func _day_name(day: int) -> String:
+	if selected_mode == GameMode.INFINITY:
+		return _text("infinity.day.label", "Night %d") % day
 	return _text("day.label", "Day %d") % day
 
 

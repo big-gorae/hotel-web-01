@@ -62,9 +62,9 @@ func set_external_anomaly_active(value: bool) -> void:
 	external_anomaly_active = value
 
 
-func start_day(day: int) -> void:
+func start_day(day: int, scheduled = null) -> void:
 	current_day = maxi(day, 1)
-	enabled = current_day >= 2
+	enabled = current_day == 2 if scheduled == null else bool(scheduled)
 	external_anomaly_active = false
 	release_hold()
 	current_state = STATE_WAITING if enabled else STATE_IDLE
@@ -165,7 +165,7 @@ func export_state() -> Dictionary:
 func import_state(state: Dictionary) -> void:
 	release_hold()
 	current_day = maxi(int(state.get("current_day", current_day)), 1)
-	enabled = bool(state.get("enabled", current_day >= 2))
+	enabled = bool(state.get("enabled", current_day == 2))
 	current_state = String(state.get("current_state", STATE_WAITING if enabled else STATE_IDLE))
 	if current_state not in [STATE_IDLE, STATE_WAITING, STATE_DOOR_OPEN, STATE_EMERGING, STATE_RESOLVED]:
 		current_state = STATE_WAITING if enabled else STATE_IDLE

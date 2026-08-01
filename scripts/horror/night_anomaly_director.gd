@@ -20,6 +20,18 @@ const CHILD_EVENT_ID := "room_106_abandoned_child"
 const BLANKET_CHILD_EVENT_ID := "vacant_room_blanket_child"
 const ROOM_109_PASSAGE_EVENT_ID := "room_109_day7_passage"
 const HELL_MIRROR_ITEM_ID := "hell_mirror"
+const CLOSET_PIG_EVENT_ID := "room_105_closet_pig_man"
+const GameMode := preload("res://scripts/systems/game_mode.gd")
+
+# Keep the Story route editable as one plain Day table. An omitted Day has no
+# primary event. Infinity uses the separate random pool in _eligible_daily_events().
+const STORY_PRIMARY_EVENT_BY_DAY := {
+	2: CLOSET_PIG_EVENT_ID,
+	4: PHONE_EVENT_ID,
+	5: LAUNDRY_EVENT_ID,
+	6: CHILD_EVENT_ID,
+	7: ROOM_109_PASSAGE_EVENT_ID,
+}
 
 const LAUNDRY_IDLE := "idle"
 const LAUNDRY_WASHING := "washing"
@@ -62,6 +74,7 @@ var room_109_passage_wait_seconds := 3.0
 var room_109_passage_footstep_seconds := 6.0
 
 var current_day := 1
+var game_mode := GameMode.STORY
 var current_scene_id := ""
 var eye_close_controller = null
 var lethal_outcomes_enabled := true
@@ -143,6 +156,10 @@ func set_lethal_outcomes_enabled(value: bool) -> void:
 
 func set_external_anomaly_active(value: bool) -> void:
 	external_anomaly_active = value
+
+
+func set_game_mode(mode_id: String) -> void:
+	game_mode = GameMode.normalize(mode_id)
 
 
 func has_active_anomaly() -> bool:
@@ -459,6 +476,7 @@ func get_presentation_state() -> Dictionary:
 
 func export_state() -> Dictionary:
 	return {
+		"game_mode": game_mode,
 		"current_day": current_day,
 		"phone_ringing": phone_ringing,
 		"phone_bell_count": phone_bell_count,
@@ -491,6 +509,7 @@ func export_state() -> Dictionary:
 
 
 func import_state(state: Dictionary) -> void:
+	game_mode = GameMode.normalize(String(state.get("game_mode", game_mode)))
 	current_day = maxi(int(state.get("current_day", current_day)), 1)
 	phone_ringing = bool(state.get("phone_ringing", false))
 	phone_bell_count = clampi(int(state.get("phone_bell_count", 0)), 0, PHONE_MAX_BELLS)
@@ -530,7 +549,7 @@ func import_state(state: Dictionary) -> void:
 
 
 func _advance_phone(delta: float) -> void:
-	if current_day < 4:
+	if game_mode == GameMode.STORY and current_day < 4:
 		return
 	if _phone_fatal_pending:
 		_phone_death_seconds = maxf(_phone_death_seconds - delta, 0.0)
@@ -775,16 +794,19 @@ func set_random_seed(seed: int) -> void:
 
 
 func _eligible_daily_events() -> Array[String]:
-	match current_day:
-		4:
-			return [PHONE_EVENT_ID]
-		5:
-			return [LAUNDRY_EVENT_ID]
-		6:
-			return [CHILD_EVENT_ID]
-		7:
-			return [ROOM_109_PASSAGE_EVENT_ID]
-	return []
+	if game_mode == GameMode.INFINITY:
+		return [
+			CLOSET_PIG_EVENT_ID,
+			PHONE_EVENT_ID,
+			LAUNDRY_EVENT_ID,
+			CHILD_EVENT_ID,
+			BLANKET_CHILD_EVENT_ID,
+		]
+	var story_event_id := String(STORY_PRIMARY_EVENT_BY_DAY.get(current_day, ""))
+	var eligible: Array[String] = []
+	if not story_event_id.is_empty():
+		eligible.append(story_event_id)
+	return eligible
 
 
 func _pick_daily_event() -> String:
@@ -801,6 +823,24 @@ func _can_start_planned_event(event_id: String) -> bool:
 		and not _planned_event_completed
 		and not has_active_anomaly()
 	)
+
+
+func notify_external_planned_event_started(event_id: String) -> bool:
+	if _planned_event_id != event_id or _planned_event_completed:
+		return false
+	_planned_event_started = true
+	state_changed.emit()
+	return true
+
+
+func notify_external_planned_event_completed(event_id: String) -> bool:
+	if _planned_event_id != event_id or _planned_event_completed:
+		return false
+	_planned_event_started = true
+	_planned_event_completed = true
+	event_survived.emit(event_id)
+	state_changed.emit()
+	return true
 
 
 func _prepare_forced_event(event_id: String) -> void:

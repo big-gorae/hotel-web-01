@@ -2,6 +2,7 @@ extends GdUnitTestSuite
 
 const JsonSaveStore := preload("res://scripts/systems/json_save_store.gd")
 const DaySaveManager := preload("res://scripts/systems/day_save_manager.gd")
+const GameMode := preload("res://scripts/systems/game_mode.gd")
 
 const TEST_PATH := "user://hotel_json_store_test.json"
 
@@ -34,6 +35,20 @@ func test_version_one_day_save_migrates_to_current_schema() -> void:
 
 	assert_that(migrated.get("version", 0)).is_equal(DaySaveManager.SAVE_VERSION)
 	assert_that(migrated.get("day_slots", {}).has("2")).is_true()
+	assert_str(String(migrated.get("game_mode", ""))).is_equal(GameMode.STORY)
+
+
+func test_story_and_infinity_use_separate_save_paths_and_day_limits() -> void:
+	var manager := DaySaveManager.new()
+	assert_str(manager.get_save_path()).is_equal(DaySaveManager.SAVE_PATH)
+	assert_int(manager.clamp_day(12)).is_equal(DaySaveManager.TOTAL_DAYS)
+
+	manager.set_game_mode(GameMode.INFINITY, false)
+	assert_str(manager.get_save_path()).is_equal(DaySaveManager.INFINITY_SAVE_PATH)
+	assert_int(manager.clamp_day(12)).is_equal(12)
+
+	manager.set_current_day(25)
+	assert_int(manager.current_day).is_equal(25)
 
 
 func _remove_test_files() -> void:

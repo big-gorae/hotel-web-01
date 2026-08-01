@@ -20,7 +20,7 @@
 | 작업 | 현재 상태 | 완료 조건 |
 | --- | --- | --- |
 | 기존 `NightAnomalyDirector` 단일 활성화 | 연결 완료 | phone, washer, child, blanket 중 하나만 tick하며 외부 콘텐츠·옷장 엔티티와 상호 차단 |
-| 확정 기현상 전역 scheduler | 연결 완료 | Day 2부터 하루 최대 1개, 하나의 active ID, cooldown과 save/import |
+| 확정 기현상 전역 scheduler | 연결 완료 | 스토리는 Day별 고정 최대 1개, Infinity는 전체 풀 무작위 최대 1개, 하나의 active ID, cooldown과 save/import |
 | 원형·가로형 진행 바 실제 UI | 연결 완료 | 마우스 hold는 커서 원형, 노래·눈 감기는 하단 가로 UI |
 | presentation layer stack | 연결 완료 | 검증된 manifest의 full variant/layers를 로드하며 없으면 procedural 검수 레이어 사용 |
 | `Anomaly` audio bus | 연결 완료 | 벨·울음·웃음·절규·TV 잡음·그림자 echo·비명·심장 loop와 지옥 거울 loop |
@@ -35,7 +35,7 @@
 - `room_109_open_door` Day 3 초기 조우는 현재 발생과 디버그 강제 실행을 모두 껐다. 컬렉션용 서사와 구현 데이터는 이후 재설계를 위해 남겨 두었으며, 별도 이벤트인 Day 7의 109호 통로에는 영향을 주지 않는다.
 - `room_107_hanging_girl`은 발동과 동시에 세탁실 탁자에 인형을 만들고, 클릭 획득·Hand 장착·선택지 대화·선택 이력 표시·룰북 단서·비장착 상태의 인형 전달 해결·오답 사망 서술을 구현했다. Preview는 세탁실 인형 획득부터 시작해 107호 생존 루트까지 이어진다. 목각 여자 인형은 기존 `resource/images/anomalies/room_107_hanging_girl/room_107_bed_nightstand/visible.png`를 조우·적대 상태·점프스케어 원본으로 공용하며, 점프스케어에서는 방 전체 대신 인형 상반신만 런타임 크롭해 돌진시킨다.
 - `hotel_following_shadow`은 Day 3부터 production queue에 등장한다. 이동음과 프런트 벨 복제, 빠른 벨 3연타 반응, 비명·심장 소리·화면 점멸, 2.2초 간격 안의 복도↔객실 경계 4회 반복 성공 판정, 저장·복원과 전역 fatal까지 연결됐다.
-- 모든 production 기현상은 하루 최대 1개이며 같은 시간에 하나만 활성화된다. Day 4~7의 고정 메인 엔티티와 옷장 엔티티도 전역 상호 차단한다.
+- 모든 production 기현상은 하루 최대 1개이며 같은 시간에 하나만 활성화된다. 스토리 모드의 고정 메인 사건과 Infinity의 무작위 메인 사건도 전역 상호 차단한다.
 
 ## 콘텐츠와 자산
 

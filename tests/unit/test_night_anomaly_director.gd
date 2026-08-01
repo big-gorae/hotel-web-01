@@ -4,6 +4,7 @@ const NightAnomalyDirector := preload("res://scripts/horror/night_anomaly_direct
 const EyeCloseController := preload("res://scripts/systems/eye_close_controller.gd")
 const InventoryModel := preload("res://scripts/items/inventory_model.gd")
 const ItemCatalog := preload("res://scripts/items/item_catalog.gd")
+const GameMode := preload("res://scripts/systems/game_mode.gd")
 
 
 func test_start_day_clears_external_anomaly_lock() -> void:
@@ -55,6 +56,7 @@ func test_answered_phone_expires_then_completes_the_only_daily_entity() -> void:
 
 func test_each_story_day_plans_its_single_fixed_entity() -> void:
 	var expected := {
+		2: NightAnomalyDirector.CLOSET_PIG_EVENT_ID,
 		4: NightAnomalyDirector.PHONE_EVENT_ID,
 		5: NightAnomalyDirector.LAUNDRY_EVENT_ID,
 		6: NightAnomalyDirector.CHILD_EVENT_ID,
@@ -64,6 +66,41 @@ func test_each_story_day_plans_its_single_fixed_entity() -> void:
 		var director = auto_free(NightAnomalyDirector.new())
 		director.start_day(day)
 		assert_str(director.get_planned_event_id()).is_equal(expected[day])
+	for day in [1, 3]:
+		var director = auto_free(NightAnomalyDirector.new())
+		director.start_day(day)
+		assert_str(director.get_planned_event_id()).is_empty()
+		assert_bool(director.is_daily_schedule_complete()).is_true()
+
+
+func test_infinity_plans_one_random_reusable_main_event_on_every_night() -> void:
+	var pool := [
+		NightAnomalyDirector.CLOSET_PIG_EVENT_ID,
+		NightAnomalyDirector.PHONE_EVENT_ID,
+		NightAnomalyDirector.LAUNDRY_EVENT_ID,
+		NightAnomalyDirector.CHILD_EVENT_ID,
+		NightAnomalyDirector.BLANKET_CHILD_EVENT_ID,
+	]
+	var selected: Dictionary = {}
+	for seed in range(30):
+		var director = auto_free(NightAnomalyDirector.new())
+		director.set_game_mode(GameMode.INFINITY)
+		director.set_random_seed(seed)
+		director.start_day(1)
+		var event_id: String = director.get_planned_event_id()
+		assert_array(pool).contains([event_id])
+		selected[event_id] = true
+	assert_int(selected.size()).is_greater(1)
+
+
+func test_external_closet_pig_completes_the_director_schedule() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	director.start_day(2)
+
+	assert_bool(director.notify_external_planned_event_started(NightAnomalyDirector.CLOSET_PIG_EVENT_ID)).is_true()
+	assert_bool(director.is_daily_schedule_complete()).is_false()
+	assert_bool(director.notify_external_planned_event_completed(NightAnomalyDirector.CLOSET_PIG_EVENT_ID)).is_true()
+	assert_bool(director.is_daily_schedule_complete()).is_true()
 
 
 func test_room_109_hotspot_only_exists_while_the_passage_event_is_active() -> void:

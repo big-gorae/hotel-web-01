@@ -16,6 +16,7 @@ signal choice_closed
 signal fatal_narrative_requested(lines: Array)
 
 const ContentCatalog := preload("res://scripts/horror/anomaly_content_catalog.gd")
+const GameMode := preload("res://scripts/systems/game_mode.gd")
 const Scheduler := preload("res://scripts/horror/anomaly_scheduler.gd")
 const HoldController := preload("res://scripts/interactions/hold_interaction_controller.gd")
 
@@ -45,6 +46,7 @@ var inventory_model = null
 var eye_close_controller = null
 
 var current_day := 1
+var game_mode := GameMode.STORY
 var current_scene_id := ""
 var current_event_id := ""
 var current_state := "idle"
@@ -83,6 +85,7 @@ var _resolution_pending := false
 var _debug_force_pending := false
 var _rng := RandomNumberGenerator.new()
 var _random_seed_override := -1
+var _planned_event_id := ""
 
 
 func _ready() -> void:
@@ -109,6 +112,10 @@ func set_resolution_transition_enabled(value: bool) -> void:
 	resolution_transition_enabled = value
 
 
+func set_game_mode(mode_id: String) -> void:
+	game_mode = GameMode.normalize(mode_id)
+
+
 func is_resolution_pending() -> bool:
 	return _resolution_pending
 
@@ -131,6 +138,7 @@ func start_day(day: int) -> void:
 		_rng.seed = _random_seed_override + current_day
 	else:
 		_rng.randomize()
+	_planned_event_id = _pick_day_event()
 	current_event_id = ""
 	current_state = "idle"
 	_spawn_seconds = SPAWN_DELAY_SECONDS
@@ -203,8 +211,12 @@ func has_active_anomaly() -> bool:
 
 
 func is_daily_schedule_complete() -> bool:
-	var target := 0 if current_day < 2 else MAX_PRODUCTION_EVENTS_PER_DAY
+	var target := 0 if _planned_event_id.is_empty() else MAX_PRODUCTION_EVENTS_PER_DAY
 	return current_event_id.is_empty() and _resolved_event_ids.size() >= target
+
+
+func get_planned_event_id() -> String:
+	return _planned_event_id
 
 
 func set_random_seed(seed: int) -> void:
@@ -504,7 +516,9 @@ func force_event(event_id: String) -> bool:
 
 func export_state() -> Dictionary:
 	return {
+		"game_mode": game_mode,
 		"current_day": current_day,
+		"planned_event_id": _planned_event_id,
 		"current_scene_id": current_scene_id,
 		"current_event_id": current_event_id,
 		"current_state": current_state,
@@ -539,7 +553,12 @@ func export_state() -> Dictionary:
 
 func import_state(state: Dictionary) -> void:
 	_resolution_pending = false
+	game_mode = GameMode.normalize(String(state.get("game_mode", game_mode)))
 	current_day = maxi(int(state.get("current_day", current_day)), 1)
+	_planned_event_id = String(state.get(
+		"planned_event_id",
+		ContentCatalog.story_event_for_day(current_day) if game_mode == GameMode.STORY else "",
+	))
 	current_scene_id = String(state.get("current_scene_id", current_scene_id))
 	current_event_id = String(state.get("current_event_id", ""))
 	current_state = String(state.get("current_state", "idle"))
@@ -586,16 +605,19 @@ func _enqueue_day_event() -> void:
 	if _resolved_event_ids.size() >= MAX_PRODUCTION_EVENTS_PER_DAY:
 		_spawn_seconds = SPAWN_DELAY_SECONDS
 		return
-	var candidates: Array[String] = []
-	for event_id in ContentCatalog.production_event_ids():
-		var definition: Dictionary = definitions[event_id]
-		if int(definition.get("min_day", 99)) <= current_day and not _resolved_event_ids.has(event_id):
-			candidates.append(event_id)
-	if candidates.is_empty():
+	if _planned_event_id.is_empty() or _resolved_event_ids.has(_planned_event_id):
 		_spawn_seconds = SPAWN_DELAY_SECONDS
 		return
-	var index := _rng.randi_range(0, candidates.size() - 1)
-	scheduler.enqueue(candidates[index], 0)
+	scheduler.enqueue(_planned_event_id, 0)
+
+
+func _pick_day_event() -> String:
+	if game_mode == GameMode.STORY:
+		return ContentCatalog.story_event_for_day(current_day)
+	var candidates := ContentCatalog.production_event_ids()
+	if candidates.is_empty():
+		return ""
+	return candidates[_rng.randi_range(0, candidates.size() - 1)]
 
 
 func _on_scheduled_event_started(event_id: String) -> void:

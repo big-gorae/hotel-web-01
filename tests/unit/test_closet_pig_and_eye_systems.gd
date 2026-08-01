@@ -5,6 +5,21 @@ const EyeCloseController := preload("res://scripts/systems/eye_close_controller.
 const EyeCloseProfile := preload("res://scripts/systems/eye_close_profile.gd")
 
 
+func test_closet_pig_runs_only_when_the_daily_primary_schedule_selects_it() -> void:
+	var system = auto_free(ClosetPigManSystem.new())
+	add_child(system)
+	system.start_day(3)
+	assert_bool(system.enabled).is_false()
+	assert_str(system.current_state).is_equal(system.STATE_IDLE)
+
+	system.start_day(9, true)
+	assert_bool(system.enabled).is_true()
+	assert_str(system.current_state).is_equal(system.STATE_WAITING)
+
+	system.start_day(2, false)
+	assert_bool(system.enabled).is_false()
+
+
 func test_closet_pig_uses_very_long_waits_and_announces_each_stage() -> void:
 	var system = auto_free(ClosetPigManSystem.new())
 	add_child(system)

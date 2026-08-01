@@ -4,6 +4,7 @@ const ContentRuntime := preload("res://scripts/horror/anomaly_content_runtime.gd
 const ContentCatalog := preload("res://scripts/horror/anomaly_content_catalog.gd")
 const InventoryModel := preload("res://scripts/items/inventory_model.gd")
 const ItemCatalog := preload("res://scripts/items/item_catalog.gd")
+const GameMode := preload("res://scripts/systems/game_mode.gd")
 
 
 func test_runtime_has_no_generic_action_explanation_popup_channel() -> void:
@@ -530,17 +531,38 @@ func test_hanging_girl_uses_laughter_as_late_timer_warning() -> void:
 	assert_int(cues.count("girl_visit_laugh")).is_greater_equal(2)
 
 
-func test_production_schedule_spawns_only_one_random_day_eligible_phenomenon() -> void:
+func test_story_schedule_uses_the_same_authored_event_for_every_seed() -> void:
+	var expected := {
+		1: "",
+		2: "corridor_red_room_light",
+		3: ContentRuntime.HANGING_GIRL_EVENT_ID,
+		4: ContentRuntime.SHADOW_EVENT_ID,
+		5: "room_108_entrails_bathtub",
+		6: "room_106_horrific_mirror",
+		7: "",
+	}
+	for day in expected:
+		for seed in range(4):
+			var runtime = auto_free(ContentRuntime.new())
+			add_child(runtime)
+			runtime.set_random_seed(seed)
+			runtime.start_day(day)
+			assert_str(runtime.get_planned_event_id()).is_equal(expected[day])
+			assert_bool(runtime.is_daily_schedule_complete()).is_equal(String(expected[day]).is_empty())
+
+
+func test_infinity_schedule_spawns_only_one_random_full_pool_event() -> void:
 	var selected: Dictionary = {}
 	for seed in range(20):
 		var runtime = auto_free(ContentRuntime.new())
 		add_child(runtime)
+		runtime.set_game_mode(GameMode.INFINITY)
 		runtime.set_random_seed(seed)
-		runtime.start_day(2)
+		runtime.start_day(1)
+		assert_array(ContentCatalog.production_event_ids()).contains([runtime.get_planned_event_id()])
 		runtime.advance(runtime.SPAWN_DELAY_SECONDS + 0.01)
 		var event_id: String = runtime.current_event_id
 		assert_bool(event_id.is_empty()).is_false()
-		assert_int(int(runtime.definitions[event_id]["min_day"])).is_less_equal(2)
 		selected[event_id] = true
 		runtime._resolve_current()
 		runtime.advance(runtime.SPAWN_DELAY_SECONDS * 2.0)
@@ -548,3 +570,20 @@ func test_production_schedule_spawns_only_one_random_day_eligible_phenomenon() -
 		assert_bool(runtime.is_daily_schedule_complete()).is_true()
 
 	assert_int(selected.size()).is_greater(1)
+
+
+func test_infinity_mode_and_random_plan_survive_save_restore() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	add_child(runtime)
+	runtime.set_game_mode(GameMode.INFINITY)
+	runtime.set_random_seed(17)
+	runtime.start_day(12)
+	var planned_event_id: String = runtime.get_planned_event_id()
+
+	var restored = auto_free(ContentRuntime.new())
+	add_child(restored)
+	restored.import_state(runtime.export_state())
+
+	assert_str(restored.game_mode).is_equal(GameMode.INFINITY)
+	assert_int(restored.current_day).is_equal(12)
+	assert_str(restored.get_planned_event_id()).is_equal(planned_event_id)

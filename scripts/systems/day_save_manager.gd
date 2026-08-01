@@ -2,20 +2,24 @@ class_name HotelDaySaveManager
 extends RefCounted
 
 const JsonSaveStore := preload("res://scripts/systems/json_save_store.gd")
+const GameMode := preload("res://scripts/systems/game_mode.gd")
 
 const TOTAL_DAYS := 7
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const SAVE_PATH := "user://hotel_save.json"
+const INFINITY_SAVE_PATH := "user://hotel_infinity_save.json"
 
+var game_mode := GameMode.STORY
 var current_day := 1
 var unlocked_days: Array[int] = [1]
 var day_slots: Dictionary = {}
 
 
 func load_save_data() -> void:
+	current_day = 1
 	unlocked_days = [1]
 	day_slots.clear()
-	var loaded_data := JsonSaveStore.load_dictionary(SAVE_PATH)
+	var loaded_data := JsonSaveStore.load_dictionary(get_save_path())
 	if loaded_data.is_empty():
 		return
 
@@ -38,6 +42,24 @@ func load_save_data() -> void:
 		unlocked_days = [1]
 
 	current_day = clamp_day(int(save_data.get("current_day", 1)))
+
+
+func set_game_mode(mode_id: String, reload_data := true) -> void:
+	game_mode = GameMode.normalize(mode_id)
+	if reload_data:
+		load_save_data()
+
+
+func get_game_mode() -> String:
+	return game_mode
+
+
+func is_infinity_mode() -> bool:
+	return GameMode.is_infinity(game_mode)
+
+
+func get_save_path() -> String:
+	return INFINITY_SAVE_PATH if is_infinity_mode() else SAVE_PATH
 
 
 func start_new_shift() -> void:
@@ -84,6 +106,16 @@ func latest_saved_day() -> int:
 	return latest_day
 
 
+func get_saved_days() -> Array[int]:
+	var saved_days: Array[int] = []
+	for key in day_slots.keys():
+		var day := clamp_day(int(key))
+		if not saved_days.has(day):
+			saved_days.append(day)
+	saved_days.sort()
+	return saved_days
+
+
 func unlock_day(day: int) -> void:
 	var safe_day := clamp_day(day)
 	if not unlocked_days.has(safe_day):
@@ -92,12 +124,13 @@ func unlock_day(day: int) -> void:
 
 
 func clamp_day(day: int) -> int:
-	return clampi(day, 1, TOTAL_DAYS)
+	return maxi(day, 1) if is_infinity_mode() else clampi(day, 1, TOTAL_DAYS)
 
 
 func _write_save_data() -> void:
-	JsonSaveStore.write_dictionary_atomic(SAVE_PATH, {
+	JsonSaveStore.write_dictionary_atomic(get_save_path(), {
 		"version": SAVE_VERSION,
+		"game_mode": game_mode,
 		"current_day": current_day,
 		"unlocked_days": unlocked_days,
 		"day_slots": day_slots,
@@ -117,5 +150,8 @@ func _migrate_save_data(save_data: Dictionary) -> Dictionary:
 		if not migrated.get("unlocked_days", []) is Array:
 			migrated["unlocked_days"] = [1]
 		migrated["version"] = 2
+	if version <= 2:
+		migrated["game_mode"] = game_mode
+		migrated["version"] = 3
 
 	return migrated
