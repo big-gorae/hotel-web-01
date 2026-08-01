@@ -152,6 +152,23 @@ func test_blanket_child_plays_found_cue_before_delayed_death() -> void:
 	assert_array(deaths).contains_exactly([NightAnomalyDirector.BLANKET_CHILD_EVENT_ID])
 
 
+func test_clicking_blanket_child_only_plays_laughter() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	var deaths: Array[String] = []
+	var cues: Array[String] = []
+	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
+	director.sound_requested.connect(func(cue_id: String): cues.append(cue_id))
+	director.start_day(4)
+	director.force_blanket_child("room_108_bed_window")
+	director.enter_scene("room_108_bed_window")
+
+	assert_bool(director.handle_hotspot("blanket_child")).is_true()
+
+	assert_array(cues).contains_exactly(["blanket_laugh_soft"])
+	assert_array(deaths).is_empty()
+	assert_str(director.blanket_state).is_equal(NightAnomalyDirector.BLANKET_VISIBLE)
+
+
 func test_red_washer_neglect_finishes_music_then_requests_death() -> void:
 	var director = auto_free(NightAnomalyDirector.new())
 	var deaths: Array[String] = []

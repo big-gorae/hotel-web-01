@@ -294,8 +294,7 @@ func handle_hotspot(hotspot_id: String) -> bool:
 		"abandoned_child":
 			return _hold_child()
 		"blanket_child":
-			if lethal_outcomes_enabled:
-				death_requested.emit(BLANKET_CHILD_EVENT_ID)
+			sound_requested.emit("blanket_laugh_soft")
 			return true
 	return false
 
