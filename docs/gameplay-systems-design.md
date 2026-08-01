@@ -399,7 +399,7 @@ When adding a room:
 4. Add hotspot nodes under `HotspotDefinitions/<scene_id>` in `scenes/main.tscn`.
 5. Add room-specific tasks to `HotelTaskCatalog`.
 6. Add room-specific anomalies to `HotelHorrorCatalog`.
-7. Add localized labels only when player-facing text differs from fallback.
+7. Add explicit Korean and English copy for every player-facing label and description; keep scene and hotspot copy in `scripts/scenes/hotel_scene_localization.gd`.
 
 This keeps “one room with multiple views” explicit and prevents anomalies from duplicating across angles.
 

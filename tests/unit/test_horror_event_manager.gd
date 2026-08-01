@@ -4,6 +4,8 @@ const FlagStore := preload("res://scripts/systems/flag_store.gd")
 const HorrorEventManager := preload("res://scripts/horror/horror_event_manager.gd")
 const HorrorEventDefinition := preload("res://scripts/horror/horror_event_definition.gd")
 const Localization := preload("res://scripts/localization.gd")
+const ContentCatalog := preload("res://scripts/horror/anomaly_content_catalog.gd")
+const CollectionContent := preload("res://scripts/horror/anomaly_collection_content.gd")
 
 
 func test_anomaly_flag_lifecycle_and_collection_survive_new_run() -> void:
@@ -95,11 +97,29 @@ func test_collection_copy_uses_korean_and_falls_back_to_english_for_untranslated
 func test_every_catalog_entry_has_editable_collection_copy_and_canon_kind() -> void:
 	var manager := HorrorEventManager.new()
 	manager.setup_default_catalog()
+	var catalog_ids: Array = manager.definitions_by_id.keys()
+	var collection_ids: Array = CollectionContent.ENTRIES.keys()
+	catalog_ids.sort()
+	collection_ids.sort()
+	assert_array(collection_ids).contains_exactly(catalog_ids)
 	for event_id in manager.definitions_by_id:
 		var definition = manager.get_definition(event_id)
 		assert_str(definition.collection_title_key).is_not_empty()
 		assert_str(definition.collection_body_key).is_not_empty()
 		assert_array(["entity", "phenomenon"]).contains([definition.collection_kind])
+		for locale_code in ["en", "ko"]:
+			var copy := CollectionContent.get_copy(event_id, locale_code)
+			assert_str(String(copy.get("title", ""))).is_not_empty()
+			assert_str(String(copy.get("body", ""))).is_not_empty()
+
+	var content_definitions: Dictionary = ContentCatalog.build_definitions()
+	for event_id in content_definitions:
+		var content_definition: Dictionary = content_definitions[event_id]
+		assert_bool(manager.definitions_by_id.has(event_id)).is_true()
+		assert_str(manager.get_definition(event_id).collection_kind).is_equal(
+			String(content_definition.get("type", "")),
+		)
+	assert_array(ContentCatalog.debug_event_ids()).contains(ContentCatalog.production_event_ids())
 
 
 func test_weighted_selection_uses_definition_weights() -> void:

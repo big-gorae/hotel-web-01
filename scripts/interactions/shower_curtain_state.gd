@@ -43,7 +43,9 @@ func make_hotspot(scene_id: String) -> Dictionary:
 func make_hotspot_for_state(closed: bool) -> Dictionary:
 	return {
 		"id": HOTSPOT_ID,
+		"label_key": "hotspot.common.shower_curtain.label",
 		"label": "Shower Curtain",
+		"text_key": "hotspot.common.shower_curtain.open" if closed else "hotspot.common.shower_curtain.close",
 		"text": "Open the shower curtain." if closed else "Close the shower curtain.",
 		"rect": CLOSED_CLICK_RECT if closed else OPEN_CLICK_RECT,
 	}

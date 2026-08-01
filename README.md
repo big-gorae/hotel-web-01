@@ -193,9 +193,10 @@ The production anomaly runtime allows only one active encounter at a time. Day 4
 ## Localization
 
 - `scripts/localization.gd` owns language state and translation lookup.
-- Korean is the default language. English is the complete fallback locale.
+- Korean is the default language. Korean and English both have explicit, complete player-copy coverage; English is the fallback for the other locale slots.
 - Supported language slots are English, Korean, Japanese, Russian, and Chinese.
-- Scene, hotspot, exit, UI text, item names/descriptions, rule book text, and scene photo paths are routed through localization keys with the current English text/path as fallback.
+- Scene, hotspot, and exit copy is centralized in `scripts/scenes/hotel_scene_localization.gd`, separate from scene geometry. UI text, item names/descriptions, rule book text, and scene photo paths also use localization keys.
+- Tests require every player-facing scene, authored/runtime hotspot, catalog item, task, rule, and anomaly-collection entry to contain non-empty Korean and English text.
 - Item text uses `item.<item_id>.name` and `item.<item_id>.description`.
 - Localized photo variants can use `scene.<scene_id>.photo`; the closed laundry variant can use `scene.laundry_room.photo.closed`.
 - Rule Book entries use `ui.rule_book.rule.<number>` and unlock by their definition's `unlock_day`.

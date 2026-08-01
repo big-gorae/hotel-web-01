@@ -29,7 +29,7 @@
 | 6 | `story.do_not_say_looking_for_sibling` | `동생을 찾으러 왔다고 말하지 마`라는 언니의 문장 |
 | 7 | `story.younger_sister_recognition` | 플레이어가 바로 그 동생이라는 인식 |
 
-한국어·영어 문장은 `story.day.{day}.line.{line}` locale key로 분리한다. 기본 언어는 한국어이고 영어는 누락 key의 fallback이자 선택 가능한 locale이다.
+한국어·영어 문장은 `story.day.{day}.line.{line}` locale key로 분리한다. 기본 언어는 한국어이며 한국어와 영어 key는 항상 함께 작성한다. 영어 fallback은 번역이 아직 없는 기타 locale에만 사용한다.
 
 ## 도입 흐름
 

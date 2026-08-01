@@ -2,6 +2,7 @@ class_name HotelLocalization
 extends RefCounted
 
 const AnomalyCollectionContent := preload("res://scripts/horror/anomaly_collection_content.gd")
+const SceneLocalizationContent := preload("res://scripts/scenes/hotel_scene_localization.gd")
 
 signal language_changed(language: int)
 
@@ -54,6 +55,12 @@ var translations := {
 		"ui.debug.tabs.anomaly": "Anomaly",
 		"ui.debug.tabs.vision": "Vision",
 		"ui.debug.tabs.presentation": "Presentation",
+		"ui.debug.filters.show": "Show filter selector",
+		"ui.debug.filters.hide": "Hide filter selector",
+		"ui.debug.filters.title": "Filter",
+		"ui.debug.filters.tooltip": "Apply this screen filter.",
+		"ui.debug.filters.intensity": "Intensity",
+		"ui.debug.filters.intensity_tooltip": "Filter intensity.",
 		"ui.debug.anomaly_transition.preview": "Fade preview",
 		"ui.debug.anomaly_transition.preview_tooltip": "Preview the anomaly disappearance transition without changing game state.",
 		"ui.debug.anomaly_transition.duration": "Anomaly fade duration",
@@ -258,6 +265,12 @@ var translations := {
 		"ui.debug.tabs.anomaly": "기현상",
 		"ui.debug.tabs.vision": "시야",
 		"ui.debug.tabs.presentation": "연출",
+		"ui.debug.filters.show": "필터 선택 표시",
+		"ui.debug.filters.hide": "필터 선택 숨기기",
+		"ui.debug.filters.title": "필터",
+		"ui.debug.filters.tooltip": "화면 필터를 적용합니다.",
+		"ui.debug.filters.intensity": "강도",
+		"ui.debug.filters.intensity_tooltip": "필터 강도를 조절합니다.",
 		"ui.debug.anomaly_transition.preview": "소멸 전환 테스트",
 		"ui.debug.anomaly_transition.preview_tooltip": "게임 상태를 바꾸지 않고 기현상 소멸 전환만 재생합니다.",
 		"ui.debug.anomaly_transition.duration": "기현상 페이드 시간",
@@ -756,6 +769,7 @@ var translations := {
 
 
 func _init() -> void:
+	SceneLocalizationContent.append_translations(translations, Language.ENGLISH, Language.KOREAN)
 	AnomalyCollectionContent.append_translations(translations, LANGUAGE_CODES)
 
 
