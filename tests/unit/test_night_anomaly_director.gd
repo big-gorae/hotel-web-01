@@ -234,6 +234,7 @@ func test_red_washer_neglect_timer_starts_only_after_discovery_and_kills_at_thir
 	var deaths: Array[String] = []
 	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
 	director.start_day(5)
+	director.enter_scene("front_desk")
 	director.enter_scene("laundry_room")
 
 	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_RED)
@@ -257,6 +258,7 @@ func test_red_washer_uses_circular_hold_and_resolves_when_closed_eye_music_ends(
 	director.hold_started.connect(func(mode: String, _position: Vector2): hold_modes.append(mode))
 	director.setup(eyes)
 	director.start_day(5)
+	director.enter_scene("front_desk")
 	director.enter_scene("laundry_room")
 
 	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_RED)
@@ -284,6 +286,7 @@ func test_red_washer_music_requires_closed_eyes_but_reclicking_is_safe() -> void
 	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
 	director.setup(eyes)
 	director.start_day(5)
+	director.enter_scene("front_desk")
 	director.enter_scene("laundry_room")
 	director.begin_laundry_stop_hold(Vector2.ZERO)
 	director.advance(director.laundry_stop_hold_duration)
@@ -293,6 +296,58 @@ func test_red_washer_music_requires_closed_eyes_but_reclicking_is_safe() -> void
 	director.advance(director.laundry_eye_close_grace_duration)
 
 	assert_array(deaths).contains_exactly([NightAnomalyDirector.LAUNDRY_EVENT_ID])
+
+
+func test_location_event_materializes_only_after_player_leaves_target_scene() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	director.start_day(5)
+
+	director.enter_scene("laundry_room")
+	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_IDLE)
+	assert_bool(director.has_active_anomaly()).is_false()
+
+	director.enter_scene("front_desk")
+	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_RED)
+	assert_bool(director.has_active_anomaly()).is_true()
+
+
+func test_child_wait_finishes_only_while_target_bathroom_is_offscreen() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	director.start_day(6)
+	director.enter_scene("front_desk")
+	assert_str(director.child_state).is_equal(NightAnomalyDirector.CHILD_WAITING)
+
+	director.enter_scene("room_106_bathroom")
+	director.advance(director.child_appearance_delay + 0.01)
+	assert_str(director.child_state).is_equal(NightAnomalyDirector.CHILD_WAITING)
+
+	director.enter_scene("front_desk")
+	director.advance(0.01)
+	assert_str(director.child_state).is_equal(NightAnomalyDirector.CHILD_CRYING)
+
+
+func test_phone_first_ring_waits_until_front_desk_is_offscreen() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	director.start_day(4)
+	director.enter_scene("front_desk")
+
+	director.advance(director.phone_initial_delay + 0.01)
+	assert_bool(director.phone_ringing).is_false()
+
+	director.enter_scene("corridor")
+	director.advance(0.01)
+	assert_bool(director.phone_ringing).is_true()
+
+
+func test_external_anomaly_blocks_room_109_passage_entry() -> void:
+	var director = auto_free(NightAnomalyDirector.new())
+	director.start_day(7)
+	director.set_external_anomaly_active(true)
+
+	director.enter_scene("corridor")
+
+	assert_str(director.room_109_passage_state).is_equal(NightAnomalyDirector.ROOM_109_PASSAGE_IDLE)
+	assert_bool(director.has_active_anomaly()).is_false()
 
 
 func test_day_seven_room_109_passage_forbids_turning_until_footsteps_end() -> void:

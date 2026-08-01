@@ -241,22 +241,16 @@ func _process(delta: float) -> void:
 		var content_active: bool = anomaly_content_runtime != null and anomaly_content_runtime.has_active_anomaly()
 		var night_active: bool = night_anomaly_director != null and night_anomaly_director.has_active_anomaly()
 		var closet_pig_active: bool = closet_pig_man_system != null and closet_pig_man_system.is_active()
-		if anomaly_content_runtime != null:
-			anomaly_content_runtime.set_external_anomaly_active(night_active or closet_pig_active)
-		if night_anomaly_director != null:
-			night_anomaly_director.set_external_anomaly_active(content_active or closet_pig_active)
 		if closet_pig_man_system != null:
 			closet_pig_man_system.set_external_anomaly_active(content_active or night_active)
 			closet_pig_man_system.advance(delta)
 			closet_pig_active = closet_pig_man_system.is_active()
 		if night_anomaly_director != null:
 			night_anomaly_director.set_external_anomaly_active(content_active or closet_pig_active)
-		if night_anomaly_director != null:
 			night_anomaly_director.advance(delta)
+			night_active = night_anomaly_director.has_active_anomaly()
 		if anomaly_content_runtime != null:
-			anomaly_content_runtime.set_external_anomaly_active(
-				closet_pig_active or (night_anomaly_director != null and night_anomaly_director.has_active_anomaly())
-			)
+			anomaly_content_runtime.set_external_anomaly_active(closet_pig_active or night_active)
 			anomaly_content_runtime.advance(delta)
 		if equipped_item_hazard_controller != null:
 			equipped_item_hazard_controller.advance(delta)
@@ -361,10 +355,24 @@ func _apply_scene_change(scene_id: String, play_transition_sound := true) -> voi
 	_show_title_banner()
 	_set_persistent_dialogue(_scene_text(scene_id, scene_data, "intro"))
 	horror_event_manager.enter_scene(scene_id)
+	var content_active: bool = anomaly_content_runtime != null and anomaly_content_runtime.has_active_anomaly()
+	var night_active: bool = night_anomaly_director != null and night_anomaly_director.has_active_anomaly()
+	var closet_pig_active: bool = closet_pig_man_system != null and closet_pig_man_system.is_active()
+	if closet_pig_man_system != null:
+		closet_pig_man_system.enter_scene(scene_id)
+		closet_pig_man_system.set_external_anomaly_active(content_active or night_active)
 	if night_anomaly_director != null:
+		night_anomaly_director.set_external_anomaly_active(content_active or closet_pig_active)
 		night_anomaly_director.enter_scene(scene_id)
+		night_active = night_anomaly_director.has_active_anomaly()
 	if anomaly_content_runtime != null:
+		anomaly_content_runtime.set_external_anomaly_active(night_active or closet_pig_active)
 		anomaly_content_runtime.enter_scene(scene_id)
+		content_active = anomaly_content_runtime.has_active_anomaly()
+	if night_anomaly_director != null:
+		night_anomaly_director.set_external_anomaly_active(content_active or closet_pig_active)
+	if closet_pig_man_system != null:
+		closet_pig_man_system.set_external_anomaly_active(content_active or night_active)
 	if anomaly_visual_overlay != null:
 		anomaly_visual_overlay.set_scene(scene_id)
 	_build_hotspots(_scene_hotspots(scene_id, scene_data))

@@ -33,6 +33,7 @@ const SQUEAL_INTERVAL_BASE_SECONDS := 30.0
 const SQUEAL_INTERVAL_JITTER_SECONDS := 10.0
 
 var current_day := 1
+var current_scene_id := ""
 var current_state := STATE_IDLE
 var stage_seconds_remaining := 0.0
 var squeal_seconds_remaining := 0.0
@@ -63,6 +64,10 @@ func set_external_anomaly_active(value: bool) -> void:
 	external_anomaly_active = value
 
 
+func enter_scene(scene_id: String) -> void:
+	current_scene_id = scene_id
+
+
 func start_day(day: int, scheduled = null) -> void:
 	current_day = maxi(day, 1)
 	enabled = current_day == 2 if scheduled == null else bool(scheduled)
@@ -89,6 +94,8 @@ func advance(delta: float) -> void:
 
 	stage_seconds_remaining = maxf(stage_seconds_remaining - delta, 0.0)
 	if stage_seconds_remaining > 0.0:
+		return
+	if current_state == STATE_WAITING and current_scene_id == SCENE_ID:
 		return
 	match current_state:
 		STATE_WAITING:

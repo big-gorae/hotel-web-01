@@ -29,6 +29,8 @@ const SHADOW_BELL_SEQUENCE_WINDOW_SECONDS := 1.05
 const SHADOW_ROOM_TRANSITION_TARGET := 4
 const SHADOW_ROOM_TRANSITION_WINDOW_SECONDS := 2.20
 const MAX_PRODUCTION_EVENTS_PER_DAY := 1
+const ACTIVATION_SLOT_CONFLICT_TAG := "activation_slot"
+const SCENE_CONFLICT_TAG_PREFIX := "scene:"
 const SHADOW_EVENT_ID := "hotel_following_shadow"
 const HANGING_GIRL_EVENT_ID := "room_107_hanging_girl"
 const HANGING_GIRL_DOLL_ITEM_ID := "cute_doll"
@@ -159,6 +161,7 @@ func enter_scene(scene_id: String) -> void:
 	if previous_scene_id != scene_id:
 		_track_shadow_room_transition(previous_scene_id, scene_id)
 	current_scene_id = scene_id
+	_refresh_scheduler_conflicts()
 	if current_event_id == "room_109_open_door" and scene_id == "corridor":
 		_entity_recognized = true
 	if current_event_id == HANGING_GIRL_EVENT_ID and scene_id == "room_107_bed_nightstand":
@@ -170,6 +173,7 @@ func enter_scene(scene_id: String) -> void:
 func advance(delta: float) -> void:
 	if delta <= 0.0:
 		return
+	_refresh_scheduler_conflicts()
 	if _resolution_pending:
 		return
 	if hold_controller != null:
@@ -599,6 +603,7 @@ func import_state(state: Dictionary) -> void:
 func _reset_scheduler() -> void:
 	scheduler = Scheduler.new()
 	scheduler.event_started.connect(_on_scheduled_event_started)
+	_refresh_scheduler_conflicts()
 
 
 func _enqueue_day_event() -> void:
@@ -608,7 +613,45 @@ func _enqueue_day_event() -> void:
 	if _planned_event_id.is_empty() or _resolved_event_ids.has(_planned_event_id):
 		_spawn_seconds = SPAWN_DELAY_SECONDS
 		return
-	scheduler.enqueue(_planned_event_id, 0)
+	_prepare_scheduled_scene(_planned_event_id)
+	scheduler.enqueue(_planned_event_id, 0, _event_conflict_tags(_planned_event_id))
+
+
+func _prepare_scheduled_scene(event_id: String) -> void:
+	if event_id != "bathroom_shower_legs" or not _current_scene_override.is_empty():
+		return
+	_current_scene_override = SHOWER_BATHROOM_SCENE_IDS[
+		_rng.randi_range(0, SHOWER_BATHROOM_SCENE_IDS.size() - 1)
+	]
+
+
+func _event_conflict_tags(event_id: String) -> Array[String]:
+	var tags: Array[String] = [ACTIVATION_SLOT_CONFLICT_TAG]
+	var target_scene_id := _event_scene_id(event_id)
+	if not target_scene_id.is_empty():
+		tags.append(_scene_conflict_tag(target_scene_id))
+	return tags
+
+
+func _event_scene_id(event_id: String) -> String:
+	if event_id == "bathroom_shower_legs" and not _current_scene_override.is_empty():
+		return _current_scene_override
+	return String(definitions.get(event_id, {}).get("scene_id", ""))
+
+
+func _refresh_scheduler_conflicts() -> void:
+	if scheduler == null:
+		return
+	var blocked_tags: Array[String] = []
+	if external_anomaly_active:
+		blocked_tags.append(ACTIVATION_SLOT_CONFLICT_TAG)
+	if not current_scene_id.is_empty():
+		blocked_tags.append(_scene_conflict_tag(current_scene_id))
+	scheduler.set_blocked_conflict_tags(blocked_tags)
+
+
+func _scene_conflict_tag(scene_id: String) -> String:
+	return "%s%s" % [SCENE_CONFLICT_TAG_PREFIX, scene_id]
 
 
 func _pick_day_event() -> String:
@@ -626,13 +669,14 @@ func _on_scheduled_event_started(event_id: String) -> void:
 		return
 	current_event_id = event_id
 	current_state = "visible"
-	_clear_event_state()
+	# A randomized target such as the shower room is chosen before scheduling so
+	# it can remain queued while the player is looking at that exact scene.
+	_clear_event_state(false)
 	var definition: Dictionary = definitions[event_id]
 	_fatal_seconds_remaining = float(definition.get("fatal_seconds", 0.0))
 	if event_id == "bathroom_shower_legs":
-		_current_scene_override = SHOWER_BATHROOM_SCENE_IDS[
-			_rng.randi_range(0, SHOWER_BATHROOM_SCENE_IDS.size() - 1)
-		]
+		if _current_scene_override.is_empty():
+			_prepare_scheduled_scene(event_id)
 		_curtain_target_count = _rng.randi_range(3, 5)
 		_curtain_has_legs = true if _debug_force_pending else _rng.randi_range(0, 1) == 1
 		current_state = "curtain_closed"

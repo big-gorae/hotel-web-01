@@ -238,6 +238,8 @@ func enter_scene(scene_id: String) -> void:
 	current_scene_id = scene_id
 	if scene_id != "laundry_room":
 		release_laundry_stop_hold()
+	if external_anomaly_active:
+		return
 	if (
 		_can_start_planned_event(ROOM_109_PASSAGE_EVENT_ID)
 		and scene_id == "corridor"
@@ -248,18 +250,7 @@ func enter_scene(scene_id: String) -> void:
 		_room_109_footstep_cue_seconds = 0.0
 		_mark_planned_event_started(ROOM_109_PASSAGE_EVENT_ID)
 		state_changed.emit()
-	if external_anomaly_active:
-		return
-	if _can_start_planned_event(LAUNDRY_EVENT_ID) and scene_id == "laundry_room" and laundry_state == LAUNDRY_IDLE:
-		_begin_red_laundry()
-		_mark_planned_event_started(LAUNDRY_EVENT_ID)
-		state_changed.emit()
-	if _can_start_planned_event(CHILD_EVENT_ID) and scene_id == "room_106_bathroom" and child_state == CHILD_IDLE:
-		child_state = CHILD_WAITING
-		_child_seconds = child_appearance_delay
-		state_changed.emit()
-	if _can_start_planned_event(BLANKET_CHILD_EVENT_ID) and blanket_state == BLANKET_IDLE and scene_id == "room_108_bed_window":
-		force_blanket_child(scene_id)
+	_try_start_planned_event_offscreen()
 
 
 func advance(delta: float) -> void:
@@ -272,6 +263,7 @@ func advance(delta: float) -> void:
 		return
 	if external_anomaly_active:
 		return
+	_try_start_planned_event_offscreen()
 	if room_108_forbidden:
 		_phone_forbidden_seconds = maxf(_phone_forbidden_seconds - delta, 0.0)
 		if _phone_forbidden_seconds <= 0.0:
@@ -621,6 +613,9 @@ func _advance_phone(delta: float) -> void:
 	if _phone_seconds > 0.0:
 		return
 	if not phone_ringing:
+		if current_scene_id == "front_desk":
+			_phone_seconds = 0.0
+			return
 		phone_ringing = true
 		phone_bell_count = 1
 		_mark_planned_event_started(PHONE_EVENT_ID)
@@ -777,8 +772,8 @@ func _audio_playback_allowed() -> bool:
 
 func _advance_child(delta: float) -> void:
 	if child_state == CHILD_WAITING:
-		_child_seconds -= delta
-		if _child_seconds <= 0.0:
+		_child_seconds = maxf(_child_seconds - delta, 0.0)
+		if _child_seconds <= 0.0 and current_scene_id != "room_106_bathroom":
 			force_child_encounter()
 	elif child_state == CHILD_CRYING:
 		if eye_close_controller != null and eye_close_controller.is_song_active():
@@ -928,6 +923,33 @@ func _can_start_planned_event(event_id: String) -> bool:
 		and not _planned_event_completed
 		and not has_active_anomaly()
 	)
+
+
+func _try_start_planned_event_offscreen() -> void:
+	if (
+		_can_start_planned_event(LAUNDRY_EVENT_ID)
+		and current_scene_id != "laundry_room"
+		and laundry_state == LAUNDRY_IDLE
+	):
+		_begin_red_laundry()
+		_mark_planned_event_started(LAUNDRY_EVENT_ID)
+		state_changed.emit()
+		return
+	if (
+		_can_start_planned_event(CHILD_EVENT_ID)
+		and current_scene_id != "room_106_bathroom"
+		and child_state == CHILD_IDLE
+	):
+		child_state = CHILD_WAITING
+		_child_seconds = child_appearance_delay
+		state_changed.emit()
+		return
+	if (
+		_can_start_planned_event(BLANKET_CHILD_EVENT_ID)
+		and current_scene_id != "room_108_bed_window"
+		and blanket_state == BLANKET_IDLE
+	):
+		force_blanket_child("room_108_bed_window")
 
 
 func notify_external_planned_event_started(event_id: String) -> bool:

@@ -74,6 +74,23 @@ func test_closet_pig_waiting_pauses_while_another_anomaly_is_active() -> void:
 	assert_str(system.current_state).is_equal(system.STATE_DOOR_OPEN)
 
 
+func test_closet_pig_waits_at_zero_until_wardrobe_scene_is_offscreen() -> void:
+	var system = auto_free(ClosetPigManSystem.new())
+	add_child(system)
+	system.start_day(2)
+	system.enter_scene(system.SCENE_ID)
+
+	system.advance(system.stage_seconds_remaining)
+
+	assert_str(system.current_state).is_equal(system.STATE_WAITING)
+	assert_float(system.stage_seconds_remaining).is_equal(0.0)
+
+	system.enter_scene("corridor")
+	system.advance(0.01)
+
+	assert_str(system.current_state).is_equal(system.STATE_DOOR_OPEN)
+
+
 func test_closet_pig_squeals_globally_and_dies_only_after_emerging_wait() -> void:
 	var system = auto_free(ClosetPigManSystem.new())
 	add_child(system)

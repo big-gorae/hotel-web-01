@@ -24,6 +24,59 @@ func test_start_day_clears_external_anomaly_lock() -> void:
 	assert_bool(runtime.external_anomaly_active).is_false()
 
 
+func test_scheduled_event_waits_until_player_leaves_its_scene() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	add_child(runtime)
+	runtime.start_day(5)
+	runtime.enter_scene("room_108_bathroom")
+
+	runtime.advance(runtime.SPAWN_DELAY_SECONDS + 0.01)
+
+	assert_str(runtime.current_event_id).is_empty()
+	assert_int(runtime.scheduler.pending_anomaly_queue.size()).is_equal(1)
+
+	runtime.enter_scene("corridor")
+
+	assert_str(runtime.current_event_id).is_equal("room_108_entrails_bathtub")
+	assert_int(runtime.scheduler.pending_anomaly_queue.size()).is_equal(0)
+
+
+func test_scheduled_event_keeps_waiting_for_external_anomaly_after_scene_exit() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	add_child(runtime)
+	runtime.start_day(5)
+	runtime.enter_scene("room_108_bathroom")
+	runtime.advance(runtime.SPAWN_DELAY_SECONDS + 0.01)
+	runtime.set_external_anomaly_active(true)
+
+	runtime.enter_scene("corridor")
+
+	assert_str(runtime.current_event_id).is_empty()
+	assert_int(runtime.scheduler.pending_anomaly_queue.size()).is_equal(1)
+
+	runtime.set_external_anomaly_active(false)
+	runtime.advance(0.01)
+
+	assert_str(runtime.current_event_id).is_equal("room_108_entrails_bathtub")
+
+
+func test_random_shower_target_is_fixed_before_offscreen_activation() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	add_child(runtime)
+	runtime.start_day(1)
+	runtime._planned_event_id = "bathroom_shower_legs"
+	runtime._current_scene_override = "room_106_bathroom"
+	runtime.enter_scene("room_106_bathroom")
+
+	runtime.advance(runtime.SPAWN_DELAY_SECONDS + 0.01)
+
+	assert_str(runtime.current_event_id).is_empty()
+	assert_str(runtime._current_scene_override).is_equal("room_106_bathroom")
+	runtime.enter_scene("front_desk")
+	assert_str(runtime.current_event_id).is_equal("bathroom_shower_legs")
+	assert_str(runtime.get_active_scene_id()).is_equal("room_106_bathroom")
+
+
 func test_generic_hold_resolves_only_after_full_duration() -> void:
 	var runtime = auto_free(ContentRuntime.new())
 	add_child(runtime)
