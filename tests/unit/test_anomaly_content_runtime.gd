@@ -63,6 +63,46 @@ func test_glass_face_requires_two_fast_triples() -> void:
 	assert_bool(runtime.handle_world_hotspot("desk_bell", "front_desk")).is_false()
 
 
+func test_phenomenon_remains_visible_until_resolution_transition_reaches_black() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	var transition_requests: Array[String] = []
+	runtime.phenomenon_resolution_transition_requested.connect(
+		func(event_id: String): transition_requests.append(event_id)
+	)
+	add_child(runtime)
+	runtime.set_resolution_transition_enabled(true)
+	runtime.force_event("front_glass_face")
+
+	for _index in 6:
+		runtime.handle_world_hotspot("desk_bell", "front_desk")
+
+	assert_bool(runtime.is_resolution_pending()).is_true()
+	assert_str(runtime.current_event_id).is_equal("front_glass_face")
+	assert_str(runtime.current_state).is_equal("hostile")
+	assert_array(transition_requests).contains_exactly(["front_glass_face"])
+
+	runtime.complete_pending_phenomenon_resolution()
+
+	assert_bool(runtime.is_resolution_pending()).is_false()
+	assert_str(runtime.current_event_id).is_empty()
+
+
+func test_entity_resolution_does_not_use_phenomenon_fade() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	var transition_requests: Array[String] = []
+	runtime.phenomenon_resolution_transition_requested.connect(
+		func(event_id: String): transition_requests.append(event_id)
+	)
+	add_child(runtime)
+	runtime.set_resolution_transition_enabled(true)
+	runtime.force_event(runtime.SHADOW_EVENT_ID)
+
+	runtime._resolve_current()
+
+	assert_str(runtime.current_event_id).is_empty()
+	assert_array(transition_requests).is_empty()
+
+
 func test_baby_wallpaper_closes_five_large_surfaces() -> void:
 	var runtime = auto_free(ContentRuntime.new())
 	add_child(runtime)

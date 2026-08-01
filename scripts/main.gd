@@ -165,6 +165,8 @@ var filter_toggle: Button
 var debug_curtain_preview_selector: OptionButton
 var debug_anomaly_selector: OptionButton
 var debug_jumpscare_lab_button: Button
+var debug_anomaly_transition_button: Button
+var anomaly_transition_duration_slider: HSlider
 var menu_overlay: ColorRect
 var brightness_slider: HSlider
 var brightness_value_label: Label
@@ -561,6 +563,24 @@ func _build_ui() -> void:
 	eye_height_slider.value_changed.connect(_on_eye_height_debug_changed)
 	tuning_row.add_child(eye_height_slider)
 
+	debug_anomaly_transition_button = Button.new()
+	debug_anomaly_transition_button.text = _ui_text("debug.anomaly_transition.preview", "Fade preview")
+	debug_anomaly_transition_button.tooltip_text = _ui_text("debug.anomaly_transition.preview_tooltip", "Preview the anomaly disappearance transition without changing game state.")
+	debug_anomaly_transition_button.focus_mode = Control.FOCUS_NONE
+	debug_anomaly_transition_button.custom_minimum_size = Vector2(132.0, 32.0)
+	debug_anomaly_transition_button.pressed.connect(_preview_anomaly_resolution_transition)
+	tuning_row.add_child(debug_anomaly_transition_button)
+
+	anomaly_transition_duration_slider = HSlider.new()
+	anomaly_transition_duration_slider.min_value = 0.25
+	anomaly_transition_duration_slider.max_value = 0.90
+	anomaly_transition_duration_slider.step = 0.05
+	anomaly_transition_duration_slider.value = HotelSceneTransitionFaderScript.DEFAULT_ANOMALY_FADE_OUT_SECONDS
+	anomaly_transition_duration_slider.custom_minimum_size = Vector2(96.0, 32.0)
+	anomaly_transition_duration_slider.tooltip_text = _ui_text("debug.anomaly_transition.duration", "Anomaly fade duration")
+	anomaly_transition_duration_slider.value_changed.connect(_on_anomaly_transition_duration_changed)
+	tuning_row.add_child(anomaly_transition_duration_slider)
+
 	phone_bell_panel = PanelContainer.new()
 	phone_bell_panel.visible = false
 	phone_bell_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -733,9 +753,11 @@ func _build_anomaly_runtime() -> void:
 	gameplay_layer.add_child(anomaly_content_runtime)
 	anomaly_content_runtime.setup(inventory_model, eye_close_controller)
 	anomaly_content_runtime.set_lethal_outcomes_enabled(LETHAL_GIMMICKS_ENABLED)
+	anomaly_content_runtime.set_resolution_transition_enabled(true)
 	anomaly_content_runtime.state_changed.connect(_on_content_anomaly_state_changed)
 	anomaly_content_runtime.event_started.connect(_on_anomaly_event_started)
 	anomaly_content_runtime.event_resolved.connect(_on_content_anomaly_resolved)
+	anomaly_content_runtime.phenomenon_resolution_transition_requested.connect(_on_phenomenon_resolution_transition_requested)
 	anomaly_content_runtime.choice_requested.connect(_on_content_choice_requested)
 	anomaly_content_runtime.choice_closed.connect(_on_content_choice_closed)
 	anomaly_content_runtime.fatal_narrative_requested.connect(_on_content_fatal_narrative_requested)
@@ -1677,6 +1699,23 @@ func _on_content_anomaly_resolved(event_id: String) -> void:
 	_save_current_day()
 
 
+func _on_phenomenon_resolution_transition_requested(_event_id: String) -> void:
+	_play_anomaly_resolution_transition(anomaly_content_runtime.complete_pending_phenomenon_resolution)
+
+
+func _play_anomaly_resolution_transition(resolution_callback: Callable) -> void:
+	if scene_transition_fader == null:
+		resolution_callback.call()
+		return
+	if scene_transition_fader.is_transitioning():
+		scene_transition_fader.transition_finished.connect(
+			_play_anomaly_resolution_transition.bind(resolution_callback),
+			CONNECT_ONE_SHOT,
+		)
+		return
+	scene_transition_fader.play_anomaly_resolution(resolution_callback)
+
+
 func _on_content_choice_requested(prompt_key: String, fallback_prompt: String, choices: Array) -> void:
 	if choice_dialogue_overlay == null:
 		return
@@ -1804,6 +1843,17 @@ func _on_eye_radius_debug_changed(value: float) -> void:
 func _on_eye_height_debug_changed(value: float) -> void:
 	if eye_close_controller != null:
 		eye_close_controller.set_debug_slit_height_scale(value)
+
+
+func _on_anomaly_transition_duration_changed(value: float) -> void:
+	if scene_transition_fader != null:
+		scene_transition_fader.set_anomaly_fade_seconds(value)
+
+
+func _preview_anomaly_resolution_transition() -> void:
+	if not debug_ui_enabled or scene_transition_fader == null:
+		return
+	scene_transition_fader.play_anomaly_resolution()
 
 
 func _set_debug_mold_stage(stage: int) -> void:

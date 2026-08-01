@@ -1,0 +1,37 @@
+extends GdUnitTestSuite
+
+const SceneTransitionFader := preload("res://scripts/ui/scene_transition_fader.gd")
+
+
+func test_anomaly_transition_changes_state_only_after_screen_is_black() -> void:
+	var fader = auto_free(SceneTransitionFader.new())
+	add_child(fader)
+	fader.set_anomaly_fade_seconds(0.05)
+	fader.anomaly_hold_seconds = 0.01
+	var callback_state := {"alpha": -1.0}
+
+	fader.play_anomaly_resolution(func(): callback_state["alpha"] = fader.color.a)
+
+	assert_bool(fader.is_transitioning()).is_true()
+	assert_bool(fader.visible).is_true()
+	assert_int(fader.mouse_filter).is_equal(Control.MOUSE_FILTER_STOP)
+	await get_tree().create_timer(0.075, true, false, true).timeout
+	assert_float(float(callback_state["alpha"])).is_equal_approx(1.0, 0.001)
+	await get_tree().create_timer(0.08, true, false, true).timeout
+	assert_bool(fader.is_transitioning()).is_false()
+	assert_bool(fader.visible).is_false()
+	assert_int(fader.mouse_filter).is_equal(Control.MOUSE_FILTER_IGNORE)
+
+
+func test_default_anomaly_transition_has_balanced_readable_timing() -> void:
+	var fader = auto_free(SceneTransitionFader.new())
+
+	assert_int(fader.process_mode).is_equal(Node.PROCESS_MODE_ALWAYS)
+	assert_float(fader.anomaly_fade_out_seconds).is_equal(0.45)
+	assert_float(fader.anomaly_hold_seconds).is_equal(0.10)
+	assert_float(fader.anomaly_fade_in_seconds).is_equal(0.52)
+	assert_float(
+		fader.anomaly_fade_out_seconds
+		+ fader.anomaly_hold_seconds
+		+ fader.anomaly_fade_in_seconds
+	).is_between(0.9, 1.3)

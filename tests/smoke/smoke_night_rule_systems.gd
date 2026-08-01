@@ -105,8 +105,22 @@ func _run() -> void:
 		return
 	for _press in 3:
 		main._on_hotspot_pressed(desk_bell_hotspot)
+	if not main.anomaly_content_runtime.is_resolution_pending():
+		_fail("glass face did not wait for the disappearance transition")
+		return
+	if main.anomaly_content_runtime.current_event_id != "front_glass_face":
+		_fail("glass face disappeared before the screen was black")
+		return
+	if not main.anomaly_presentation_layer.is_rendering_artifact() or not main.scene_transition_fader.is_transitioning():
+		_fail("glass face was not preserved during fade-out")
+		return
+	main._on_anomaly_transition_duration_changed(0.05)
+	await create_timer(1.2).timeout
 	if not main.anomaly_content_runtime.current_event_id.is_empty():
-		_fail("second debug bell triple did not resolve the glass face")
+		_fail("glass face did not resolve at the black midpoint")
+		return
+	if main.scene_transition_fader.is_transitioning():
+		_fail("glass face disappearance transition did not finish")
 		return
 
 	var mold_preview_index := _find_anomaly_preview_index(main, main.MOLD_PIG_MASK_EVENT_ID)
@@ -346,8 +360,15 @@ func _run() -> void:
 		_fail("TV ghost did not switch to its hostile image during the hold")
 		return
 	main.anomaly_content_runtime.advance(2.0)
-	if not main.anomaly_content_runtime.current_event_id.is_empty():
-		_fail("TV ghost hold did not resolve")
+	if not main.anomaly_content_runtime.is_resolution_pending():
+		_fail("TV ghost did not wait for the disappearance transition")
+		return
+	if not main.anomaly_presentation_layer.is_rendering_artifact() or not main.scene_transition_fader.is_transitioning():
+		_fail("TV ghost disappeared before the screen was black")
+		return
+	await create_timer(0.40).timeout
+	if not main.anomaly_content_runtime.current_event_id.is_empty() or main.scene_transition_fader.is_transitioning():
+		_fail("TV ghost hold did not finish its disappearance transition")
 		return
 
 	main._start_day(7, false, false)

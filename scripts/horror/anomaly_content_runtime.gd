@@ -4,6 +4,7 @@ extends Node
 signal state_changed
 signal event_started(event_id: String)
 signal event_resolved(event_id: String)
+signal phenomenon_resolution_transition_requested(event_id: String)
 signal death_requested(event_id: String)
 signal sound_requested(cue_id: String)
 signal hold_started(mode: String, focus_position: Vector2)
@@ -48,6 +49,7 @@ var current_event_id := ""
 var current_state := "idle"
 var external_anomaly_active := false
 var lethal_outcomes_enabled := true
+var resolution_transition_enabled := false
 
 var _spawn_seconds := SPAWN_DELAY_SECONDS
 var _resolved_event_ids: Array[String] = []
@@ -76,6 +78,7 @@ var _hanging_girl_doll_taken := false
 var _hanging_girl_dialogue_open := false
 var _hanging_girl_fatal_pending := false
 var _hanging_girl_resolved_visible := false
+var _resolution_pending := false
 var _debug_force_pending := false
 var _rng := RandomNumberGenerator.new()
 var _random_seed_override := -1
@@ -101,6 +104,21 @@ func set_lethal_outcomes_enabled(value: bool) -> void:
 	lethal_outcomes_enabled = value
 
 
+func set_resolution_transition_enabled(value: bool) -> void:
+	resolution_transition_enabled = value
+
+
+func is_resolution_pending() -> bool:
+	return _resolution_pending
+
+
+func complete_pending_phenomenon_resolution() -> void:
+	if not _resolution_pending:
+		return
+	_resolution_pending = false
+	_finalize_current_resolution()
+
+
 func set_external_anomaly_active(value: bool) -> void:
 	external_anomaly_active = value
 
@@ -121,6 +139,7 @@ func start_day(day: int) -> void:
 	_hanging_girl_dialogue_open = false
 	_hanging_girl_fatal_pending = false
 	_hanging_girl_resolved_visible = false
+	_resolution_pending = false
 	_clear_event_state()
 	_reset_scheduler()
 	state_changed.emit()
@@ -141,6 +160,8 @@ func enter_scene(scene_id: String) -> void:
 
 func advance(delta: float) -> void:
 	if delta <= 0.0:
+		return
+	if _resolution_pending:
 		return
 	if hold_controller != null:
 		hold_controller.advance(delta)
@@ -297,7 +318,7 @@ func get_dynamic_hotspots(scene_id: String) -> Array:
 
 
 func handle_click(hotspot_id: String) -> bool:
-	if current_event_id.is_empty():
+	if current_event_id.is_empty() or _resolution_pending:
 		return false
 	if hotspot_id == "anomaly_pickup:hanging_girl_doll":
 		return _take_hanging_girl_doll()
@@ -316,6 +337,8 @@ func handle_click(hotspot_id: String) -> bool:
 func handle_world_hotspot(hotspot_id: String, scene_id: String) -> bool:
 	if hotspot_id != "desk_bell" or scene_id != "front_desk":
 		return false
+	if _resolution_pending:
+		return true
 	if current_event_id == SHADOW_EVENT_ID:
 		_press_shadow_bell()
 		return true
@@ -398,7 +421,7 @@ func finish_fatal_narrative() -> void:
 
 
 func begin_pointer_hold(hotspot_id: String, equipped_item_id: String, focus_position: Vector2) -> bool:
-	if current_event_id.is_empty() or not hotspot_id.begins_with("anomaly_hold:"):
+	if current_event_id.is_empty() or _resolution_pending or not hotspot_id.begins_with("anomaly_hold:"):
 		return false
 	var definition: Dictionary = definitions[current_event_id]
 	var required_item_id := String(definition.get("required_item_id", ""))
@@ -408,7 +431,7 @@ func begin_pointer_hold(hotspot_id: String, equipped_item_id: String, focus_posi
 
 
 func begin_item_hold(hotspot_id: String, equipped_item_id: String, focus_position: Vector2) -> bool:
-	if current_event_id.is_empty() or not hotspot_id.begins_with("anomaly_hold:"):
+	if current_event_id.is_empty() or _resolution_pending or not hotspot_id.begins_with("anomaly_hold:"):
 		return false
 	var definition: Dictionary = definitions[current_event_id]
 	var required_item_id := String(definition.get("required_item_id", ""))
@@ -424,6 +447,8 @@ func release_hold() -> void:
 
 
 func handle_curtain_toggled(scene_id: String, is_closed: bool) -> bool:
+	if _resolution_pending:
+		return true
 	if current_event_id != "bathroom_shower_legs" or scene_id != get_active_scene_id():
 		return false
 	if is_closed:
@@ -462,6 +487,7 @@ func notify_player_action(cue_id: String) -> void:
 func force_event(event_id: String) -> bool:
 	if not definitions.has(event_id):
 		return false
+	_resolution_pending = false
 	if not current_event_id.is_empty():
 		scheduler.fail_active(current_event_id)
 	_clear_event_state()
@@ -511,6 +537,7 @@ func export_state() -> Dictionary:
 
 
 func import_state(state: Dictionary) -> void:
+	_resolution_pending = false
 	current_day = maxi(int(state.get("current_day", current_day)), 1)
 	current_scene_id = String(state.get("current_scene_id", current_scene_id))
 	current_event_id = String(state.get("current_event_id", ""))
@@ -702,11 +729,13 @@ func _is_shadow_room_boundary(previous_scene_id: String, scene_id: String) -> bo
 func _close_surface(surface_id: String) -> void:
 	if not ContentCatalog.surface_rects().has(surface_id) or _closed_surfaces.has(surface_id):
 		return
+	if _closed_surfaces.size() + 1 >= ContentCatalog.surface_rects().size():
+		sound_requested.emit("baby_short_cry")
+		_resolve_current()
+		return
 	_closed_surfaces.append(surface_id)
 	sound_requested.emit("baby_short_cry")
 	state_changed.emit()
-	if _closed_surfaces.size() >= ContentCatalog.surface_rects().size():
-		_resolve_current()
 
 
 func _complete_mirror_transfer() -> void:
@@ -719,6 +748,19 @@ func _complete_mirror_transfer() -> void:
 
 
 func _resolve_current() -> void:
+	if current_event_id.is_empty():
+		return
+	if _resolution_pending:
+		return
+	var definition: Dictionary = definitions.get(current_event_id, {})
+	if resolution_transition_enabled and String(definition.get("type", "")) == ContentCatalog.TYPE_PHENOMENON:
+		_resolution_pending = true
+		phenomenon_resolution_transition_requested.emit(current_event_id)
+		return
+	_finalize_current_resolution()
+
+
+func _finalize_current_resolution() -> void:
 	if current_event_id.is_empty():
 		return
 	var resolved_id := current_event_id

@@ -43,6 +43,18 @@ func _run() -> void:
 	if main.debug_jumpscare_lab_button == null or main.jumpscare_lab == null:
 		_fail("jumpscare lab was not initialized")
 		return
+	if main.debug_anomaly_transition_button == null or main.anomaly_transition_duration_slider == null:
+		_fail("anomaly disappearance transition debug controls were not initialized")
+		return
+	main._on_anomaly_transition_duration_changed(0.05)
+	main._preview_anomaly_resolution_transition()
+	if not main.scene_transition_fader.is_transitioning() or not main.scene_transition_fader.visible:
+		_fail("anomaly disappearance transition preview did not start")
+		return
+	await create_timer(0.40).timeout
+	if main.scene_transition_fader.is_transitioning() or main.scene_transition_fader.visible:
+		_fail("anomaly disappearance transition preview did not finish")
+		return
 	main._open_jumpscare_lab()
 	if not main.jumpscare_lab.visible:
 		_fail("jumpscare lab did not open")
