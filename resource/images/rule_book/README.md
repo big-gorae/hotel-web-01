@@ -30,5 +30,8 @@ Keep important handwriting away from the outer edge of the image. The UI preserv
 - `rule_book_draft_01_clipboard.png`: yellowed sheet on a dark clipboard
 - `rule_book_draft_02_carbon_form.png`: cheap carbon-copy management form
 - `rule_book_draft_03_laminated_wall.png`: worn laminated sheet taped to a wall
+- `rule_book_draft_04_spiral_notebook.png`: worn spiral-bound shift notebook
+- `rule_book_draft_05_clothbound_shift_journal.png`: black clothbound shared shift journal
+- `rule_book_draft_06_pocket_memo.png`: improvised pocket memo pad
 
 The editable generation jobs live in `docs/image-prompts/rule-book-drafts.jsonl`. They use `gpt-image-1-mini` at low quality. Keep generated backgrounds free of readable text; after a direction is selected, composite the real localized Korean and English copy separately.
