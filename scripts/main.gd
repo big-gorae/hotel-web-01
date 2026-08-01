@@ -184,7 +184,9 @@ var hold_progress_overlay
 var choice_dialogue_overlay
 var anomaly_audio_controller
 var eye_radius_slider: HSlider
+var eye_radius_value_label: Label
 var eye_height_slider: HSlider
+var eye_height_value_label: Label
 var phone_bell_panel: PanelContainer
 var phone_bell_label: Label
 var system_message_panel: PanelContainer
@@ -547,12 +549,14 @@ func _build_ui() -> void:
 	eye_radius_slider = HSlider.new()
 	eye_radius_slider.min_value = 28.0
 	eye_radius_slider.max_value = 320.0
-	eye_radius_slider.step = 4.0
+	eye_radius_slider.step = 2.0
 	eye_radius_slider.value = 150.0
 	eye_radius_slider.custom_minimum_size = Vector2(96.0, 32.0)
 	eye_radius_slider.tooltip_text = _ui_text("debug.eyes.radius", "Closed-eye vision radius")
 	eye_radius_slider.value_changed.connect(_on_eye_radius_debug_changed)
 	tuning_row.add_child(eye_radius_slider)
+	eye_radius_value_label = _create_debug_numeric_value_label("%d" % roundi(eye_radius_slider.value))
+	tuning_row.add_child(eye_radius_value_label)
 
 	eye_height_slider = HSlider.new()
 	eye_height_slider.min_value = 0.24
@@ -563,6 +567,8 @@ func _build_ui() -> void:
 	eye_height_slider.tooltip_text = _ui_text("debug.eyes.height", "Closed-eye opening height")
 	eye_height_slider.value_changed.connect(_on_eye_height_debug_changed)
 	tuning_row.add_child(eye_height_slider)
+	eye_height_value_label = _create_debug_numeric_value_label("%.2f" % eye_height_slider.value)
+	tuning_row.add_child(eye_height_value_label)
 
 	debug_anomaly_transition_button = Button.new()
 	debug_anomaly_transition_button.text = _ui_text("debug.anomaly_transition.preview", "Fade preview")
@@ -1859,11 +1865,25 @@ func _trigger_game_over_event(event_id: String) -> void:
 func _on_eye_radius_debug_changed(value: float) -> void:
 	if eye_close_controller != null:
 		eye_close_controller.set_debug_vision_radius(value)
+	if eye_radius_value_label != null:
+		eye_radius_value_label.text = "%d" % roundi(value)
 
 
 func _on_eye_height_debug_changed(value: float) -> void:
 	if eye_close_controller != null:
 		eye_close_controller.set_debug_slit_height_scale(value)
+	if eye_height_value_label != null:
+		eye_height_value_label.text = "%.2f" % value
+
+
+func _create_debug_numeric_value_label(initial_text: String) -> Label:
+	var value_label := Label.new()
+	value_label.text = initial_text
+	value_label.custom_minimum_size = Vector2(48.0, 32.0)
+	value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	value_label.add_theme_font_size_override("font_size", 14)
+	value_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
+	return value_label
 
 
 func _on_anomaly_transition_duration_changed(value: float) -> void:

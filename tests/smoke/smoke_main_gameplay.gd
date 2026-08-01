@@ -43,6 +43,19 @@ func _run() -> void:
 	if main.debug_jumpscare_lab_button == null or main.jumpscare_lab == null:
 		_fail("jumpscare lab was not initialized")
 		return
+	if main.eye_radius_value_label == null or main.eye_radius_value_label.text != "150":
+		_fail("closed-eye vision radius did not show its initial numeric value")
+		return
+	if main.eye_height_value_label == null or main.eye_height_value_label.text != "0.40":
+		_fail("closed-eye opening height did not show its initial numeric value")
+		return
+	main.eye_radius_slider.value = 212.0
+	main.eye_height_slider.value = 0.56
+	if main.eye_radius_value_label.text != "212" or main.eye_height_value_label.text != "0.56":
+		_fail("closed-eye numeric values did not update with their sliders")
+		return
+	main.eye_radius_slider.value = 150.0
+	main.eye_height_slider.value = 0.40
 	if (
 		main.debug_anomaly_transition_button == null
 		or main.anomaly_transition_duration_slider == null
