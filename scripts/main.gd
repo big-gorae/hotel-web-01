@@ -534,7 +534,7 @@ func _build_ui() -> void:
 	eye_radius_slider.min_value = 28.0
 	eye_radius_slider.max_value = 320.0
 	eye_radius_slider.step = 2.0
-	eye_radius_slider.value = 150.0
+	eye_radius_slider.value = 100.0
 	eye_radius_slider.custom_minimum_size = Vector2(96.0, 32.0)
 	eye_radius_slider.tooltip_text = _ui_text("debug.eyes.radius", "Closed-eye vision radius")
 	eye_radius_slider.value_changed.connect(_on_eye_radius_debug_changed)
@@ -546,7 +546,7 @@ func _build_ui() -> void:
 	eye_height_slider.min_value = 0.24
 	eye_height_slider.max_value = 0.64
 	eye_height_slider.step = 0.02
-	eye_height_slider.value = 0.40
+	eye_height_slider.value = 0.50
 	eye_height_slider.custom_minimum_size = Vector2(96.0, 32.0)
 	eye_height_slider.tooltip_text = _ui_text("debug.eyes.height", "Closed-eye opening height")
 	eye_height_slider.value_changed.connect(_on_eye_height_debug_changed)

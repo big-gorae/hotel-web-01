@@ -70,10 +70,10 @@ func _run() -> void:
 		return
 	main.debug_tab_container.current_tab = 0
 	await process_frame
-	if main.eye_radius_value_label == null or main.eye_radius_value_label.text != "150":
+	if main.eye_radius_value_label == null or main.eye_radius_value_label.text != "100":
 		_fail("closed-eye vision radius did not show its initial numeric value")
 		return
-	if main.eye_height_value_label == null or main.eye_height_value_label.text != "0.40":
+	if main.eye_height_value_label == null or main.eye_height_value_label.text != "0.50":
 		_fail("closed-eye opening height did not show its initial numeric value")
 		return
 	main.eye_radius_slider.value = 212.0
@@ -81,8 +81,8 @@ func _run() -> void:
 	if main.eye_radius_value_label.text != "212" or main.eye_height_value_label.text != "0.56":
 		_fail("closed-eye numeric values did not update with their sliders")
 		return
-	main.eye_radius_slider.value = 150.0
-	main.eye_height_slider.value = 0.40
+	main.eye_radius_slider.value = 100.0
+	main.eye_height_slider.value = 0.50
 	if (
 		main.debug_anomaly_transition_button == null
 		or main.anomaly_transition_duration_slider == null

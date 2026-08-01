@@ -1,10 +1,10 @@
 class_name HotelEyeCloseProfile
 extends RefCounted
 
-var vision_radius := 150.0
+var vision_radius := 100.0
 var anomaly_vision_radius := 96.0
 var song_vision_radius := 44.0
-var slit_height_scale := 0.40
+var slit_height_scale := 0.50
 var feather_width := 42.0
 var visible_brightness := 0.36
 var heartbeat_stream: AudioStream

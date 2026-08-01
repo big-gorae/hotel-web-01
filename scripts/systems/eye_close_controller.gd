@@ -192,8 +192,8 @@ shader_type canvas_item;
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 uniform vec2 viewport_size = vec2(1280.0, 720.0);
 uniform vec2 focus_position = vec2(640.0, 360.0);
-uniform float radius = 150.0;
-uniform float slit_height_scale = 0.40;
+uniform float radius = 100.0;
+uniform float slit_height_scale = 0.50;
 uniform float feather = 42.0;
 uniform float visible_brightness = 0.36;
 
