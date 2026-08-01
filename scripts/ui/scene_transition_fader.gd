@@ -7,9 +7,11 @@ signal transition_finished
 const DEFAULT_FADE_OUT_SECONDS := 0.11
 const DEFAULT_HOLD_SECONDS := 0.035
 const DEFAULT_FADE_IN_SECONDS := 0.14
-const DEFAULT_ANOMALY_FADE_OUT_SECONDS := 0.45
-const DEFAULT_ANOMALY_HOLD_SECONDS := 0.10
-const DEFAULT_ANOMALY_FADE_IN_SECONDS := 0.52
+const DEFAULT_ANOMALY_FADE_OUT_SECONDS := 0.49
+const DEFAULT_ANOMALY_HOLD_SECONDS := 0.02
+const DEFAULT_ANOMALY_FADE_IN_SECONDS := 0.56
+const ANOMALY_FADE_IN_RATIO := DEFAULT_ANOMALY_FADE_IN_SECONDS / DEFAULT_ANOMALY_FADE_OUT_SECONDS
+const PERCEPTUAL_GAMMA := 2.2
 
 var active_tween: Tween
 var transitioning := false
@@ -42,13 +44,14 @@ func play_anomaly_resolution(resolution_callback := Callable()) -> void:
 		anomaly_fade_in_seconds,
 		Tween.EASE_IN_OUT,
 		Tween.EASE_IN_OUT,
+		true,
 	)
 
 
 func set_anomaly_fade_seconds(fade_seconds: float) -> void:
 	var safe_seconds := clampf(fade_seconds, 0.0, 1.50)
 	anomaly_fade_out_seconds = safe_seconds
-	anomaly_fade_in_seconds = safe_seconds * 1.15
+	anomaly_fade_in_seconds = safe_seconds * ANOMALY_FADE_IN_RATIO
 
 
 func _play_transition(
@@ -58,6 +61,7 @@ func _play_transition(
 	fade_in_seconds: float,
 	fade_out_ease := Tween.EASE_OUT,
 	fade_in_ease := Tween.EASE_IN,
+	use_perceptual_fade := false,
 ) -> void:
 	if transitioning:
 		return
@@ -73,13 +77,28 @@ func _play_transition(
 
 	active_tween = create_tween()
 	active_tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
-	active_tween.tween_property(self, "color:a", 1.0, maxf(fade_out_seconds, 0.01)).set_trans(Tween.TRANS_SINE).set_ease(fade_out_ease)
+	_append_fade(0.0, 1.0, fade_out_seconds, fade_out_ease, use_perceptual_fade)
 	active_tween.tween_callback(_emit_screen_covered)
 	if scene_change_callback.is_valid():
 		active_tween.tween_callback(scene_change_callback)
 	active_tween.tween_interval(maxf(hold_seconds, 0.0))
-	active_tween.tween_property(self, "color:a", 0.0, maxf(fade_in_seconds, 0.01)).set_trans(Tween.TRANS_SINE).set_ease(fade_in_ease)
+	_append_fade(1.0, 0.0, fade_in_seconds, fade_in_ease, use_perceptual_fade)
 	active_tween.tween_callback(_finish_transition)
+
+
+func _append_fade(from_darkness: float, to_darkness: float, duration: float, ease: Tween.EaseType, use_perceptual_fade: bool) -> void:
+	var safe_duration := maxf(duration, 0.01)
+	if use_perceptual_fade:
+		active_tween.tween_method(_set_perceptual_darkness, from_darkness, to_darkness, safe_duration)
+		return
+	active_tween.tween_property(self, "color:a", to_darkness, safe_duration).set_trans(Tween.TRANS_SINE).set_ease(ease)
+
+
+func _set_perceptual_darkness(darkness: float) -> void:
+	var progress := clampf(darkness, 0.0, 1.0)
+	var smoothed := progress * progress * progress * (progress * (progress * 6.0 - 15.0) + 10.0)
+	var alpha := 1.0 - pow(1.0 - smoothed, PERCEPTUAL_GAMMA)
+	color = Color(0.0, 0.0, 0.0, alpha)
 
 
 func _emit_screen_covered() -> void:
