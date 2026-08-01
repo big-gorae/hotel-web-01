@@ -35,3 +35,12 @@ func test_default_anomaly_transition_has_balanced_readable_timing() -> void:
 		+ fader.anomaly_hold_seconds
 		+ fader.anomaly_fade_in_seconds
 	).is_between(0.9, 1.3)
+
+
+func test_anomaly_transition_accepts_zero_fade_seconds() -> void:
+	var fader = auto_free(SceneTransitionFader.new())
+
+	fader.set_anomaly_fade_seconds(0.0)
+
+	assert_float(fader.anomaly_fade_out_seconds).is_equal(0.0)
+	assert_float(fader.anomaly_fade_in_seconds).is_equal(0.0)

@@ -46,7 +46,7 @@ func play_anomaly_resolution(resolution_callback := Callable()) -> void:
 
 
 func set_anomaly_fade_seconds(fade_seconds: float) -> void:
-	var safe_seconds := clampf(fade_seconds, 0.05, 1.50)
+	var safe_seconds := clampf(fade_seconds, 0.0, 1.50)
 	anomaly_fade_out_seconds = safe_seconds
 	anomaly_fade_in_seconds = safe_seconds * 1.15
 

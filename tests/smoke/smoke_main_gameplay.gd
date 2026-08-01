@@ -91,6 +91,9 @@ func _run() -> void:
 	if main.anomaly_transition_duration_value_label.text != "암전 0.45초 / 전체 1.07초":
 		_fail("anomaly transition duration did not show its initial numeric timing")
 		return
+	if main.anomaly_transition_duration_slider.min_value != 0.0:
+		_fail("anomaly transition duration slider did not allow zero seconds")
+		return
 	main._on_anomaly_transition_duration_changed(0.50)
 	if main.anomaly_transition_duration_value_label.text != "암전 0.50초 / 전체 1.18초":
 		_fail(
@@ -98,7 +101,14 @@ func _run() -> void:
 			% main.anomaly_transition_duration_value_label.text
 		)
 		return
-	main._on_anomaly_transition_duration_changed(0.05)
+	main.anomaly_transition_duration_slider.value = 0.0
+	if (
+		main.scene_transition_fader.anomaly_fade_out_seconds != 0.0
+		or main.scene_transition_fader.anomaly_fade_in_seconds != 0.0
+		or main.anomaly_transition_duration_value_label.text != "암전 0.00초 / 전체 0.10초"
+	):
+		_fail("zero-second anomaly transition duration was not applied")
+		return
 	main._preview_anomaly_resolution_transition()
 	if not main.scene_transition_fader.is_transitioning() or not main.scene_transition_fader.visible:
 		_fail("anomaly disappearance transition preview did not start")

@@ -589,7 +589,7 @@ func _build_ui() -> void:
 	presentation_tab.add_child(debug_anomaly_transition_button)
 
 	anomaly_transition_duration_slider = HSlider.new()
-	anomaly_transition_duration_slider.min_value = 0.25
+	anomaly_transition_duration_slider.min_value = 0.0
 	anomaly_transition_duration_slider.max_value = 0.90
 	anomaly_transition_duration_slider.step = 0.05
 	anomaly_transition_duration_slider.value = HotelSceneTransitionFaderScript.DEFAULT_ANOMALY_FADE_OUT_SECONDS
