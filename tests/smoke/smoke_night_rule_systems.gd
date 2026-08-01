@@ -371,6 +371,37 @@ func _run() -> void:
 		_fail("TV ghost hold did not finish its disappearance transition")
 		return
 
+	main.anomaly_content_runtime.force_event("room_106_horrific_mirror")
+	main.show_scene("room_106_bathroom", false)
+	var small_mirror = _find_inventory_item(main, "small_mirror")
+	main.inventory_model.equip_item(small_mirror)
+	var mirror_hotspots: Array = main.anomaly_content_runtime.get_dynamic_hotspots("room_106_bathroom")
+	if mirror_hotspots.size() != 1:
+		_fail("horrific mirror did not expose its full-mirror hold hotspot")
+		return
+	main._on_anomaly_hotspot_button_down(mirror_hotspots[0])
+	if not main.hold_progress_overlay.is_showing_hold():
+		_fail("holding the horrific mirror with the small mirror did not show circular progress")
+		return
+	main.anomaly_content_runtime.advance(4.0)
+	if (
+		main.inventory_model.has_item_id("small_mirror")
+		or not main.inventory_model.has_item_id("hell_mirror")
+		or String(main.inventory_model.equipped_item.id) != "hell_mirror"
+	):
+		_fail("horrific mirror hold did not transfer into the equipped small mirror")
+		return
+	await create_timer(0.40).timeout
+	if not main.anomaly_content_runtime.current_event_id.is_empty():
+		_fail("horrific mirror did not resolve after the disappearance transition")
+		return
+	if not main.system_message_panel.visible or main.system_message_label.text != main.localization.translate(
+		"horror.room_106_horrific_mirror.transferred"
+	):
+		_fail("horrific mirror transfer did not show its authored contamination warning")
+		return
+	main.system_message_panel.visible = false
+
 	main._start_day(7, false, false)
 	await process_frame
 	_finish_story(main)
@@ -388,7 +419,8 @@ func _run() -> void:
 		_fail("day seven Room 109 passage did not complete after the footsteps")
 		return
 
-	main.inventory_model.add_item_by_id("hell_mirror")
+	if not main.inventory_model.has_item_id("hell_mirror"):
+		main.inventory_model.add_item_by_id("hell_mirror")
 	main.inventory_model.equip_item_by_id("hell_mirror")
 	main.show_scene("laundry_room", false)
 	main.system_message_panel.visible = false

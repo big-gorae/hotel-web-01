@@ -7,6 +7,7 @@ signal event_resolved(event_id: String)
 signal phenomenon_resolution_transition_requested(event_id: String)
 signal death_requested(event_id: String)
 signal sound_requested(cue_id: String)
+signal dialogue_requested(message_key: String, fallback_message: String)
 signal hold_started(mode: String, focus_position: Vector2)
 signal hold_progress_changed(progress: float)
 signal hold_ended
@@ -771,6 +772,11 @@ func _finalize_current_resolution() -> void:
 	scheduler.complete_active(resolved_id, INTER_EVENT_COOLDOWN_SECONDS)
 	current_event_id = ""
 	_spawn_seconds = SPAWN_DELAY_SECONDS
+	if resolved_id == "room_106_horrific_mirror":
+		dialogue_requested.emit(
+			"horror.room_106_horrific_mirror.transferred",
+			"The horrific image moved into the small mirror. You can hear souls screaming while you hold it.",
+		)
 	event_resolved.emit(resolved_id)
 	state_changed.emit()
 

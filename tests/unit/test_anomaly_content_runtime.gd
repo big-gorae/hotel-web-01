@@ -167,10 +167,15 @@ func test_empty_shower_curtain_resolves_on_first_opening() -> void:
 
 func test_horrific_mirror_moves_into_small_mirror_and_auto_equips() -> void:
 	var inventory := InventoryModel.new()
+	var dialogue_requests: Array[Array] = []
 	ItemCatalog.register_defaults(inventory)
 	inventory.add_item_by_id("small_mirror")
 	inventory.equip_item_by_id("small_mirror")
 	var runtime = auto_free(ContentRuntime.new())
+	runtime.dialogue_requested.connect(
+		func(message_key: String, fallback_message: String) -> void:
+			dialogue_requests.append([message_key, fallback_message])
+	)
 	add_child(runtime)
 	runtime.setup(inventory, null)
 	runtime.force_event("room_106_horrific_mirror")
@@ -182,6 +187,8 @@ func test_horrific_mirror_moves_into_small_mirror_and_auto_equips() -> void:
 	assert_bool(inventory.has_item_id("small_mirror")).is_false()
 	assert_bool(inventory.has_item_id("hell_mirror")).is_true()
 	assert_str(String(inventory.equipped_item.id)).is_equal("hell_mirror")
+	assert_array(dialogue_requests).has_size(1)
+	assert_str(String(dialogue_requests[0][0])).is_equal("horror.room_106_horrific_mirror.transferred")
 
 
 func test_tv_changes_to_hostile_state_during_hold_then_resolves() -> void:

@@ -761,6 +761,7 @@ func _build_anomaly_runtime() -> void:
 	anomaly_content_runtime.choice_requested.connect(_on_content_choice_requested)
 	anomaly_content_runtime.choice_closed.connect(_on_content_choice_closed)
 	anomaly_content_runtime.fatal_narrative_requested.connect(_on_content_fatal_narrative_requested)
+	anomaly_content_runtime.dialogue_requested.connect(_on_content_dialogue_requested)
 	anomaly_content_runtime.hold_started.connect(_on_anomaly_hold_started)
 	anomaly_content_runtime.hold_progress_changed.connect(_on_anomaly_hold_progress_changed)
 	anomaly_content_runtime.hold_ended.connect(_on_anomaly_hold_ended)
@@ -1270,11 +1271,16 @@ func _try_dispose_equipped_hell_mirror(hotspot_id: String) -> bool:
 func _on_anomaly_hotspot_button_down(hotspot: Dictionary) -> void:
 	if anomaly_content_runtime == null:
 		return
-	if String(hotspot.get("anomaly_input", "")) == "item_hold":
-		return
 	var item_id := ""
 	if inventory_model != null and inventory_model.equipped_item != null:
 		item_id = String(inventory_model.equipped_item.id)
+	if String(hotspot.get("anomaly_input", "")) == "item_hold":
+		anomaly_content_runtime.begin_item_hold(
+			String(hotspot.get("id", "")),
+			item_id,
+			get_viewport().get_mouse_position()
+		)
+		return
 	anomaly_content_runtime.begin_pointer_hold(
 		String(hotspot.get("id", "")),
 		item_id,
@@ -1755,6 +1761,10 @@ func _on_content_fatal_narrative_requested(raw_lines: Array) -> void:
 			String(raw_line.get("fallback", "")),
 		))
 	choice_dialogue_overlay.show_narrative(localized_lines, 0.34)
+
+
+func _on_content_dialogue_requested(message_key: String, fallback_message: String) -> void:
+	_show_system_message(localization.translate(message_key, fallback_message))
 
 
 func _on_content_fatal_narrative_finished() -> void:
