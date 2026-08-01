@@ -75,8 +75,38 @@ func _run() -> void:
 		return
 	main.anomaly_content_runtime.force_event("room_109_open_door")
 	main._on_content_anomaly_state_changed()
-	if _find_dynamic_or_editor_hotspot(main, "room_109_open_door").is_empty() or not main.room_109_overlay.visible:
+	if _find_dynamic_or_editor_hotspot(main, "room_109_open_door").is_empty():
 		_fail("forced Room 109 entity was not visible on day three")
+		return
+	if main.room_109_overlay.visible:
+		_fail("forced Room 109 rendered both the authored image and procedural door")
+		return
+	if not main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("forced Room 109 authored open-door image was not rendered")
+		return
+
+	var glass_preview_index := _find_anomaly_preview_index(main, "front_glass_face")
+	if glass_preview_index < 0:
+		_fail("front glass face was missing from the debug selector")
+		return
+	main._on_debug_anomaly_selected(glass_preview_index)
+	await process_frame
+	if main.current_scene_id != "front_desk" or main.anomaly_content_runtime.current_event_id != "front_glass_face":
+		_fail("front glass face debug preview did not open at the front desk")
+		return
+	var desk_bell_hotspot := _find_dynamic_or_editor_hotspot(main, "desk_bell")
+	if desk_bell_hotspot.is_empty():
+		_fail("front glass face debug preview could not use the real desk bell")
+		return
+	for _press in 3:
+		main._on_hotspot_pressed(desk_bell_hotspot)
+	if main.anomaly_content_runtime.current_state != "hostile":
+		_fail("first debug bell triple did not reveal the hostile glass face")
+		return
+	for _press in 3:
+		main._on_hotspot_pressed(desk_bell_hotspot)
+	if not main.anomaly_content_runtime.current_event_id.is_empty():
+		_fail("second debug bell triple did not resolve the glass face")
 		return
 
 	var mold_preview_index := _find_anomaly_preview_index(main, main.MOLD_PIG_MASK_EVENT_ID)

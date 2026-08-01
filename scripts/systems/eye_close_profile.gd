@@ -4,6 +4,7 @@ extends RefCounted
 var vision_radius := 150.0
 var anomaly_vision_radius := 96.0
 var song_vision_radius := 44.0
+var slit_height_scale := 0.40
 var feather_width := 42.0
 var visible_brightness := 0.36
 var heartbeat_stream: AudioStream
@@ -19,6 +20,7 @@ func copy():
 	profile.vision_radius = vision_radius
 	profile.anomaly_vision_radius = anomaly_vision_radius
 	profile.song_vision_radius = song_vision_radius
+	profile.slit_height_scale = slit_height_scale
 	profile.feather_width = feather_width
 	profile.visible_brightness = visible_brightness
 	profile.heartbeat_stream = heartbeat_stream

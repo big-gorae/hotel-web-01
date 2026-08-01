@@ -144,6 +144,35 @@ func _run() -> void:
 		_fail("day one rule page did not show exactly its three new rules")
 		return
 	main._hide_menu()
+	if main.eye_radius_slider == null or main.eye_height_slider == null:
+		_fail("closed-eye radius and height debug controls were not initialized")
+		return
+	main._on_eye_radius_debug_changed(188.0)
+	main._on_eye_height_debug_changed(0.52)
+	if main.eye_close_controller.get_effective_vision_radius() != 188.0:
+		_fail("closed-eye radius debug control did not reach the controller")
+		return
+	if main.eye_close_controller.get_effective_slit_height_scale() != 0.52:
+		_fail("closed-eye height debug control did not reach the controller")
+		return
+	var front_door_button_index := -1
+	var desk_bell_button_index := -1
+	for button_index in main.hotspot_buttons.size():
+		var ordered_hotspot: Dictionary = main.hotspot_buttons[button_index].get_meta("hotspot")
+		match String(ordered_hotspot.get("id", "")):
+			"front_door":
+				front_door_button_index = button_index
+			"desk_bell":
+				desk_bell_button_index = button_index
+	if desk_bell_button_index <= front_door_button_index:
+		_fail("small desk-bell hotspot was still covered by the front-door hotspot")
+		return
+	var desk_bell_hotspot: Dictionary = main.hotspot_buttons[desk_bell_button_index].get_meta("hotspot")
+	main._hide_transient_dialogue()
+	main._on_hotspot_pressed(desk_bell_hotspot)
+	if main.transient_dialogue_panel.visible:
+		_fail("ordinary desk-bell use opened an explanatory popup")
+		return
 	main.show_scene("corridor")
 	if not main.scene_transition_fader.is_transitioning():
 		_fail("scene transition fader did not start")

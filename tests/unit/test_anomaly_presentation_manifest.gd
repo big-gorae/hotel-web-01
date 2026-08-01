@@ -67,6 +67,7 @@ func test_all_mvp_manifests_match_their_real_source_and_artifact_files() -> void
 		"bathroom_shower_legs_room_108.json",
 		"front_monitor_ghost.json",
 		"front_glass_face.json",
+		"room_109_open_door.json",
 	]:
 		var result := Manifest.load_and_validate(
 			"res://resource/anomaly_manifests/%s" % filename,

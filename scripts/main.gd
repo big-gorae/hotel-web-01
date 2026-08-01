@@ -181,6 +181,7 @@ var hold_progress_overlay
 var choice_dialogue_overlay
 var anomaly_audio_controller
 var eye_radius_slider: HSlider
+var eye_height_slider: HSlider
 var phone_bell_panel: PanelContainer
 var phone_bell_label: Label
 var system_message_panel: PanelContainer
@@ -549,6 +550,16 @@ func _build_ui() -> void:
 	eye_radius_slider.tooltip_text = _ui_text("debug.eyes.radius", "Closed-eye vision radius")
 	eye_radius_slider.value_changed.connect(_on_eye_radius_debug_changed)
 	tuning_row.add_child(eye_radius_slider)
+
+	eye_height_slider = HSlider.new()
+	eye_height_slider.min_value = 0.24
+	eye_height_slider.max_value = 0.64
+	eye_height_slider.step = 0.02
+	eye_height_slider.value = 0.40
+	eye_height_slider.custom_minimum_size = Vector2(96.0, 32.0)
+	eye_height_slider.tooltip_text = _ui_text("debug.eyes.height", "Closed-eye opening height")
+	eye_height_slider.value_changed.connect(_on_eye_height_debug_changed)
+	tuning_row.add_child(eye_height_slider)
 
 	phone_bell_panel = PanelContainer.new()
 	phone_bell_panel.visible = false
@@ -1065,7 +1076,9 @@ func _build_hotspots(hotspots: Array) -> void:
 		button.queue_free()
 	hotspot_buttons.clear()
 
-	for hotspot in hotspots:
+	var ordered_hotspots := hotspots.duplicate(true)
+	ordered_hotspots.sort_custom(_sort_hotspots_largest_first)
+	for hotspot in ordered_hotspots:
 		var label := _hotspot_text(hotspot, "label")
 		var button := Button.new()
 		button.text = label
@@ -1083,6 +1096,12 @@ func _build_hotspots(hotspots: Array) -> void:
 		hotspot_buttons.append(button)
 
 	_apply_hotspot_display()
+
+
+func _sort_hotspots_largest_first(left: Dictionary, right: Dictionary) -> bool:
+	var left_rect: Rect2 = left.get("rect", Rect2())
+	var right_rect: Rect2 = right.get("rect", Rect2())
+	return left_rect.size.x * left_rect.size.y > right_rect.size.x * right_rect.size.y
 
 
 func _build_navigation(exits: Array) -> void:
@@ -1156,6 +1175,10 @@ func _on_hotspot_pressed(hotspot: Dictionary) -> void:
 		anomaly_content_runtime != null
 		and anomaly_content_runtime.handle_world_hotspot(hotspot_id, current_scene_id)
 	):
+		return
+	if hotspot_id == "desk_bell" and current_scene_id == "front_desk":
+		if anomaly_audio_controller != null:
+			anomaly_audio_controller.play_cue("desk_bell")
 		return
 	if shower_curtain_state != null and hotspot_id == HotelShowerCurtainStateScript.HOTSPOT_ID:
 		_toggle_shower_curtain()
@@ -1626,6 +1649,11 @@ func _sync_anomaly_visual_overlay() -> void:
 		}
 	elif anomaly_content_runtime != null and anomaly_content_runtime.has_active_anomaly():
 		presentation_state = anomaly_content_runtime.get_presentation_state()
+	elif (
+		anomaly_content_runtime != null
+		and anomaly_content_runtime.has_lingering_hanging_girl(current_scene_id)
+	):
+		presentation_state = anomaly_content_runtime.get_lingering_hanging_girl_presentation_state()
 	elif night_anomaly_director != null:
 		presentation_state = night_anomaly_director.get_presentation_state()
 	anomaly_visual_overlay.apply_presentation_state(presentation_state)
@@ -1773,6 +1801,11 @@ func _on_eye_radius_debug_changed(value: float) -> void:
 		eye_close_controller.set_debug_vision_radius(value)
 
 
+func _on_eye_height_debug_changed(value: float) -> void:
+	if eye_close_controller != null:
+		eye_close_controller.set_debug_slit_height_scale(value)
+
+
 func _set_debug_mold_stage(stage: int) -> void:
 	var safe_stage := clampi(stage, 1, HotelMoldGrowthSystemScript.MAX_STACK)
 	if mold_growth_system != null:
@@ -1812,9 +1845,6 @@ func _position_runtime_status() -> void:
 func _sync_room_109_display() -> void:
 	if room_109_overlay == null or day_save_manager == null:
 		return
-	var content_event_id := ""
-	if anomaly_content_runtime != null:
-		content_event_id = anomaly_content_runtime.current_event_id
 	var day_seven_passage_active: bool = (
 		night_anomaly_director != null
 		and night_anomaly_director.room_109_passage_state in [
@@ -1825,7 +1855,7 @@ func _sync_room_109_display() -> void:
 	room_109_overlay.visible = (
 		game_started
 		and current_scene_id == "corridor"
-		and (content_event_id == "room_109_open_door" or day_seven_passage_active)
+		and day_seven_passage_active
 	)
 	if room_109_overlay.visible and current_texture != null:
 		room_109_overlay.set_photo_rect(_get_photo_draw_rect())

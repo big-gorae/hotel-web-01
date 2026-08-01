@@ -11,6 +11,7 @@ const EyeCloseProfile := preload("res://scripts/systems/eye_close_profile.gd")
 var profile = EyeCloseProfile.new()
 var anomaly_context := false
 var debug_radius_override := -1.0
+var debug_slit_height_scale_override := -1.0
 
 var _closed := false
 var _song_active := false
@@ -160,6 +161,17 @@ func set_debug_vision_radius(radius: float) -> void:
 	_update_mask_uniforms()
 
 
+func set_debug_slit_height_scale(scale: float) -> void:
+	debug_slit_height_scale_override = scale if scale > 0.0 else -1.0
+	_update_mask_uniforms()
+
+
+func get_effective_slit_height_scale() -> float:
+	if debug_slit_height_scale_override > 0.0:
+		return debug_slit_height_scale_override
+	return profile.slit_height_scale
+
+
 func get_effective_vision_radius() -> float:
 	if debug_radius_override > 0.0:
 		return debug_radius_override
@@ -181,6 +193,7 @@ uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 uniform vec2 viewport_size = vec2(1280.0, 720.0);
 uniform vec2 focus_position = vec2(640.0, 360.0);
 uniform float radius = 150.0;
+uniform float slit_height_scale = 0.40;
 uniform float feather = 42.0;
 uniform float visible_brightness = 0.36;
 
@@ -188,11 +201,15 @@ void fragment() {
 	vec2 pixel = UV * viewport_size;
 	vec2 slit_position = pixel - focus_position;
 	float slit_half_width = max(radius * 2.10, 1.0);
-	float slit_half_height = max(radius * 0.34, 1.0);
+	float slit_half_height = max(radius * slit_height_scale, 1.0);
 	float normalized_x = abs(slit_position.x) / slit_half_width;
 	float lid_curve = pow(max(1.0 - normalized_x * normalized_x, 0.0), 0.72);
 	float opening_at_x = slit_half_height * lid_curve;
-	float vertical_edge = abs(slit_position.y) - opening_at_x;
+	float upper_opening = opening_at_x * 1.15;
+	float lower_opening = opening_at_x * 0.95;
+	float vertical_edge = slit_position.y < 0.0
+		? -slit_position.y - upper_opening
+		: slit_position.y - lower_opening;
 	float horizontal_edge = abs(slit_position.x) - slit_half_width;
 	float slit_distance = max(vertical_edge, horizontal_edge);
 	float darkness = smoothstep(-feather * 0.42, feather * 0.58, slit_distance);
@@ -266,6 +283,7 @@ func _update_mask_uniforms() -> void:
 	_mask_material.set_shader_parameter("viewport_size", viewport_size)
 	_mask_material.set_shader_parameter("focus_position", get_viewport().get_mouse_position())
 	_mask_material.set_shader_parameter("radius", get_effective_vision_radius())
+	_mask_material.set_shader_parameter("slit_height_scale", get_effective_slit_height_scale())
 	_mask_material.set_shader_parameter("feather", profile.feather_width)
 	_mask_material.set_shader_parameter("visible_brightness", clampf(profile.visible_brightness, 0.0, 1.0))
 

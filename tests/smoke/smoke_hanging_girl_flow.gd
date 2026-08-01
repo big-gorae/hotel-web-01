@@ -110,6 +110,18 @@ func _run() -> void:
 	if main.transient_dialogue_panel.visible:
 		_fail("giving Walter opened an explanatory popup")
 		return
+	if not main.anomaly_content_runtime.has_lingering_hanging_girl("room_107_bed_nightstand"):
+		_fail("hanging girl did not remain in Room 107 for the rest of the day")
+		return
+	if not main.anomaly_presentation_layer.visible or not main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("resolved hanging girl was not still rendered in Room 107")
+		return
+	main.show_scene("corridor", false)
+	main.show_scene("room_107_bed_nightstand", false)
+	await process_frame
+	if not main.anomaly_presentation_layer.visible or not main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("hanging girl disappeared after leaving and returning during the same day")
+		return
 
 	main.anomaly_content_runtime.force_event("room_107_hanging_girl")
 	main.anomaly_content_runtime.advance(

@@ -50,6 +50,7 @@ func test_eye_close_profile_can_be_injected_and_song_uses_narrow_radius() -> voi
 	profile.vision_radius = 180.0
 	profile.anomaly_vision_radius = 82.0
 	profile.song_vision_radius = 36.0
+	profile.slit_height_scale = 0.46
 	eyes.apply_profile(profile)
 
 	eyes.set_anomaly_context(true)
@@ -61,6 +62,9 @@ func test_eye_close_profile_can_be_injected_and_song_uses_narrow_radius() -> voi
 
 	eyes.set_debug_vision_radius(120.0)
 	assert_that(eyes.get_effective_vision_radius()).is_equal(120.0)
+	assert_float(eyes.get_effective_slit_height_scale()).is_equal(0.46)
+	eyes.set_debug_slit_height_scale(0.58)
+	assert_float(eyes.get_effective_slit_height_scale()).is_equal(0.58)
 	eyes.open_eyes()
 	assert_that(eyes.is_closed()).is_false()
 
@@ -74,6 +78,9 @@ func test_default_eye_radius_is_preserved_and_visible_area_uses_clean_squint_sha
 	assert_that(eyes._mask_material.shader.code).not_contains("vhs_apply_signal")
 	assert_that(eyes._mask_material.shader.code).contains("slit_half_width")
 	assert_that(eyes._mask_material.shader.code).contains("lid_curve")
+	assert_float(eyes.profile.slit_height_scale).is_equal(0.40)
+	assert_that(eyes._mask_material.shader.code).contains("upper_opening")
+	assert_that(eyes._mask_material.shader.code).contains("slit_height_scale")
 	assert_that(eyes._mask_material.shader.code).not_contains("distance(pixel, focus_position)")
 	assert_that(eyes.profile.visible_brightness).is_equal(0.36)
 	assert_that(eyes._mask_material.shader.code).contains("visible_color *= visible_brightness")

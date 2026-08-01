@@ -34,3 +34,9 @@
 - Avoid “짜치는” presentation: unnecessary UI interruptions, redundant narration, forced transitions, celebratory confirmations, or synthetic effects that weaken the intended atmosphere.
 - Prefer restrained in-world, audio, animation, and persistent-state feedback. Add a modal or explanatory message only when the user explicitly requests it or the interaction would otherwise be genuinely unreadable.
 - Preserve authored diegetic dialogue, meaningful choices, and explicitly designed horror or death sequences; these are not routine action explanations.
+
+## Korean And English Localization
+
+- Add or update Korean and English together whenever player-facing text or a localization key changes.
+- Keep Korean and English key coverage identical. Never rely on English fallback text in Korean mode or Korean fallback text in English mode.
+- For catalog-driven game-over screens, verify every title and description key exists in both languages in the same change.

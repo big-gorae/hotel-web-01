@@ -51,15 +51,16 @@ func test_glass_face_requires_two_fast_triples() -> void:
 	var runtime = auto_free(ContentRuntime.new())
 	add_child(runtime)
 	runtime.force_event("front_glass_face")
-	var hotspot_id := String(runtime.get_dynamic_hotspots("front_desk")[0]["id"])
+	assert_array(runtime.get_dynamic_hotspots("front_desk")).is_empty()
 
 	for _index in 3:
-		runtime.handle_click(hotspot_id)
+		assert_bool(runtime.handle_world_hotspot("desk_bell", "front_desk")).is_true()
 	assert_str(runtime.current_state).is_equal("hostile")
 	for _index in 3:
-		runtime.handle_click(hotspot_id)
+		runtime.handle_world_hotspot("desk_bell", "front_desk")
 
 	assert_str(runtime.current_event_id).is_empty()
+	assert_bool(runtime.handle_world_hotspot("desk_bell", "front_desk")).is_false()
 
 
 func test_baby_wallpaper_closes_five_large_surfaces() -> void:
@@ -336,6 +337,17 @@ func test_hanging_girl_doll_unlocks_only_survival_choice_and_is_consumed() -> vo
 
 	assert_str(runtime.current_event_id).is_empty()
 	assert_bool(inventory.has_item_id(ContentRuntime.HANGING_GIRL_DOLL_ITEM_ID)).is_false()
+	assert_bool(runtime.has_lingering_hanging_girl("room_107_bed_nightstand")).is_true()
+	assert_str(String(runtime.get_lingering_hanging_girl_presentation_state()["event_id"])).is_equal(
+		ContentRuntime.HANGING_GIRL_EVENT_ID
+	)
+
+	var restored = auto_free(ContentRuntime.new())
+	add_child(restored)
+	restored.import_state(runtime.export_state())
+	assert_bool(restored.has_lingering_hanging_girl("room_107_bed_nightstand")).is_true()
+	restored.start_day(2)
+	assert_bool(restored.has_lingering_hanging_girl("room_107_bed_nightstand")).is_false()
 
 	# Replaying the preview must bypass the previous completion cooldown and
 	# create a fresh companion pickup.

@@ -75,6 +75,7 @@ var _hanging_girl_selected_choices: Array[String] = []
 var _hanging_girl_doll_taken := false
 var _hanging_girl_dialogue_open := false
 var _hanging_girl_fatal_pending := false
+var _hanging_girl_resolved_visible := false
 var _debug_force_pending := false
 var _rng := RandomNumberGenerator.new()
 var _random_seed_override := -1
@@ -119,6 +120,7 @@ func start_day(day: int) -> void:
 	_hanging_girl_doll_taken = false
 	_hanging_girl_dialogue_open = false
 	_hanging_girl_fatal_pending = false
+	_hanging_girl_resolved_visible = false
 	_clear_event_state()
 	_reset_scheduler()
 	state_changed.emit()
@@ -217,6 +219,22 @@ func get_presentation_state() -> Dictionary:
 	}
 
 
+func has_lingering_hanging_girl(scene_id: String) -> bool:
+	return _hanging_girl_resolved_visible and scene_id == "room_107_bed_nightstand"
+
+
+func get_lingering_hanging_girl_presentation_state() -> Dictionary:
+	if not _hanging_girl_resolved_visible:
+		return {}
+	return {
+		"event_id": HANGING_GIRL_EVENT_ID,
+		"state": "visible",
+		"scene_id": "room_107_bed_nightstand",
+		"entity_stage": _entity_stage,
+		"hanging_girl_doll_taken": true,
+	}
+
+
 func get_dynamic_hotspots(scene_id: String) -> Array:
 	if current_event_id.is_empty():
 		return []
@@ -267,12 +285,9 @@ func get_dynamic_hotspots(scene_id: String) -> Array:
 			})
 		return surface_hotspots
 	if treatment == ContentCatalog.TREATMENT_BELL_SEQUENCE:
-		return [{
-			"id": "anomaly_bell:%s" % current_event_id,
-			"label": "",
-			"rect": Rect2(0.445, 0.555, 0.095, 0.105),
-			"anomaly_input": "click",
-		}]
+		# Bell events use the authored front-desk bell hotspot so debug and
+		# production share one spatial input and one sound path.
+		return []
 	return [{
 		"id": "anomaly_hold:%s" % current_event_id,
 		"label": "",
@@ -299,12 +314,15 @@ func handle_click(hotspot_id: String) -> bool:
 
 
 func handle_world_hotspot(hotspot_id: String, scene_id: String) -> bool:
-	if current_event_id != SHADOW_EVENT_ID:
-		return false
 	if hotspot_id != "desk_bell" or scene_id != "front_desk":
 		return false
-	_press_shadow_bell()
-	return true
+	if current_event_id == SHADOW_EVENT_ID:
+		_press_shadow_bell()
+		return true
+	if current_event_id == "front_glass_face":
+		_press_bell()
+		return true
+	return false
 
 
 func handle_choice(choice_id: String) -> bool:
@@ -360,6 +378,7 @@ func handle_choice(choice_id: String) -> bool:
 			if inventory_model == null or not inventory_model.remove_item_by_id(HANGING_GIRL_DOLL_ITEM_ID):
 				return false
 			_hanging_girl_dialogue_open = false
+			_hanging_girl_resolved_visible = true
 			choice_closed.emit()
 			_resolve_current()
 		"fun_yes", "changed_mind", "you_play", "doll_play", "hide_and_seek", "your_mom_game", "your_mom_walter":
@@ -485,6 +504,7 @@ func export_state() -> Dictionary:
 		"hanging_girl_doll_taken": _hanging_girl_doll_taken,
 		"hanging_girl_dialogue_open": _hanging_girl_dialogue_open,
 		"hanging_girl_fatal_pending": _hanging_girl_fatal_pending,
+		"hanging_girl_resolved_visible": _hanging_girl_resolved_visible,
 		"rng_state": _rng.state,
 		"scheduler": scheduler.export_state(),
 	}
@@ -519,6 +539,7 @@ func import_state(state: Dictionary) -> void:
 	_shadow_room_transition_seconds = maxf(float(state.get("shadow_room_transition_seconds", 0.0)), 0.0)
 	_hanging_girl_selected_choices = _string_array(state.get("hanging_girl_selected_choices", []))
 	_hanging_girl_doll_taken = bool(state.get("hanging_girl_doll_taken", false))
+	_hanging_girl_resolved_visible = bool(state.get("hanging_girl_resolved_visible", false))
 	_hanging_girl_dialogue_open = false
 	_hanging_girl_fatal_pending = false
 	if state.has("rng_state"):
