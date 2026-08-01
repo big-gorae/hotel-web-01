@@ -120,8 +120,25 @@ func test_every_catalog_entry_has_editable_collection_copy_and_canon_kind() -> v
 			String(content_definition.get("type", "")),
 		)
 	assert_array(ContentCatalog.debug_event_ids()).contains(ContentCatalog.production_event_ids())
-	assert_bool(ContentCatalog.is_event_enabled("room_109_open_door")).is_false()
-	assert_array(ContentCatalog.debug_event_ids()).not_contains(["room_109_open_door"])
+	assert_bool(ContentCatalog.is_event_enabled("room_109_open_door")).is_true()
+	assert_array(ContentCatalog.debug_event_ids()).contains(["room_109_open_door"])
+	assert_array(ContentCatalog.production_event_ids()).not_contains(["room_109_open_door"])
+
+
+func test_day_seven_room_109_passage_uses_its_own_game_over_definition() -> void:
+	var manager := HorrorEventManager.new()
+	manager.setup_default_catalog()
+	var passage = manager.get_definition("room_109_day7_passage")
+
+	assert_str(passage.event_type).is_equal(HorrorEventDefinition.TYPE_JUMPSCARE)
+	manager.mark_event_seen("room_109_day7_passage")
+	assert_bool(manager.trigger_jumpscare("room_109_day7_passage")).is_true()
+
+	var discovered_ids: Array[String] = []
+	for entry in manager.get_discovered_entries():
+		discovered_ids.append(String(entry.get("id", "")))
+	assert_array(discovered_ids).contains(["room_109_day7_passage"])
+	assert_array(discovered_ids).not_contains(["room_109_open_door"])
 
 
 func test_weighted_selection_uses_definition_weights() -> void:

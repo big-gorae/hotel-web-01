@@ -87,11 +87,22 @@ func _play_transition(
 
 
 func _append_fade(from_darkness: float, to_darkness: float, duration: float, ease: Tween.EaseType, use_perceptual_fade: bool) -> void:
-	var safe_duration := maxf(duration, 0.01)
-	if use_perceptual_fade:
-		active_tween.tween_method(_set_perceptual_darkness, from_darkness, to_darkness, safe_duration)
+	if duration <= 0.0:
+		if use_perceptual_fade:
+			active_tween.tween_callback(_set_perceptual_darkness.bind(to_darkness))
+		else:
+			active_tween.tween_callback(_set_linear_darkness.bind(to_darkness))
 		return
-	active_tween.tween_property(self, "color:a", to_darkness, safe_duration).set_trans(Tween.TRANS_SINE).set_ease(ease)
+	if use_perceptual_fade:
+		active_tween.tween_method(_set_perceptual_darkness, from_darkness, to_darkness, duration)
+		return
+	active_tween.tween_property(self, "color:a", to_darkness, duration).set_trans(Tween.TRANS_SINE).set_ease(ease)
+
+
+func _set_linear_darkness(darkness: float) -> void:
+	var target_color := color
+	target_color.a = clampf(darkness, 0.0, 1.0)
+	color = target_color
 
 
 func _set_perceptual_darkness(darkness: float) -> void:

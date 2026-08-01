@@ -298,6 +298,27 @@ func test_red_washer_music_requires_closed_eyes_but_reclicking_is_safe() -> void
 	assert_array(deaths).contains_exactly([NightAnomalyDirector.LAUNDRY_EVENT_ID])
 
 
+func test_nonlethal_red_washer_music_keeps_advancing_after_eye_failure() -> void:
+	var eyes = auto_free(EyeCloseController.new())
+	var director = auto_free(NightAnomalyDirector.new())
+	var deaths: Array[String] = []
+	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
+	director.setup(eyes)
+	director.set_lethal_outcomes_enabled(false)
+	director.start_day(5)
+	director.enter_scene("front_desk")
+	director.enter_scene("laundry_room")
+	director.begin_laundry_stop_hold(Vector2.ZERO)
+	director.advance(director.laundry_stop_hold_duration)
+
+	director.advance(director.laundry_eye_close_grace_duration)
+	director.advance(director.laundry_music_duration)
+
+	assert_array(deaths).is_empty()
+	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_RESOLVED)
+	assert_bool(director.is_daily_schedule_complete()).is_true()
+
+
 func test_location_event_materializes_only_after_player_leaves_target_scene() -> void:
 	var director = auto_free(NightAnomalyDirector.new())
 	director.start_day(5)
@@ -359,13 +380,16 @@ func test_day_seven_room_109_passage_forbids_turning_until_footsteps_end() -> vo
 	director.enter_scene("corridor")
 	assert_str(director.room_109_passage_state).is_equal(NightAnomalyDirector.ROOM_109_PASSAGE_WAITING)
 	assert_bool(director.can_change_scene("front_desk")).is_false()
-	assert_array(deaths).contains_exactly([NightAnomalyDirector.ROOM_109_EVENT_ID])
+	assert_array(deaths).contains_exactly([NightAnomalyDirector.ROOM_109_PASSAGE_EVENT_ID])
+	deaths.clear()
+	assert_bool(director.handle_hotspot("room_109_open_door")).is_true()
+	assert_array(deaths).contains_exactly([NightAnomalyDirector.ROOM_109_PASSAGE_EVENT_ID])
 	deaths.clear()
 	director.advance(director.room_109_passage_wait_seconds)
 
 	assert_str(director.room_109_passage_state).is_equal(NightAnomalyDirector.ROOM_109_PASSAGE_FOOTSTEPS)
 	assert_bool(director.can_change_scene("front_desk")).is_false()
-	assert_array(deaths).contains_exactly([NightAnomalyDirector.ROOM_109_EVENT_ID])
+	assert_array(deaths).contains_exactly([NightAnomalyDirector.ROOM_109_PASSAGE_EVENT_ID])
 
 	director.set_lethal_outcomes_enabled(false)
 	director.advance(director.room_109_passage_footstep_seconds)

@@ -81,21 +81,23 @@ func _run() -> void:
 	if main.rule_book_manager.get_visible_rules().size() != 8:
 		_fail("day three rules did not unlock")
 		return
-	if main.anomaly_content_runtime.force_event("room_109_open_door"):
-		_fail("disabled Day 3 Room 109 encounter could still be forced")
+	var room_109_preview_index := _find_anomaly_preview_index(main, "room_109_open_door")
+	if room_109_preview_index < 0:
+		_fail("Day 3 Room 109 encounter was missing from the debug selector")
 		return
-	main._on_content_anomaly_state_changed()
-	if not _find_dynamic_or_editor_hotspot(main, "room_109_open_door").is_empty():
-		_fail("disabled Day 3 Room 109 encounter still exposed a hotspot")
+	main._on_debug_anomaly_selected(room_109_preview_index)
+	await process_frame
+	if main.current_scene_id != "corridor" or main.anomaly_content_runtime.current_event_id != "room_109_open_door":
+		_fail("Day 3 Room 109 debug preview did not open in the corridor")
+		return
+	if _find_dynamic_or_editor_hotspot(main, "room_109_open_door").is_empty():
+		_fail("Day 3 Room 109 debug preview did not expose its fatal hotspot")
 		return
 	if main.room_109_overlay.visible:
-		_fail("disabled Day 3 Room 109 encounter still showed its overlay")
+		_fail("Day 3 Room 109 debug preview reused the Day 7 passage overlay")
 		return
-	if main.anomaly_presentation_layer.is_rendering_artifact():
-		_fail("disabled Day 3 Room 109 encounter still rendered its image")
-		return
-	if _find_anomaly_preview_index(main, "room_109_open_door") >= 0:
-		_fail("disabled Day 3 Room 109 encounter remained in the debug selector")
+	if not main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("Day 3 Room 109 debug preview did not render its authored image")
 		return
 
 	var glass_preview_index := _find_anomaly_preview_index(main, "front_glass_face")

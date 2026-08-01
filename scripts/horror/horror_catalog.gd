@@ -73,7 +73,13 @@ static func build_definitions() -> Array:
 		_make_game_over_event("room_109_open_door", "room_109", ["corridor"], "Room 109", "Something inside notices you looking."),
 		_make_game_over_event("laundry_red_washer", "laundry_room", ["laundry_room"], "Red Laundry", "The wet bundle moves as you look inside."),
 		_make_game_over_event("vacant_room_blanket_child", "hotel", ["room_105_door_window", "room_106_bed_bathroom_entry", "room_107_bed_nightstand", "room_108_bed_window"], "Child Under the Blanket", "A voice whispers that it found you."),
-		_make_collection_event({"id": "room_109_day7_passage", "scene_id": "corridor"}),
+		_make_game_over_event(
+			"room_109_day7_passage",
+			"corridor",
+			["corridor"],
+			"Room 109 Passage",
+			"You turned before the footsteps behind you had stopped."
+		),
 	]
 	for content_id in ContentCatalog.debug_event_ids():
 		if content_id == "room_109_open_door":

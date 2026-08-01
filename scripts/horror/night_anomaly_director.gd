@@ -306,7 +306,7 @@ func can_change_scene(target_scene_id: String) -> bool:
 		death_requested.emit(CHILD_EVENT_ID)
 		return false
 	if room_109_passage_state in [ROOM_109_PASSAGE_WAITING, ROOM_109_PASSAGE_FOOTSTEPS] and target_scene_id != "corridor":
-		death_requested.emit(ROOM_109_EVENT_ID)
+		death_requested.emit(ROOM_109_PASSAGE_EVENT_ID)
 		return false
 	return true
 
@@ -320,7 +320,12 @@ func handle_hotspot(hotspot_id: String) -> bool:
 		"room_109_open_door":
 			if not lethal_outcomes_enabled:
 				return false
-			death_requested.emit(ROOM_109_EVENT_ID)
+			var room_109_death_event_id := (
+				ROOM_109_PASSAGE_EVENT_ID
+				if room_109_passage_state in [ROOM_109_PASSAGE_WAITING, ROOM_109_PASSAGE_FOOTSTEPS]
+				else ROOM_109_EVENT_ID
+			)
+			death_requested.emit(room_109_death_event_id)
 			return true
 		"blanket_child":
 			sound_requested.emit("blanket_laugh_soft")
@@ -671,13 +676,13 @@ func _advance_laundry(delta: float) -> void:
 				_laundry_eyes_closed_once = true
 				_laundry_eye_close_grace_seconds = 0.0
 			elif _laundry_eyes_closed_once:
-				_request_laundry_death()
-				return
+				if _request_laundry_death():
+					return
 			else:
 				_laundry_eye_close_grace_seconds = maxf(_laundry_eye_close_grace_seconds - delta, 0.0)
 				if _laundry_eye_close_grace_seconds <= 0.0:
-					_request_laundry_death()
-					return
+					if _request_laundry_death():
+						return
 			_laundry_seconds = maxf(_laundry_seconds - delta, 0.0)
 			if _laundry_seconds <= 0.0:
 				_finish_laundry_music()

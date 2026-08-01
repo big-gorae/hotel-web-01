@@ -55,3 +55,18 @@ func test_anomaly_transition_accepts_zero_fade_seconds() -> void:
 
 	assert_float(fader.anomaly_fade_out_seconds).is_equal(0.0)
 	assert_float(fader.anomaly_fade_in_seconds).is_equal(0.0)
+
+
+func test_zero_duration_fades_preserve_black_callback_order_without_extra_time() -> void:
+	var fader = auto_free(SceneTransitionFader.new())
+	add_child(fader)
+	fader.set_anomaly_fade_seconds(0.0)
+	fader.anomaly_hold_seconds = 0.0
+	var callback_state := {"alpha": -1.0}
+
+	fader.play_anomaly_resolution(func(): callback_state["alpha"] = fader.color.a)
+	await fader.transition_finished
+
+	assert_float(float(callback_state["alpha"])).is_equal(1.0)
+	assert_float(fader.color.a).is_equal(0.0)
+	assert_bool(fader.is_transitioning()).is_false()
