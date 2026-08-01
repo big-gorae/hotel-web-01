@@ -98,7 +98,7 @@ const HOTSPOT_LABELS := {
 	},
 	"room_106_bathroom": {
 		"room_106_bathroom_door": "Door", "room_106_bathroom_mirror": "Mirror",
-		"room_106_bathroom_sink": "Sink", "room_106_bathroom_tub": "Tub", "abandoned_child": "Child",
+		"room_106_bathroom_sink": "Sink", "room_106_bathroom_tub": "Tub",
 	},
 	"room_106_bed_bathroom_entry": {
 		"room_106_exit_edge": "Corridor", "room_106_bed": "Bed", "room_106_window": "Window",
@@ -148,7 +148,6 @@ const HOTSPOT_TEXTS := {
 	"room_105_door_window.lamp": ["The lamp is warm, making the room feel smaller than it is.", "스탠드의 온기가 방을 실제보다 더 좁게 느껴지게 한다."],
 	"room_106_bed_bathroom_entry.room_106_bed": ["The bedspread is pulled into place, but the room still feels recently used.", "침대보는 가지런히 당겨져 있지만 방에는 방금까지 누군가 있던 기척이 남아 있다."],
 	"room_106_bed_bathroom_entry.room_106_window": ["The curtains leave a narrow view of the outside lights.", "커튼 틈으로 바깥 불빛이 좁게 보인다."],
-	"room_106_bathroom.abandoned_child": ["The crying has stopped. The child is waiting.", "울음이 멎었다. 아이가 기다리고 있다."],
 	"room_107_bathroom_entry.room_107_closet_door": ["The door beside the bathroom is a closet, not the exit.", "욕실 옆 문은 출구가 아니라 옷장문이다."],
 	"room_107_bathroom_entry.room_107_phone": ["The phone is close enough to reach from the pillow.", "베개에 누운 채로도 닿을 만큼 전화기가 가깝다."],
 	"room_107_bed_nightstand.room_107_nightstand": ["The room phone sits beside a loose note and a warm lamp.", "객실 전화기가 흩어진 메모와 따뜻한 스탠드 옆에 놓여 있다."],

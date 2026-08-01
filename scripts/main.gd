@@ -1404,10 +1404,7 @@ func _sync_scene_3d_overlay() -> void:
 	if current_scene_id == "room_106_bathroom":
 		var child_visible: bool = (
 			night_anomaly_director != null
-			and night_anomaly_director.child_state in [
-				night_anomaly_director.CHILD_CRYING,
-				night_anomaly_director.CHILD_SONG_DONE,
-			]
+			and night_anomaly_director.child_state == night_anomaly_director.CHILD_CRYING
 		)
 		if not child_visible:
 			scene_3d_overlay.clear_overlay()
@@ -1892,6 +1889,7 @@ func _show_system_message(message: String) -> void:
 		return
 	system_message_label.text = message
 	system_message_label.custom_minimum_size = Vector2(minf(720.0, get_viewport_rect().size.x - 64.0), 0.0)
+	system_message_panel.move_to_front()
 	system_message_panel.visible = true
 	system_message_panel.modulate.a = 1.0
 	_position_runtime_status()

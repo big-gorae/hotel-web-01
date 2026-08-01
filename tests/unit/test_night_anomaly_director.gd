@@ -132,6 +132,29 @@ func test_child_song_only_runs_while_f_is_held_and_silence_counts_toward_death()
 	assert_that(deaths).is_equal([NightAnomalyDirector.CHILD_EVENT_ID])
 
 
+func test_child_prompt_appears_after_closing_eyes_and_song_completion_resolves_immediately() -> void:
+	var eyes = auto_free(EyeCloseController.new())
+	var director = auto_free(NightAnomalyDirector.new())
+	var messages := []
+	var survived := []
+	director.dialogue_requested.connect(func(message_key: String) -> void: messages.append(message_key))
+	director.event_survived.connect(func(event_id: String) -> void: survived.append(event_id))
+	director.setup(eyes)
+	director.start_day(6)
+	director.force_child_encounter()
+
+	eyes.close_eyes()
+	assert_that(messages).is_equal(["night.child.hold_f_to_sing"])
+	assert_bool(director.begin_hand_action()).is_true()
+	eyes._process(director.child_song_duration)
+
+	assert_bool(eyes.is_closed()).is_false()
+	assert_str(director.child_state).is_equal(NightAnomalyDirector.CHILD_RESOLVED)
+	assert_bool(director.is_daily_schedule_complete()).is_true()
+	assert_that(survived).is_equal([NightAnomalyDirector.CHILD_EVENT_ID])
+	assert_that(director.get_dynamic_hotspots("room_106_bathroom")).is_empty()
+
+
 func test_nonlethal_mode_keeps_anomalies_but_never_requests_death() -> void:
 	var eyes = auto_free(EyeCloseController.new())
 	var director = auto_free(NightAnomalyDirector.new())

@@ -393,7 +393,7 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
 
 - ID: `room_106_abandoned_child`
 - Scene: `room_106_bathroom`
-- Logic: `waiting -> crying -> singing -> song_done -> held`
+- Logic: `waiting -> crying -> singing -> resolved`
 - Visual:
   - 아이 형상
   - 손을 뻗는 진정 상태
@@ -403,7 +403,8 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
   - 이탈 금지
   - 눈 감기
   - `F`가 노래 부르기로 문맥 전환
-  - 가로형 진행 바 완료 뒤 아이 안기
+  - 눈을 감으면 `F` 노래 안내 표시
+  - 가로형 진행 바 완료 뒤 자동으로 눈을 뜨고 즉시 해결
 - Audio: 울음, 노래, 가짜 어머니 cue, 실패 점프스케어
 - SceneLock: 아이와 가짜 어머니를 독립 full-canvas overlay로 제작
 - QA: 화장실 밖에 어머니가 나타나지 않고, 노래하지 않은 시간만 사망 카운트에 포함

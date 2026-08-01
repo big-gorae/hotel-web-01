@@ -34,7 +34,7 @@
 | 옷장의 돼지 가면 남자 | 105호 | 짧게 강화되는 응시 2단계, 전역 돼지 울음, 5초 홀드 해결 | [pig-mask-man.md](entities/pig-mask-man.md) |
 | 받지 못한 전화 | 프런트·지목된 객실 | 전화를 늦게 받거나 통화 후 지목된 방에 진입하면 사망 | [unanswered-call.md](entities/unanswered-call.md) |
 | 붉은 세탁기 | 세탁실 | 붉은 유리, 완료 음악, 세탁물 폐기 순서 준수 | [red-washer.md](entities/red-washer.md) |
-| 등록되지 않은 아이 | 106호 화장실 | 외면하지 않고 눈을 감아 노래한 뒤 안아 주기 | [unregistered-child.md](entities/unregistered-child.md) |
+| 등록되지 않은 아이 | 106호 화장실 | 눈을 감고 안내에 따라 노래해 울음을 멈추기 | [unregistered-child.md](entities/unregistered-child.md) |
 | 109호의 열린 문 | 109호·복도 | 들여다보지 않기, 마지막 날 나오는 존재를 보내기. 초기 해결법 미정 | [room-109-open-door.md](entities/room-109-open-door.md) |
 | 그림자 | 객실 구역·복도·프런트 | 같은 간격으로 반복되는 이동음과 벨소리를 듣고, 벨 연타 후 방을 빠르게 오가며 떼어 내기 | [shadow.md](entities/shadow.md) |
 | 이불 속 아이 | 비어 있는 객실 | 이불을 건드리지 않고 해당 방에서 눈을 감아 버티기 | [child-under-blanket.md](entities/child-under-blanket.md) |

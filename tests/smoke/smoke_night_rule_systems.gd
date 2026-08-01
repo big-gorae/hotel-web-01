@@ -354,17 +354,26 @@ func _run() -> void:
 	if main.eye_close_controller.is_song_active():
 		_fail("closing eyes started the child song without holding F")
 		return
+	if (
+		not main.system_message_panel.visible
+		or main.system_message_label.text != main.localization.translate("night.child.hold_f_to_sing")
+		or main.system_message_panel.get_index() <= main.eye_close_controller.get_index()
+	):
+		_fail("closing eyes did not show the F-to-sing prompt above the eye mask")
+		return
 	if not main.night_anomaly_director.begin_hand_action() or not main.eye_close_controller.is_song_active():
 		_fail("holding F with closed eyes did not start the child song")
 		return
 	main.eye_close_controller._process(main.night_anomaly_director.child_song_duration)
-	if main.night_anomaly_director.child_state != main.night_anomaly_director.CHILD_SONG_DONE:
-		_fail("child did not stop crying after the full song")
+	if main.eye_close_controller.is_closed():
+		_fail("finishing the child song did not open the player's eyes")
 		return
-	main.eye_close_controller.open_eyes()
-	main._on_hotspot_pressed(_find_dynamic_hotspot(main, "abandoned_child"))
-	if main.night_anomaly_director.child_state != main.night_anomaly_director.CHILD_HELD:
-		_fail("rule thirteen child embrace did not complete")
+	if (
+		main.night_anomaly_director.child_state != main.night_anomaly_director.CHILD_RESOLVED
+		or not main.night_anomaly_director.is_daily_schedule_complete()
+		or not _find_dynamic_hotspot(main, "abandoned_child").is_empty()
+	):
+		_fail("finishing the child song did not resolve the encounter directly")
 		return
 
 	main.anomaly_content_runtime.force_event("room_108_tv_ghost")

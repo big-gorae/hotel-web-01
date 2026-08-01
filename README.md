@@ -163,7 +163,7 @@ The production anomaly runtime allows only one active encounter at a time. Story
 - Calls originate from Room 108. The front desk phone must be answered before its thirteenth bell, and an answered light-repair request makes Room 108 unsafe to enter.
 - The unresolved Day 3 Room 109 encounter remains debug-only. On Day 7, first entry into the corridor starts the completed wait-and-footsteps passage; touching the door or leaving early is fatal.
 - A red washer must be stopped; its door and the laundry-room exit remain dangerous until the completion music finishes. The resulting load is discarded while the player's eyes are closed.
-- The Room 106 child encounter starts singing automatically when the player closes their eyes. After the crying stops, the child can be held; fatal branches are connected to the game-over presentation.
+- In the Room 106 child encounter, closing the player's eyes shows a prompt to hold F and sing. Completing the song opens their eyes and resolves the encounter immediately; fatal branches remain connected to the game-over presentation.
 
 ## Gameplay Systems Plan
 

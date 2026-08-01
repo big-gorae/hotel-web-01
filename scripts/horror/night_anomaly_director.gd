@@ -43,8 +43,9 @@ const LAUNDRY_DISCARDED := "discarded"
 const CHILD_IDLE := "idle"
 const CHILD_WAITING := "waiting"
 const CHILD_CRYING := "crying"
+# Retained only to migrate saves made before singing resolved the encounter.
 const CHILD_SONG_DONE := "song_done"
-const CHILD_HELD := "held"
+const CHILD_RESOLVED := "resolved"
 
 const BLANKET_IDLE := "idle"
 const BLANKET_VISIBLE := "visible"
@@ -168,7 +169,7 @@ func has_active_anomaly() -> bool:
 		or _phone_fatal_pending
 		or room_108_forbidden
 		or laundry_state in [LAUNDRY_WASHING, LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_READY]
-		or child_state in [CHILD_WAITING, CHILD_CRYING, CHILD_SONG_DONE]
+		or child_state in [CHILD_WAITING, CHILD_CRYING]
 		or blanket_state == BLANKET_VISIBLE
 		or room_109_passage_state in [ROOM_109_PASSAGE_WAITING, ROOM_109_PASSAGE_FOOTSTEPS]
 	)
@@ -266,7 +267,7 @@ func advance(delta: float) -> void:
 	if laundry_state in [LAUNDRY_WASHING, LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_READY]:
 		_advance_laundry(delta)
 		return
-	if child_state in [CHILD_WAITING, CHILD_CRYING, CHILD_SONG_DONE]:
+	if child_state in [CHILD_WAITING, CHILD_CRYING]:
 		_advance_child(delta)
 		return
 	if blanket_state == BLANKET_VISIBLE:
@@ -288,7 +289,7 @@ func can_change_scene(target_scene_id: String) -> bool:
 	if current_scene_id == "laundry_room" and laundry_state == LAUNDRY_MUSIC and target_scene_id != "laundry_room":
 		death_requested.emit(LAUNDRY_EVENT_ID)
 		return false
-	if current_scene_id == "room_106_bathroom" and child_state in [CHILD_CRYING, CHILD_SONG_DONE] and target_scene_id != "room_106_bathroom":
+	if current_scene_id == "room_106_bathroom" and child_state == CHILD_CRYING and target_scene_id != "room_106_bathroom":
 		death_requested.emit(CHILD_EVENT_ID)
 		return false
 	if room_109_passage_state in [ROOM_109_PASSAGE_WAITING, ROOM_109_PASSAGE_FOOTSTEPS] and target_scene_id != "corridor":
@@ -308,8 +309,6 @@ func handle_hotspot(hotspot_id: String) -> bool:
 				return false
 			death_requested.emit(ROOM_109_EVENT_ID)
 			return true
-		"abandoned_child":
-			return _hold_child()
 		"blanket_child":
 			sound_requested.emit("blanket_laugh_soft")
 			return true
@@ -340,13 +339,6 @@ func get_dynamic_hotspots(scene_id: String) -> Array:
 			"rect": Rect2(0.735, 0.285, 0.055, 0.325),
 			"text": "The open doorway is too dark to judge its depth.",
 		})
-	if scene_id == "room_106_bathroom" and child_state == CHILD_SONG_DONE:
-		hotspots.append({
-			"id": "abandoned_child",
-			"label": "Child",
-			"rect": Rect2(0.46, 0.58, 0.18, 0.24),
-			"text": "The crying has stopped. The child is waiting.",
-		})
 	if scene_id == blanket_scene_id and blanket_state == BLANKET_VISIBLE:
 		hotspots.append({
 			"id": "blanket_child",
@@ -359,7 +351,7 @@ func get_dynamic_hotspots(scene_id: String) -> Array:
 func is_scene_anomalous(scene_id: String) -> bool:
 	if scene_id == "laundry_room" and laundry_state in [LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_READY]:
 		return true
-	if scene_id == "room_106_bathroom" and child_state in [CHILD_CRYING, CHILD_SONG_DONE]:
+	if scene_id == "room_106_bathroom" and child_state == CHILD_CRYING:
 		return true
 	if room_108_forbidden and scene_id.begins_with("room_108"):
 		return true
@@ -458,7 +450,7 @@ func get_presentation_state() -> Dictionary:
 			"state": laundry_state,
 			"scene_id": "laundry_room",
 		}
-	if child_state in [CHILD_CRYING, CHILD_SONG_DONE]:
+	if child_state == CHILD_CRYING:
 		return {
 			"event_id": CHILD_EVENT_ID,
 			"state": child_state,
@@ -543,6 +535,11 @@ func import_state(state: Dictionary) -> void:
 	_planned_event_id = String(state.get("planned_event_id", ""))
 	_planned_event_started = bool(state.get("planned_event_started", false))
 	_planned_event_completed = bool(state.get("planned_event_completed", _planned_event_id.is_empty()))
+	if child_state == CHILD_SONG_DONE:
+		child_state = CHILD_RESOLVED
+		if _planned_event_id == CHILD_EVENT_ID:
+			_planned_event_started = true
+			_planned_event_completed = true
 	if state.has("rng_state"):
 		_rng.state = int(state["rng_state"])
 	if laundry_state == LAUNDRY_MUSIC and _audio_playback_allowed() and _completion_music_player != null:
@@ -705,6 +702,8 @@ func _advance_child(delta: float) -> void:
 
 
 func _on_eye_closed_changed(closed: bool) -> void:
+	if closed and child_state == CHILD_CRYING:
+		dialogue_requested.emit("night.child.hold_f_to_sing")
 	if not closed and _child_song_held:
 		release_hand_action()
 	state_changed.emit()
@@ -716,8 +715,11 @@ func _on_song_completed() -> void:
 	_child_song_held = false
 	hold_progress_changed.emit(1.0)
 	hold_ended.emit()
-	child_state = CHILD_SONG_DONE
+	child_state = CHILD_RESOLVED
 	_child_seconds = 0.0
+	if eye_close_controller != null:
+		eye_close_controller.open_eyes()
+	_complete_planned_event(CHILD_EVENT_ID)
 	state_changed.emit()
 
 
@@ -783,15 +785,6 @@ func _advance_room_109_passage(delta: float) -> void:
 		room_109_passage_state = ROOM_109_PASSAGE_DONE
 		_complete_planned_event(ROOM_109_PASSAGE_EVENT_ID)
 		state_changed.emit()
-
-
-func _hold_child() -> bool:
-	if child_state != CHILD_SONG_DONE:
-		return false
-	child_state = CHILD_HELD
-	_complete_planned_event(CHILD_EVENT_ID)
-	state_changed.emit()
-	return true
 
 
 func is_daily_schedule_complete() -> bool:

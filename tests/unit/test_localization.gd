@@ -83,8 +83,6 @@ func test_runtime_only_hotspots_have_explicit_korean_and_english_copy() -> void:
 	for key in [
 		"hotspot.corridor.room_109_open_door.label",
 		"hotspot.corridor.room_109_open_door.text",
-		"hotspot.room_106_bathroom.abandoned_child.label",
-		"hotspot.room_106_bathroom.abandoned_child.text",
 		"hotspot.laundry_room.anomaly_pickup:hanging_girl_doll.label",
 		"hotspot.room_107_bed_nightstand.anomaly_choice:hanging_girl.label",
 		"hotspot.room_105_bathroom_entry.closet_pig_hold:wardrobe.label",
