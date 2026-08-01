@@ -3,6 +3,7 @@ extends GdUnitTestSuite
 const HorrorEventManager := preload("res://scripts/horror/horror_event_manager.gd")
 const JumpscareController := preload("res://scripts/horror/jumpscare_controller.gd")
 const JumpscareLab := preload("res://scripts/ui/jumpscare_lab.gd")
+const Localization := preload("res://scripts/localization.gd")
 
 
 func test_lab_loads_fake_mother_defaults_and_builds_an_isolated_preview() -> void:
@@ -48,3 +49,25 @@ func test_lab_preview_uses_the_controller_without_triggering_game_over_state() -
 	assert_bool(controller.active).is_true()
 	assert_bool(manager.is_jumpscare_active()).is_false()
 	controller.stop()
+
+
+func test_lab_localizes_all_editable_controls_in_korean_and_english() -> void:
+	var manager := HorrorEventManager.new()
+	manager.setup_default_catalog()
+	var controller = auto_free(JumpscareController.new())
+	add_child(controller)
+	var lab = auto_free(JumpscareLab.new())
+	add_child(lab)
+	var localization := Localization.new()
+
+	localization.set_language(Localization.Language.ENGLISH)
+	lab.setup(manager, controller, localization)
+	lab.select_event_by_id("room_106_abandoned_child")
+	assert_str(lab.fit_selector.get_item_text(0)).is_equal("Fill screen · Cover")
+	assert_str(lab.preview_button.text).is_equal("▶ Preview current values")
+	assert_str(lab.status_label.text).contains("Abandoned Child")
+
+	localization.set_language(Localization.Language.KOREAN)
+	assert_str(lab.fit_selector.get_item_text(0)).is_equal("화면 채우기 · Cover")
+	assert_str(lab.preview_button.text).is_equal("▶ 현재 값으로 프리뷰")
+	assert_str(lab.status_label.text).contains("등록되지 않은 아이")

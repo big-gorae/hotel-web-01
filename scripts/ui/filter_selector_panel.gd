@@ -4,6 +4,7 @@ extends HBoxContainer
 signal preset_selected(preset_name: String)
 
 var post_process_filter = null
+var localization = null
 var title_text := "Filter"
 var button_tooltip_text := "Apply this screen filter."
 var intensity_text := "Intensity"
@@ -16,8 +17,9 @@ func _init() -> void:
 	add_theme_constant_override("separation", 8)
 
 
-func setup(new_post_process_filter, new_title_text := "Filter", new_button_tooltip_text := "Apply this screen filter.", new_intensity_text := "Intensity", new_intensity_tooltip_text := "Filter intensity") -> void:
+func setup(new_post_process_filter, new_title_text := "Filter", new_button_tooltip_text := "Apply this screen filter.", new_intensity_text := "Intensity", new_intensity_tooltip_text := "Filter intensity", new_localization = null) -> void:
 	post_process_filter = new_post_process_filter
+	localization = new_localization
 	title_text = new_title_text
 	button_tooltip_text = new_button_tooltip_text
 	intensity_text = new_intensity_text
@@ -27,6 +29,7 @@ func setup(new_post_process_filter, new_title_text := "Filter", new_button_toolt
 
 func rebuild() -> void:
 	for child in get_children():
+		remove_child(child)
 		child.queue_free()
 
 	if post_process_filter == null:
@@ -42,7 +45,9 @@ func rebuild() -> void:
 
 	for preset_name in post_process_filter.get_available_presets():
 		var button := Button.new()
-		button.text = post_process_filter.get_preset_display_name(String(preset_name))
+		var preset_id := String(preset_name)
+		var fallback_name: String = post_process_filter.get_preset_display_name(preset_id)
+		button.text = _text("debug.filters.preset.%s" % preset_id, fallback_name)
 		button.toggle_mode = true
 		button.focus_mode = Control.FOCUS_NONE
 		button.custom_minimum_size = Vector2(120.0, 32.0)
@@ -132,6 +137,12 @@ func _style_button(button: Button, enabled: bool) -> void:
 	button.add_theme_stylebox_override("hover", _make_panel_style(Color(1.0, 0.82, 0.28, 0.20), Color(1.0, 0.82, 0.28, 0.85), 6))
 	button.add_theme_stylebox_override("pressed", _make_panel_style(Color(0.25, 0.72, 1.0, 0.30), Color(0.45, 0.82, 1.0, 0.95), 6))
 	button.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95, 0.72) if enabled else Color(0.95, 0.95, 0.95, 0.50))
+
+
+func _text(key: String, fallback: String) -> String:
+	if localization == null:
+		return fallback
+	return localization.translate("ui.%s" % key, fallback)
 
 
 func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBoxFlat:

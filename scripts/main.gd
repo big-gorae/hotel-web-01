@@ -435,7 +435,7 @@ func _build_ui() -> void:
 
 	end_shift_button = Button.new()
 	end_shift_button.visible = false
-	end_shift_button.text = "근무 종료"
+	end_shift_button.text = _ui_text("shift.end", "End Shift")
 	end_shift_button.focus_mode = Control.FOCUS_NONE
 	end_shift_button.custom_minimum_size = Vector2(94.0, 34.0)
 	end_shift_button.add_theme_font_size_override("font_size", 14)
@@ -492,38 +492,38 @@ func _build_ui() -> void:
 	debug_curtain_preview_selector = OptionButton.new()
 	debug_curtain_preview_selector.custom_minimum_size = Vector2(232.0, 32.0)
 	debug_curtain_preview_selector.focus_mode = Control.FOCUS_NONE
-	debug_curtain_preview_selector.tooltip_text = "Bathroom photo comparison: gameplay, open, or edit_002 closed."
-	debug_curtain_preview_selector.add_item("🛁 Gameplay", DEBUG_CURTAIN_GAMEPLAY)
-	debug_curtain_preview_selector.add_item("🛁 Open", DEBUG_CURTAIN_OPEN)
-	debug_curtain_preview_selector.add_item("🛁 Closed A · edit_002", DEBUG_CURTAIN_CLOSED_EDIT)
+	debug_curtain_preview_selector.tooltip_text = _ui_text("debug.curtain.tooltip.available", "Compare the bathroom photo in gameplay, open, and closed states.")
+	debug_curtain_preview_selector.add_item("🛁 %s" % _ui_text("debug.curtain.mode.gameplay", "Gameplay"), DEBUG_CURTAIN_GAMEPLAY)
+	debug_curtain_preview_selector.add_item("🛁 %s" % _ui_text("debug.curtain.mode.open", "Open"), DEBUG_CURTAIN_OPEN)
+	debug_curtain_preview_selector.add_item("🛁 %s" % _ui_text("debug.curtain.mode.closed_edit", "Closed A · edit_002"), DEBUG_CURTAIN_CLOSED_EDIT)
 	debug_curtain_preview_selector.item_selected.connect(_on_debug_curtain_preview_selected)
 	scene_tab.add_child(debug_curtain_preview_selector)
 
 	debug_anomaly_selector = OptionButton.new()
 	debug_anomaly_selector.custom_minimum_size = Vector2(226.0, 32.0)
 	debug_anomaly_selector.focus_mode = Control.FOCUS_NONE
-	debug_anomaly_selector.tooltip_text = "Force one confirmed anomaly. Deferred-resolution events are preview-only."
-	debug_anomaly_selector.add_item("☠ Anomaly preview", 0)
+	debug_anomaly_selector.tooltip_text = _ui_text("debug.anomaly.tooltip", "Force one confirmed anomaly. Events without a completed resolution are previews only.")
+	debug_anomaly_selector.add_item("☠ %s" % _ui_text("debug.anomaly.preview", "Anomaly preview"), 0)
 	var anomaly_debug_index := 1
-	debug_anomaly_selector.add_item("옷장의 돼지 가면 남자 · %s" % CLOSET_PIG_MAN_EVENT_ID, anomaly_debug_index)
+	debug_anomaly_selector.add_item("%s · %s" % [_debug_event_label(CLOSET_PIG_MAN_EVENT_ID), CLOSET_PIG_MAN_EVENT_ID], anomaly_debug_index)
 	debug_anomaly_selector.set_item_metadata(anomaly_debug_index, CLOSET_PIG_MAN_EVENT_ID)
 	anomaly_debug_index += 1
 	for event_id in MVP_NIGHT_DEBUG_EVENT_IDS:
-		debug_anomaly_selector.add_item(String(event_id), anomaly_debug_index)
+		debug_anomaly_selector.add_item("%s · %s" % [_debug_event_label(String(event_id)), event_id], anomaly_debug_index)
 		debug_anomaly_selector.set_item_metadata(anomaly_debug_index, event_id)
 		anomaly_debug_index += 1
 	for event_id in HotelAnomalyContentCatalogScript.debug_event_ids():
-		debug_anomaly_selector.add_item(String(event_id), anomaly_debug_index)
+		debug_anomaly_selector.add_item("%s · %s" % [_debug_event_label(String(event_id)), event_id], anomaly_debug_index)
 		debug_anomaly_selector.set_item_metadata(anomaly_debug_index, event_id)
 		anomaly_debug_index += 1
 	debug_anomaly_selector.item_selected.connect(_on_debug_anomaly_selected)
 	anomaly_tab.add_child(debug_anomaly_selector)
 
 	debug_jumpscare_lab_button = Button.new()
-	debug_jumpscare_lab_button.text = "⚡ 점프스케어 연구소"
+	debug_jumpscare_lab_button.text = "⚡ %s" % _ui_text("debug.jumpscare_lab.title", "Jumpscare Lab")
 	debug_jumpscare_lab_button.custom_minimum_size = Vector2(220.0, 32.0)
 	debug_jumpscare_lab_button.focus_mode = Control.FOCUS_NONE
-	debug_jumpscare_lab_button.tooltip_text = "원본 확대, 돌진 시점과 속도, 화면 진동을 조절하고 프리뷰합니다."
+	debug_jumpscare_lab_button.tooltip_text = _ui_text("debug.jumpscare_lab.tooltip", "Adjust source scale, lunge timing and speed, and screen shake, then preview the result.")
 	debug_jumpscare_lab_button.pressed.connect(_open_jumpscare_lab)
 	presentation_tab.add_child(debug_jumpscare_lab_button)
 
@@ -675,7 +675,8 @@ func _build_ui() -> void:
 		_ui_text("debug.filters.title", "Filter"),
 		_ui_text("debug.filters.tooltip", "Apply this screen filter."),
 		_ui_text("debug.filters.intensity", "Intensity"),
-		_ui_text("debug.filters.intensity_tooltip", "Filter intensity.")
+		_ui_text("debug.filters.intensity_tooltip", "Filter intensity."),
+		localization
 	)
 	filter_bar.preset_selected.connect(_on_filter_preset_selected)
 	navigation_layout.add_child(filter_bar)
@@ -2258,6 +2259,16 @@ func _ui_text(key: String, fallback: String) -> String:
 	return localization.translate("ui.%s" % key, fallback)
 
 
+func _debug_event_label(event_id: String) -> String:
+	var fallback := event_id.replace("_", " ").capitalize()
+	if horror_event_manager != null:
+		var definition = horror_event_manager.get_definition(event_id)
+		if definition != null:
+			fallback = String(definition.fallback_title)
+			return localization.translate(String(definition.title_key), fallback)
+	return localization.translate("horror_event.%s.title" % event_id, fallback)
+
+
 func _apply_hotspot_display() -> void:
 	_sync_debug_toggles()
 
@@ -2332,7 +2343,11 @@ func _sync_debug_toggles() -> void:
 		var supports_curtain_preview: bool = shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data)
 		debug_curtain_preview_selector.disabled = not supports_curtain_preview
 		debug_curtain_preview_selector.select(debug_curtain_preview_mode)
-		debug_curtain_preview_selector.tooltip_text = "Bathroom photo comparison: gameplay, open, or edit_002 closed." if supports_curtain_preview else "Enter a Room 105-108 bathroom to compare curtain photos."
+		debug_curtain_preview_selector.tooltip_text = (
+			_ui_text("debug.curtain.tooltip.available", "Compare the bathroom photo in gameplay, open, and closed states.")
+			if supports_curtain_preview
+			else _ui_text("debug.curtain.tooltip.unavailable", "Enter a Room 105–108 bathroom to compare curtain photos.")
+		)
 
 	if filter_bar != null:
 		filter_bar.sync_selected_preset()

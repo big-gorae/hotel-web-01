@@ -486,7 +486,7 @@ func notify_player_action(cue_id: String) -> void:
 
 
 func force_event(event_id: String) -> bool:
-	if not definitions.has(event_id):
+	if not definitions.has(event_id) or not ContentCatalog.is_event_enabled(event_id):
 		return false
 	_resolution_pending = false
 	if not current_event_id.is_empty():

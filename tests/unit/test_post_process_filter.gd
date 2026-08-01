@@ -11,8 +11,8 @@ func test_filter_presets_are_available_in_debug_order() -> void:
 		PostProcessFilter.PRESET_DREARY_1,
 		PostProcessFilter.PRESET_SUBTLE_GRAIN,
 	])
-	assert_that(post_process_filter.get_preset_display_name(PostProcessFilter.PRESET_NONE)).is_equal("필터 없음")
-	assert_that(post_process_filter.get_preset_display_name(PostProcessFilter.PRESET_SUBTLE_GRAIN)).is_equal("브라운관 지지직")
+	assert_that(post_process_filter.get_preset_display_name(PostProcessFilter.PRESET_NONE)).is_equal("No filter")
+	assert_that(post_process_filter.get_preset_display_name(PostProcessFilter.PRESET_SUBTLE_GRAIN)).is_equal("CRT static")
 
 
 func test_filter_visibility_follows_selected_preset() -> void:

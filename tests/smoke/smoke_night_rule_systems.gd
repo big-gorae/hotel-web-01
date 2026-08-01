@@ -78,16 +78,21 @@ func _run() -> void:
 	if main.rule_book_manager.get_visible_rules().size() != 8:
 		_fail("day three rules did not unlock")
 		return
-	main.anomaly_content_runtime.force_event("room_109_open_door")
+	if main.anomaly_content_runtime.force_event("room_109_open_door"):
+		_fail("disabled Day 3 Room 109 encounter could still be forced")
+		return
 	main._on_content_anomaly_state_changed()
-	if _find_dynamic_or_editor_hotspot(main, "room_109_open_door").is_empty():
-		_fail("forced Room 109 entity was not visible on day three")
+	if not _find_dynamic_or_editor_hotspot(main, "room_109_open_door").is_empty():
+		_fail("disabled Day 3 Room 109 encounter still exposed a hotspot")
 		return
 	if main.room_109_overlay.visible:
-		_fail("forced Room 109 rendered both the authored image and procedural door")
+		_fail("disabled Day 3 Room 109 encounter still showed its overlay")
 		return
-	if not main.anomaly_presentation_layer.is_rendering_artifact():
-		_fail("forced Room 109 authored open-door image was not rendered")
+	if main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("disabled Day 3 Room 109 encounter still rendered its image")
+		return
+	if _find_anomaly_preview_index(main, "room_109_open_door") >= 0:
+		_fail("disabled Day 3 Room 109 encounter remained in the debug selector")
 		return
 
 	var glass_preview_index := _find_anomaly_preview_index(main, "front_glass_face")

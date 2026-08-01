@@ -14,6 +14,11 @@ const TREATMENT_MIRROR_TRANSFER := "mirror_transfer"
 const TREATMENT_SHADOW_ESCAPE := "shadow_escape"
 const TREATMENT_UNRESOLVED := "unresolved"
 
+# Keep the authored data for the collection and a possible later redesign, but
+# do not schedule or expose the unfinished Day 3 encounter in debug tools.
+# The separate Day 7 room_109_day7_passage event is not controlled by this flag.
+const ROOM_109_INITIAL_ENCOUNTER_ENABLED := false
+
 
 static func build_definitions() -> Dictionary:
 	var definitions := {}
@@ -69,10 +74,15 @@ static func production_event_ids() -> Array[String]:
 
 static func debug_event_ids() -> Array[String]:
 	var ids := production_event_ids()
-	ids.append_array([
-		"room_109_open_door",
-	])
+	if ROOM_109_INITIAL_ENCOUNTER_ENABLED:
+		ids.append("room_109_open_door")
 	return ids
+
+
+static func is_event_enabled(event_id: String) -> bool:
+	if event_id == "room_109_open_door":
+		return ROOM_109_INITIAL_ENCOUNTER_ENABLED
+	return true
 
 
 static func surface_rects() -> Dictionary:

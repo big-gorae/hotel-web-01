@@ -120,6 +120,8 @@ func test_every_catalog_entry_has_editable_collection_copy_and_canon_kind() -> v
 			String(content_definition.get("type", "")),
 		)
 	assert_array(ContentCatalog.debug_event_ids()).contains(ContentCatalog.production_event_ids())
+	assert_bool(ContentCatalog.is_event_enabled("room_109_open_door")).is_false()
+	assert_array(ContentCatalog.debug_event_ids()).not_contains(["room_109_open_door"])
 
 
 func test_weighted_selection_uses_definition_weights() -> void:

@@ -32,7 +32,7 @@
 - 15개 기현상 모두 실제 hotspot과 처리 상태를 갖는다.
 - `room_108_entrails_bathtub`은 욕조 전체 4.2초 hold 완료 후 전용 배수음을 재생한다.
 - 옷장의 돼지 가면 남자, 받지 못한 전화, 붉은 세탁기, 등록되지 않은 아이, 이불 속 아이는 확정 처리와 방치 사망 흐름을 갖는다.
-- `room_109_open_door`는 외형·탐지·전역 fatal만 구현했고 성공 처리법은 만들지 않았다.
+- `room_109_open_door` Day 3 초기 조우는 현재 발생과 디버그 강제 실행을 모두 껐다. 컬렉션용 서사와 구현 데이터는 이후 재설계를 위해 남겨 두었으며, 별도 이벤트인 Day 7의 109호 통로에는 영향을 주지 않는다.
 - `room_107_hanging_girl`은 발동과 동시에 세탁실 탁자에 인형을 만들고, 클릭 획득·Hand 장착·선택지 대화·선택 이력 표시·룰북 단서·비장착 상태의 인형 전달 해결·오답 사망 서술을 구현했다. Preview는 세탁실 인형 획득부터 시작해 107호 생존 루트까지 이어진다. 목각 여자 인형은 기존 `resource/images/anomalies/room_107_hanging_girl/room_107_bed_nightstand/visible.png`를 조우·적대 상태·점프스케어 원본으로 공용하며, 점프스케어에서는 방 전체 대신 인형 상반신만 런타임 크롭해 돌진시킨다.
 - `hotel_following_shadow`은 Day 3부터 production queue에 등장한다. 이동음과 프런트 벨 복제, 빠른 벨 3연타 반응, 비명·심장 소리·화면 점멸, 2.2초 간격 안의 복도↔객실 경계 4회 반복 성공 판정, 저장·복원과 전역 fatal까지 연결됐다.
 - 모든 production 기현상은 하루 최대 1개이며 같은 시간에 하나만 활성화된다. Day 4~7의 고정 메인 엔티티와 옷장 엔티티도 전역 상호 차단한다.
@@ -40,7 +40,7 @@
 ## 콘텐츠와 자산
 
 - 이상현상별 Logic, Hotspot, Visual, Audio, SceneLock와 QA 단위는 [콘텐츠 제작 계획](anomaly-content-production-plan.md)에 있다.
-- 현재 SceneLock 실행 파일은 설치되어 있으나 이 Codex 세션에 호출 가능한 SceneLock tool namespace가 노출되지 않았다. 따라서 실제 SceneLock job, accepted candidate와 receipt는 아직 없다.
+- 현재 런타임은 저장소의 승인 이미지와 presentation manifest만 사용하며, 이 파일들은 모두 게임에 연결되어 있다. SceneLock의 accepted candidate와 receipt는 SceneLock 자체의 승인·내보내기 이력을 증명하는 제작 추적 자료일 뿐 런타임 요구사항이 아니다. 이번 자산들은 그 SceneLock 승인 절차를 거치지 않았으므로 receipt가 없으며, 플레이나 이미지 로딩에는 영향이 없다.
 - 모니터 존재, 유리문 존재의 두 상태, 지옥의 거울 아이콘은 최종 ImageGen 결과로 교체했다. 검증된 manifest가 장면별 이미지를 로드하고 없을 때만 procedural 프리뷰를 사용한다.
 - `small_mirror`와 `hell_mirror`는 런타임 ID·텍스트·변환·자동 장착·Hand 위험과 각각의 투명 PNG 아이콘까지 연결됐다. 인벤토리, drag preview, Hand 슬롯과 장비 HUD가 같은 아이콘을 사용한다.
 - 이불 속 아이의 공용 일본어 `みーつけた。` 음성은 `res://resource/sounds/anomalies/blanket_found_ja.ogg`에 있으며, 라이선스·생성·후처리 기록은 `resource/sounds/licenses/blanket_found_ja.md`에 보존한다. 파일이 없을 때만 개발용 타이밍 합성음으로 fallback한다.

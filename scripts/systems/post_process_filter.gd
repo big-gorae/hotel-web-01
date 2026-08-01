@@ -86,7 +86,7 @@ const DEFAULT_PRESET := PRESET_DREARY_1
 const PRESET_ORDER := [PRESET_NONE, PRESET_DREARY_1, PRESET_SUBTLE_GRAIN]
 const PRESETS := {
 	PRESET_NONE: {
-		"display_name": "필터 없음",
+		"display_name": "No filter",
 		"saturation": 1.0,
 		"contrast": 1.0,
 		"brightness": 0.0,
@@ -102,7 +102,7 @@ const PRESETS := {
 		"rgb_offset_strength": 0.0,
 	},
 	PRESET_DREARY_1: {
-		"display_name": "우중충한 필터 1",
+		"display_name": "Dreary 1",
 		"saturation": 0.74,
 		"contrast": 1.12,
 		"brightness": -0.025,
@@ -118,7 +118,7 @@ const PRESETS := {
 		"rgb_offset_strength": 0.0,
 	},
 	PRESET_SUBTLE_GRAIN: {
-		"display_name": "브라운관 지지직",
+		"display_name": "CRT static",
 		"saturation": 0.82,
 		"contrast": 1.14,
 		"brightness": -0.025,

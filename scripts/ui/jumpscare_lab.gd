@@ -5,101 +5,96 @@ signal preview_requested(event_id: String)
 
 const FIT_COVER := "cover"
 const FIT_CONTAIN := "contain"
-const EVENT_LABELS := {
-	"room_105_closet_pig_man": "옷장의 돼지 가면 남자",
-	"room_106_abandoned_child": "가짜 엄마",
-}
-
 const TUNABLE_FIELDS := [
 	{
 		"key": "jumpscare_hold_seconds",
-		"label": "돌진 시작",
+		"label": "Lunge delay",
 		"min": 0.0,
 		"max": 1.2,
 		"step": 0.01,
-		"suffix": " 초",
-		"hint": "첫 등장 후 돌진을 시작할 때까지",
+		"suffix": " s",
+		"hint": "Time from first appearance until the lunge starts",
 	},
 	{
 		"key": "jumpscare_initial_zoom",
-		"label": "원본 확대",
+		"label": "Initial scale",
 		"min": 0.5,
 		"max": 1.8,
 		"step": 0.01,
-		"suffix": " 배",
-		"hint": "처음 나타나는 원본 사진의 크기",
+		"suffix": "×",
+		"hint": "Size of the source image when it first appears",
 	},
 	{
 		"key": "jumpscare_lunge_seconds",
-		"label": "돌진 시간",
+		"label": "Lunge duration",
 		"min": 0.05,
 		"max": 1.0,
 		"step": 0.01,
-		"suffix": " 초",
-		"hint": "최종 확대까지 걸리는 시간",
+		"suffix": " s",
+		"hint": "Time required to reach the final scale",
 	},
 	{
 		"key": "jumpscare_lunge_zoom",
-		"label": "돌진 확대",
+		"label": "Lunge scale",
 		"min": 1.1,
 		"max": 4.0,
 		"step": 0.05,
-		"suffix": " 배",
-		"hint": "돌진이 끝났을 때의 크기",
+		"suffix": "×",
+		"hint": "Scale at the end of the lunge",
 	},
 	{
 		"key": "jumpscare_duration",
-		"label": "전체 길이",
+		"label": "Total duration",
 		"min": 0.5,
 		"max": 4.0,
 		"step": 0.05,
-		"suffix": " 초",
-		"hint": "첫 등장부터 종료까지",
+		"suffix": " s",
+		"hint": "Time from first appearance until the preview ends",
 	},
 	{
 		"key": "jumpscare_focus_x",
-		"label": "확대 중심 X",
+		"label": "Focus X",
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
 		"suffix": "",
-		"hint": "0은 왼쪽, 1은 오른쪽",
+		"hint": "0 is left; 1 is right",
 	},
 	{
 		"key": "jumpscare_focus_y",
-		"label": "확대 중심 Y",
+		"label": "Focus Y",
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
 		"suffix": "",
-		"hint": "0은 위, 1은 아래",
+		"hint": "0 is top; 1 is bottom",
 	},
 	{
 		"key": "jumpscare_initial_shake",
-		"label": "첫 충격 진동",
+		"label": "Initial shake",
 		"min": 0.0,
 		"max": 24.0,
 		"step": 0.5,
 		"suffix": " px",
-		"hint": "첫 프레임의 화면 진동",
+		"hint": "Screen shake on the first frame",
 	},
 	{
 		"key": "jumpscare_lunge_shake",
-		"label": "돌진 진동",
+		"label": "Lunge shake",
 		"min": 0.0,
 		"max": 32.0,
 		"step": 0.5,
 		"suffix": " px",
-		"hint": "돌진 순간의 화면 진동",
+		"hint": "Screen shake at the lunge",
 	},
 	{
 		"key": "jumpscare_audio_volume_db",
-		"label": "충격음 음량",
+		"label": "Impact volume",
 		"min": -30.0,
 		"max": 0.0,
 		"step": 0.5,
 		"suffix": " dB",
-		"hint": "프리뷰 음량",
+		"hint": "Preview volume",
 	},
 ]
 
@@ -128,8 +123,12 @@ func _ready() -> void:
 func setup(new_event_manager, new_jumpscare_controller, new_localization = null) -> void:
 	horror_event_manager = new_event_manager
 	jumpscare_controller = new_jumpscare_controller
+	if localization != null and localization.language_changed.is_connected(_on_language_changed):
+		localization.language_changed.disconnect(_on_language_changed)
 	localization = new_localization
-	_populate_events()
+	if localization != null and not localization.language_changed.is_connected(_on_language_changed):
+		localization.language_changed.connect(_on_language_changed)
+	_rebuild_ui()
 
 
 func open_lab(event_id := "room_106_abandoned_child") -> void:
@@ -203,8 +202,28 @@ func preview_selected() -> bool:
 		return false
 	jumpscare_controller.play(preview, localization)
 	preview_requested.emit(String(preview.id))
-	status_label.text = "%s 프리뷰 재생 · 사망/저장 미적용" % _event_label(preview)
+	status_label.text = _text("status.playing", "%s preview playing · deaths/saves unaffected") % _event_label(preview)
 	return true
+
+
+func _rebuild_ui() -> void:
+	var selected_event_id := ""
+	if event_selector != null and event_selector.selected >= 0 and event_selector.selected < event_selector.item_count:
+		selected_event_id = String(event_selector.get_item_metadata(event_selector.selected))
+	for child in get_children():
+		remove_child(child)
+		child.queue_free()
+	controls.clear()
+	event_selector = null
+	fit_selector = null
+	preview_button = null
+	reset_button = null
+	close_button = null
+	status_label = null
+	_build_ui()
+	_populate_events()
+	if not selected_event_id.is_empty():
+		select_event_by_id(selected_event_id)
 
 
 func _build_ui() -> void:
@@ -240,19 +259,19 @@ func _build_ui() -> void:
 	var title_row := HBoxContainer.new()
 	layout.add_child(title_row)
 	var title := Label.new()
-	title.text = "⚡ 점프스케어 연구소"
+	title.text = "⚡ %s" % _text("title", "Jumpscare Lab")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.add_theme_font_size_override("font_size", 26)
 	title.add_theme_color_override("font_color", Color(1.0, 0.83, 0.55))
 	title_row.add_child(title)
 	close_button = Button.new()
-	close_button.text = "닫기"
+	close_button.text = _text("close", "Close")
 	close_button.focus_mode = Control.FOCUS_NONE
 	close_button.pressed.connect(close_lab)
 	title_row.add_child(close_button)
 
 	var intro := Label.new()
-	intro.text = "값을 조절한 뒤 프리뷰를 누르세요. 변경값은 연구소에서만 사용되며 게임 데이터에는 저장되지 않습니다."
+	intro.text = _text("intro", "Adjust the values and preview the result. Changes are used only in this lab and are not saved to game data.")
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro.add_theme_color_override("font_color", Color(0.78, 0.80, 0.84))
 	layout.add_child(intro)
@@ -262,18 +281,18 @@ func _build_ui() -> void:
 	source_grid.add_theme_constant_override("h_separation", 14)
 	source_grid.add_theme_constant_override("v_separation", 8)
 	layout.add_child(source_grid)
-	source_grid.add_child(_make_label("엔티티"))
+	source_grid.add_child(_make_label(_text("entity", "Entity")))
 	event_selector = OptionButton.new()
 	event_selector.custom_minimum_size = Vector2(460.0, 34.0)
 	event_selector.focus_mode = Control.FOCUS_NONE
 	event_selector.item_selected.connect(_on_event_selected)
 	source_grid.add_child(event_selector)
-	source_grid.add_child(_make_label("원본 맞춤"))
+	source_grid.add_child(_make_label(_text("source_fit", "Source fit")))
 	fit_selector = OptionButton.new()
 	fit_selector.custom_minimum_size = Vector2(240.0, 34.0)
 	fit_selector.focus_mode = Control.FOCUS_NONE
-	fit_selector.add_item("화면 채우기 · Cover", 0)
-	fit_selector.add_item("원본 비율 · Contain", 1)
+	fit_selector.add_item(_text("fit.cover", "Fill screen · Cover"), 0)
+	fit_selector.add_item(_text("fit.contain", "Original ratio · Contain"), 1)
 	source_grid.add_child(fit_selector)
 
 	var separator := HSeparator.new()
@@ -286,19 +305,20 @@ func _build_ui() -> void:
 	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(grid)
 	for field in TUNABLE_FIELDS:
-		grid.add_child(_make_label(String(field["label"])))
+		var field_key := String(field["key"])
+		grid.add_child(_make_label(_text("field.%s.label" % field_key, String(field["label"]))))
 		var spin := SpinBox.new()
 		spin.min_value = float(field["min"])
 		spin.max_value = float(field["max"])
 		spin.step = float(field["step"])
-		spin.suffix = String(field["suffix"])
+		spin.suffix = _field_suffix(field_key, String(field["suffix"]))
 		spin.allow_greater = false
 		spin.allow_lesser = false
 		spin.custom_minimum_size = Vector2(185.0, 32.0)
 		spin.update_on_text_changed = true
 		controls[String(field["key"])] = spin
 		grid.add_child(spin)
-		var hint := _make_label(String(field["hint"]))
+		var hint := _make_label(_text("field.%s.hint" % field_key, String(field["hint"])))
 		hint.add_theme_color_override("font_color", Color(0.60, 0.64, 0.70))
 		grid.add_child(hint)
 
@@ -306,19 +326,19 @@ func _build_ui() -> void:
 	action_row.add_theme_constant_override("separation", 10)
 	layout.add_child(action_row)
 	preview_button = Button.new()
-	preview_button.text = "▶ 현재 값으로 프리뷰"
+	preview_button.text = "▶ %s" % _text("preview", "Preview current values")
 	preview_button.custom_minimum_size = Vector2(250.0, 42.0)
 	preview_button.focus_mode = Control.FOCUS_NONE
 	preview_button.pressed.connect(preview_selected)
 	action_row.add_child(preview_button)
 	reset_button = Button.new()
-	reset_button.text = "↺ 엔티티 기본값"
+	reset_button.text = "↺ %s" % _text("reset", "Entity defaults")
 	reset_button.custom_minimum_size = Vector2(190.0, 42.0)
 	reset_button.focus_mode = Control.FOCUS_NONE
 	reset_button.pressed.connect(_load_selected_definition)
 	action_row.add_child(reset_button)
 	status_label = Label.new()
-	status_label.text = "프리뷰는 사망 판정과 저장을 변경하지 않습니다."
+	status_label.text = _text("status.safe", "Previews do not change death state or saves.")
 	status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -368,11 +388,36 @@ func _load_selected_definition() -> void:
 	set_control_value("jumpscare_initial_shake", float(selected_definition.jumpscare_initial_shake))
 	set_control_value("jumpscare_lunge_shake", float(selected_definition.jumpscare_lunge_shake))
 	set_control_value("jumpscare_audio_volume_db", float(selected_definition.jumpscare_audio_volume_db))
-	status_label.text = "%s 기본값 불러옴" % _event_label(selected_definition)
+	status_label.text = _text("status.loaded", "%s defaults loaded") % _event_label(selected_definition)
 
 
 func _event_label(definition) -> String:
-	return String(EVENT_LABELS.get(String(definition.id), definition.fallback_title))
+	var fallback := String(definition.fallback_title)
+	if localization == null:
+		return fallback
+	return localization.translate(String(definition.title_key), fallback)
+
+
+func _field_suffix(field_key: String, fallback: String) -> String:
+	if field_key in ["jumpscare_hold_seconds", "jumpscare_lunge_seconds", "jumpscare_duration"]:
+		return _text("suffix.seconds", " s")
+	if field_key in ["jumpscare_initial_zoom", "jumpscare_lunge_zoom"]:
+		return _text("suffix.times", "×")
+	if field_key in ["jumpscare_initial_shake", "jumpscare_lunge_shake"]:
+		return _text("suffix.pixels", " px")
+	if field_key == "jumpscare_audio_volume_db":
+		return _text("suffix.decibels", " dB")
+	return fallback
+
+
+func _text(key: String, fallback: String) -> String:
+	if localization == null:
+		return fallback
+	return localization.translate("ui.debug.jumpscare_lab.%s" % key, fallback)
+
+
+func _on_language_changed(_language: int) -> void:
+	_rebuild_ui()
 
 
 func _make_label(text: String) -> Label:
