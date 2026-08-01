@@ -146,6 +146,8 @@ var day_badge_panel: PanelContainer
 var day_badge_label: Label
 var end_shift_button: Button
 var debug_panel: PanelContainer
+var debug_tab_container: TabContainer
+var debug_test_tabs: Dictionary = {}
 var persistent_dialogue_panel: PanelContainer
 var persistent_dialogue_label: Label
 var persistent_dialogue_hint_label: Label
@@ -478,30 +480,42 @@ func _build_ui() -> void:
 	debug_panel.offset_left = -1045.0
 	debug_panel.offset_top = 18.0
 	debug_panel.offset_right = -18.0
-	debug_panel.offset_bottom = 108.0
+	debug_panel.offset_bottom = 132.0
 	debug_panel.visible = debug_ui_enabled
 	debug_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
 	gameplay_layer.add_child(debug_panel)
 
-	var corner_column := VBoxContainer.new()
-	corner_column.add_theme_constant_override("separation", 6)
-	debug_panel.add_child(corner_column)
-
-	var corner_row := HBoxContainer.new()
-	corner_row.add_theme_constant_override("separation", 8)
-	corner_column.add_child(corner_row)
+	debug_tab_container = TabContainer.new()
+	debug_tab_container.custom_minimum_size = Vector2(1000.0, 90.0)
+	debug_panel.add_child(debug_tab_container)
+	debug_test_tabs.clear()
+	var general_tab := _create_debug_test_tab(
+		"general", _ui_text("debug.tabs.general", "General")
+	)
+	var scene_tab := _create_debug_test_tab(
+		"scene", _ui_text("debug.tabs.scene", "Scene")
+	)
+	var anomaly_tab := _create_debug_test_tab(
+		"anomaly", _ui_text("debug.tabs.anomaly", "Anomaly")
+	)
+	var vision_tab := _create_debug_test_tab(
+		"vision", _ui_text("debug.tabs.vision", "Vision")
+	)
+	var presentation_tab := _create_debug_test_tab(
+		"presentation", _ui_text("debug.tabs.presentation", "Presentation")
+	)
 
 	hotspot_toggle = _make_debug_button("▣", _ui_text("debug.hotspots.show", "Show click areas"), _toggle_hotspots)
-	corner_row.add_child(hotspot_toggle)
+	general_tab.add_child(hotspot_toggle)
 
 	chat_toggle = _make_debug_button("💬", _ui_text("debug.dialogue.hide", "Hide dialogue panel"), _toggle_chat)
-	corner_row.add_child(chat_toggle)
+	general_tab.add_child(chat_toggle)
 
 	navigation_toggle = _make_debug_button("🧭", _ui_text("debug.navigation.show", "Show quick travel buttons"), _toggle_navigation)
-	corner_row.add_child(navigation_toggle)
+	general_tab.add_child(navigation_toggle)
 
 	filter_toggle = _make_debug_button("🎛", _ui_text("debug.filters.show", "Show filter selector"), _toggle_filter_selector)
-	corner_row.add_child(filter_toggle)
+	general_tab.add_child(filter_toggle)
 
 	debug_curtain_preview_selector = OptionButton.new()
 	debug_curtain_preview_selector.custom_minimum_size = Vector2(232.0, 32.0)
@@ -512,7 +526,7 @@ func _build_ui() -> void:
 	debug_curtain_preview_selector.add_item("🛁 Closed A · edit_002", DEBUG_CURTAIN_CLOSED_EDIT)
 	debug_curtain_preview_selector.add_item("🛁 Closed B · prev", DEBUG_CURTAIN_CLOSED_PREV)
 	debug_curtain_preview_selector.item_selected.connect(_on_debug_curtain_preview_selected)
-	corner_row.add_child(debug_curtain_preview_selector)
+	scene_tab.add_child(debug_curtain_preview_selector)
 
 	debug_anomaly_selector = OptionButton.new()
 	debug_anomaly_selector.custom_minimum_size = Vector2(226.0, 32.0)
@@ -532,11 +546,7 @@ func _build_ui() -> void:
 		debug_anomaly_selector.set_item_metadata(anomaly_debug_index, event_id)
 		anomaly_debug_index += 1
 	debug_anomaly_selector.item_selected.connect(_on_debug_anomaly_selected)
-	corner_row.add_child(debug_anomaly_selector)
-
-	var tuning_row := HBoxContainer.new()
-	tuning_row.add_theme_constant_override("separation", 8)
-	corner_column.add_child(tuning_row)
+	anomaly_tab.add_child(debug_anomaly_selector)
 
 	debug_jumpscare_lab_button = Button.new()
 	debug_jumpscare_lab_button.text = "⚡ 점프스케어 연구소"
@@ -544,7 +554,7 @@ func _build_ui() -> void:
 	debug_jumpscare_lab_button.focus_mode = Control.FOCUS_NONE
 	debug_jumpscare_lab_button.tooltip_text = "원본 확대, 돌진 시점과 속도, 화면 진동을 조절하고 프리뷰합니다."
 	debug_jumpscare_lab_button.pressed.connect(_open_jumpscare_lab)
-	tuning_row.add_child(debug_jumpscare_lab_button)
+	presentation_tab.add_child(debug_jumpscare_lab_button)
 
 	eye_radius_slider = HSlider.new()
 	eye_radius_slider.min_value = 28.0
@@ -554,9 +564,9 @@ func _build_ui() -> void:
 	eye_radius_slider.custom_minimum_size = Vector2(96.0, 32.0)
 	eye_radius_slider.tooltip_text = _ui_text("debug.eyes.radius", "Closed-eye vision radius")
 	eye_radius_slider.value_changed.connect(_on_eye_radius_debug_changed)
-	tuning_row.add_child(eye_radius_slider)
+	vision_tab.add_child(eye_radius_slider)
 	eye_radius_value_label = _create_debug_numeric_value_label("%d" % roundi(eye_radius_slider.value))
-	tuning_row.add_child(eye_radius_value_label)
+	vision_tab.add_child(eye_radius_value_label)
 
 	eye_height_slider = HSlider.new()
 	eye_height_slider.min_value = 0.24
@@ -566,9 +576,9 @@ func _build_ui() -> void:
 	eye_height_slider.custom_minimum_size = Vector2(96.0, 32.0)
 	eye_height_slider.tooltip_text = _ui_text("debug.eyes.height", "Closed-eye opening height")
 	eye_height_slider.value_changed.connect(_on_eye_height_debug_changed)
-	tuning_row.add_child(eye_height_slider)
+	vision_tab.add_child(eye_height_slider)
 	eye_height_value_label = _create_debug_numeric_value_label("%.2f" % eye_height_slider.value)
-	tuning_row.add_child(eye_height_value_label)
+	vision_tab.add_child(eye_height_value_label)
 
 	debug_anomaly_transition_button = Button.new()
 	debug_anomaly_transition_button.text = _ui_text("debug.anomaly_transition.preview", "Fade preview")
@@ -576,7 +586,7 @@ func _build_ui() -> void:
 	debug_anomaly_transition_button.focus_mode = Control.FOCUS_NONE
 	debug_anomaly_transition_button.custom_minimum_size = Vector2(132.0, 32.0)
 	debug_anomaly_transition_button.pressed.connect(_preview_anomaly_resolution_transition)
-	tuning_row.add_child(debug_anomaly_transition_button)
+	presentation_tab.add_child(debug_anomaly_transition_button)
 
 	anomaly_transition_duration_slider = HSlider.new()
 	anomaly_transition_duration_slider.min_value = 0.25
@@ -586,14 +596,14 @@ func _build_ui() -> void:
 	anomaly_transition_duration_slider.custom_minimum_size = Vector2(96.0, 32.0)
 	anomaly_transition_duration_slider.tooltip_text = _ui_text("debug.anomaly_transition.duration", "Anomaly fade duration")
 	anomaly_transition_duration_slider.value_changed.connect(_on_anomaly_transition_duration_changed)
-	tuning_row.add_child(anomaly_transition_duration_slider)
+	presentation_tab.add_child(anomaly_transition_duration_slider)
 
 	anomaly_transition_duration_value_label = Label.new()
 	anomaly_transition_duration_value_label.custom_minimum_size = Vector2(180.0, 32.0)
 	anomaly_transition_duration_value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	anomaly_transition_duration_value_label.add_theme_font_size_override("font_size", 14)
 	anomaly_transition_duration_value_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
-	tuning_row.add_child(anomaly_transition_duration_value_label)
+	presentation_tab.add_child(anomaly_transition_duration_value_label)
 	_update_anomaly_transition_duration_value(
 		HotelSceneTransitionFaderScript.DEFAULT_ANOMALY_FADE_OUT_SECONDS
 	)
@@ -2615,6 +2625,16 @@ func _make_debug_button(icon: String, tooltip: String, callback: Callable) -> Bu
 	button.focus_mode = Control.FOCUS_NONE
 	button.pressed.connect(callback)
 	return button
+
+
+func _create_debug_test_tab(tab_id: String, title: String) -> HBoxContainer:
+	var tab_row := HBoxContainer.new()
+	tab_row.name = tab_id
+	tab_row.add_theme_constant_override("separation", 8)
+	debug_tab_container.add_child(tab_row)
+	debug_tab_container.set_tab_title(debug_tab_container.get_tab_count() - 1, title)
+	debug_test_tabs[tab_id] = tab_row
+	return tab_row
 
 
 func _style_debug_button(button: Button, enabled: bool) -> void:

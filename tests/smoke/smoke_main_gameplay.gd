@@ -43,6 +43,31 @@ func _run() -> void:
 	if main.debug_jumpscare_lab_button == null or main.jumpscare_lab == null:
 		_fail("jumpscare lab was not initialized")
 		return
+	if main.debug_tab_container == null or main.debug_tab_container.get_tab_count() != 5:
+		_fail("debug tests were not split into five tabs")
+		return
+	var expected_debug_tabs := ["기본", "장면", "기현상", "시야", "연출"]
+	for tab_index in expected_debug_tabs.size():
+		if main.debug_tab_container.get_tab_title(tab_index) != expected_debug_tabs[tab_index]:
+			_fail("debug test tab title or order is incorrect")
+			return
+	if (
+		main.hotspot_toggle.get_parent() != main.debug_test_tabs["general"]
+		or main.debug_curtain_preview_selector.get_parent() != main.debug_test_tabs["scene"]
+		or main.debug_anomaly_selector.get_parent() != main.debug_test_tabs["anomaly"]
+		or main.eye_radius_slider.get_parent() != main.debug_test_tabs["vision"]
+		or main.debug_jumpscare_lab_button.get_parent() != main.debug_test_tabs["presentation"]
+		or main.anomaly_transition_duration_slider.get_parent() != main.debug_test_tabs["presentation"]
+	):
+		_fail("debug controls were not assigned to their intended tabs")
+		return
+	main.debug_tab_container.current_tab = 2
+	await process_frame
+	if not main.debug_test_tabs["anomaly"].visible or main.debug_test_tabs["general"].visible:
+		_fail("selecting a debug tab did not isolate its controls")
+		return
+	main.debug_tab_container.current_tab = 0
+	await process_frame
 	if main.eye_radius_value_label == null or main.eye_radius_value_label.text != "150":
 		_fail("closed-eye vision radius did not show its initial numeric value")
 		return
