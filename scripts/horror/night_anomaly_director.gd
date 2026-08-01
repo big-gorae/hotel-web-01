@@ -370,6 +370,10 @@ func is_scene_anomalous(scene_id: String) -> bool:
 	return false
 
 
+func is_laundry_washer_locked_closed() -> bool:
+	return laundry_state in [LAUNDRY_WASHING, LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_READY]
+
+
 func force_phone_ring() -> void:
 	if current_day < 4:
 		current_day = 4
@@ -390,6 +394,7 @@ func force_red_laundry() -> void:
 	laundry_state = LAUNDRY_RED
 	_laundry_seconds = 0.0
 	_laundry_neglect_seconds = laundry_neglect_duration
+	_laundry_fatal_pending = false
 	_prepare_forced_event(LAUNDRY_EVENT_ID)
 	_mark_planned_event_started(LAUNDRY_EVENT_ID)
 	if _audio_playback_allowed() and _washer_spin_player != null and not _washer_spin_player.playing:
@@ -601,32 +606,28 @@ func _answer_phone() -> bool:
 
 
 func _advance_laundry(delta: float) -> void:
-	if laundry_state == LAUNDRY_RED:
-		_laundry_neglect_seconds = maxf(_laundry_neglect_seconds - delta, 0.0)
-		if _laundry_neglect_seconds <= 0.0:
-			laundry_state = LAUNDRY_MUSIC
-			_laundry_fatal_pending = true
-			_laundry_seconds = laundry_music_duration + laundry_post_music_death_delay
-			if _washer_spin_player != null:
-				_washer_spin_player.stop()
-			if _audio_playback_allowed() and _completion_music_player != null:
-				_completion_music_player.play()
-			state_changed.emit()
-		return
-	if laundry_state == LAUNDRY_MUSIC and _laundry_fatal_pending:
-		_laundry_seconds = maxf(_laundry_seconds - delta, 0.0)
-		if _laundry_seconds <= 0.0 and lethal_outcomes_enabled:
-			_laundry_fatal_pending = false
-			death_requested.emit(LAUNDRY_EVENT_ID)
-		return
-	if laundry_state != LAUNDRY_WASHING:
-		return
-	_laundry_seconds -= delta
-	if _laundry_seconds > 0.0:
-		return
-	laundry_state = LAUNDRY_RED
-	_laundry_neglect_seconds = laundry_neglect_duration
-	state_changed.emit()
+	match laundry_state:
+		LAUNDRY_WASHING:
+			_laundry_seconds = maxf(_laundry_seconds - delta, 0.0)
+			if _laundry_seconds <= 0.0:
+				laundry_state = LAUNDRY_RED
+				_laundry_neglect_seconds = laundry_neglect_duration
+				_laundry_fatal_pending = false
+				state_changed.emit()
+		LAUNDRY_RED:
+			_laundry_neglect_seconds = maxf(_laundry_neglect_seconds - delta, 0.0)
+			if _laundry_neglect_seconds <= 0.0:
+				_start_laundry_music(true)
+		LAUNDRY_MUSIC:
+			_laundry_seconds = maxf(_laundry_seconds - delta, 0.0)
+			if _laundry_seconds > 0.0:
+				return
+			if _laundry_fatal_pending:
+				_laundry_fatal_pending = false
+				if lethal_outcomes_enabled:
+					death_requested.emit(LAUNDRY_EVENT_ID)
+				return
+			_finish_laundry_music()
 
 
 func _handle_washer() -> bool:
@@ -634,14 +635,7 @@ func _handle_washer() -> bool:
 		LAUNDRY_WASHING:
 			return true
 		LAUNDRY_RED:
-			laundry_state = LAUNDRY_MUSIC
-			_laundry_fatal_pending = false
-			_laundry_seconds = laundry_music_duration
-			if _washer_spin_player != null:
-				_washer_spin_player.stop()
-			if _audio_playback_allowed() and _completion_music_player != null:
-				_completion_music_player.play()
-			state_changed.emit()
+			_start_laundry_music(false)
 			return true
 		LAUNDRY_MUSIC:
 			if lethal_outcomes_enabled:
@@ -652,13 +646,29 @@ func _handle_washer() -> bool:
 				death_requested.emit(LAUNDRY_EVENT_ID)
 				return true
 			laundry_state = LAUNDRY_DISCARDED
+			_laundry_seconds = 0.0
+			_laundry_neglect_seconds = 0.0
+			_laundry_fatal_pending = false
 			_complete_planned_event(LAUNDRY_EVENT_ID)
 			state_changed.emit()
 			return true
 	return false
 
 
-func _on_completion_music_finished() -> void:
+func _start_laundry_music(fatal_pending: bool) -> void:
+	laundry_state = LAUNDRY_MUSIC
+	_laundry_fatal_pending = fatal_pending
+	_laundry_seconds = laundry_music_duration
+	if fatal_pending:
+		_laundry_seconds += laundry_post_music_death_delay
+	if _washer_spin_player != null:
+		_washer_spin_player.stop()
+	if _audio_playback_allowed() and _completion_music_player != null:
+		_completion_music_player.play()
+	state_changed.emit()
+
+
+func _finish_laundry_music() -> void:
 	if laundry_state != LAUNDRY_MUSIC:
 		return
 	if _laundry_fatal_pending:
@@ -666,6 +676,10 @@ func _on_completion_music_finished() -> void:
 	laundry_state = LAUNDRY_READY
 	_laundry_seconds = 0.0
 	state_changed.emit()
+
+
+func _on_completion_music_finished() -> void:
+	_finish_laundry_music()
 
 
 func _audio_playback_allowed() -> bool:

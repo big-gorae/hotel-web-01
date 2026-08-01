@@ -416,10 +416,17 @@ func _draw_cute_doll() -> void:
 
 
 func _draw_red_washer() -> void:
-	var rect := _map_rect(Rect2(0.505, 0.345, 0.205, 0.355))
-	draw_rect(rect, Color(0.45, 0.0, 0.0, 0.32), true)
-	draw_circle(rect.get_center(), minf(rect.size.x, rect.size.y) * 0.39, Color(0.82, 0.0, 0.0, 0.88))
-	draw_circle(rect.get_center(), minf(rect.size.x, rect.size.y) * 0.30, Color(0.25, 0.0, 0.0, 0.94))
+	# Emergency fallback when the registered full-scene artifact is unavailable.
+	# Keep it inside the rear washer glass instead of tinting the whole machine row.
+	var rect := _map_rect(Rect2(0.610, 0.528, 0.041, 0.116))
+	_draw_oval(rect.get_center(), rect.size * Vector2(0.48, 0.49), Color(0.20, 0.0, 0.0, 0.96))
+	for index in 5:
+		var fold_center := rect.position + rect.size * Vector2(
+			0.32 + 0.13 * float(index % 3),
+			0.27 + 0.18 * float(index),
+		)
+		_draw_oval(fold_center, rect.size * Vector2(0.23, 0.11), Color(0.66, 0.015, 0.02, 0.92))
+	draw_arc(rect.get_center(), rect.size.x * 0.47, -1.2, 1.1, 20, Color(0.94, 0.12, 0.10, 0.72), 2.0)
 
 
 func _draw_abandoned_child() -> void:

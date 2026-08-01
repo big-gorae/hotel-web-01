@@ -316,6 +316,9 @@ func _run() -> void:
 	_finish_story(main)
 	main._hide_menu()
 	main.show_scene("laundry_room", false)
+	if main._is_laundry_second_washer_open():
+		_fail("running red-laundry washer did not use the closed-door photo")
+		return
 	main.night_anomaly_director.force_red_laundry()
 	if not main.anomaly_presentation_layer.is_rendering_artifact():
 		_fail("red washer MVP image was not rendered")
@@ -324,12 +327,14 @@ func _run() -> void:
 	if main.night_anomaly_director.laundry_state != main.night_anomaly_director.LAUNDRY_MUSIC:
 		_fail("red washer did not enter completion-music lock")
 		return
-	main.night_anomaly_director._completion_music_player.stop()
-	main.night_anomaly_director._on_completion_music_finished()
+	main.night_anomaly_director.advance(main.night_anomaly_director.laundry_music_duration)
 	main.eye_close_controller.close_eyes()
 	main._on_hotspot_pressed(_find_dynamic_or_editor_hotspot(main, "laundry_second_washer"))
 	if main.night_anomaly_director.laundry_state != main.night_anomaly_director.LAUNDRY_DISCARDED:
 		_fail("red laundry could not be discarded with eyes closed")
+		return
+	if not main._is_laundry_second_washer_open():
+		_fail("discarded red laundry did not restore the open-door photo")
 		return
 	main.eye_close_controller.open_eyes()
 

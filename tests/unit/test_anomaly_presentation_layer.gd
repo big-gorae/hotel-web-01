@@ -45,3 +45,25 @@ func test_shower_event_selects_the_manifest_for_its_saved_room() -> void:
 		"curtain_legs_visible": true,
 	})).is_true()
 	assert_int(layer.get_child_count()).is_equal(1)
+
+
+func test_red_washer_artifact_persists_until_the_laundry_is_discarded() -> void:
+	var layer = auto_free(PresentationLayer.new())
+	add_child(layer)
+	layer.reload_manifests()
+	layer.set_scene("laundry_room")
+	layer.set_photo_rect(Rect2(0.0, 0.0, 1448.0, 1086.0))
+
+	for state_id in ["red", "music", "ready"]:
+		assert_bool(layer.apply_presentation_state({
+			"event_id": "laundry_red_washer",
+			"state": state_id,
+			"scene_id": "laundry_room",
+		})).override_failure_message("missing red washer artifact for %s" % state_id).is_true()
+		assert_int(layer.get_child_count()).is_equal(1)
+
+	assert_bool(layer.apply_presentation_state({
+		"event_id": "laundry_red_washer",
+		"state": "discarded",
+		"scene_id": "laundry_room",
+	})).is_false()

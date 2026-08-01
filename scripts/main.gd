@@ -1594,6 +1594,7 @@ func _on_phone_bell_changed(count: int, maximum: int) -> void:
 
 
 func _on_night_anomaly_state_changed() -> void:
+	_sync_laundry_washer_photo_to_event()
 	if HOTEL_SCENES.has(current_scene_id):
 		_build_hotspots(_scene_hotspots(current_scene_id, HOTEL_SCENES[current_scene_id]))
 		_update_layout()
@@ -1601,6 +1602,22 @@ func _on_night_anomaly_state_changed() -> void:
 	_sync_eye_close_anomaly_context()
 	_sync_room_109_display()
 	_sync_anomaly_visual_overlay()
+
+
+func _sync_laundry_washer_photo_to_event() -> void:
+	if night_anomaly_director == null or flag_store == null:
+		return
+	var should_open: bool = (
+		night_anomaly_director.laundry_state == night_anomaly_director.LAUNDRY_DISCARDED
+	)
+	if not should_open and not night_anomaly_director.is_laundry_washer_locked_closed():
+		return
+	if _is_laundry_second_washer_open() == should_open:
+		return
+	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, should_open)
+	laundry_second_washer_open = should_open
+	if current_scene_id == "laundry_room":
+		_refresh_current_scene_photo()
 
 
 func _on_content_anomaly_state_changed() -> void:
