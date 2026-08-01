@@ -22,14 +22,15 @@ const STATE_DOOR_OPEN := "door_open"
 const STATE_EMERGING := "emerging"
 const STATE_RESOLVED := "resolved"
 
-# The first squeal starts the readable response window quickly. Each visual
-# phase is deliberately shorter than the last so the stare keeps escalating.
-const INITIAL_WAIT_SECONDS := 90.0
-const DOOR_OPEN_WAIT_SECONDS := 45.0
-const EMERGING_WAIT_SECONDS := 30.0
+# The closed wardrobe is only a randomized lead-in, not a visual phase.
+# Once it opens, the encounter has exactly two fixed readable phases.
+const INITIAL_WAIT_MIN_SECONDS := 90.0
+const INITIAL_WAIT_MAX_SECONDS := 180.0
+const DOOR_OPEN_WAIT_SECONDS := 30.0
+const EMERGING_WAIT_SECONDS := 40.0
 const HOLD_SECONDS := 5.0
-const SQUEAL_INTERVAL_MIN_SECONDS := 24.0
-const SQUEAL_INTERVAL_MAX_SECONDS := 42.0
+const SQUEAL_INTERVAL_BASE_SECONDS := 30.0
+const SQUEAL_INTERVAL_JITTER_SECONDS := 10.0
 
 var current_day := 1
 var current_state := STATE_IDLE
@@ -68,7 +69,7 @@ func start_day(day: int, scheduled = null) -> void:
 	external_anomaly_active = false
 	release_hold()
 	current_state = STATE_WAITING if enabled else STATE_IDLE
-	stage_seconds_remaining = INITIAL_WAIT_SECONDS if enabled else 0.0
+	stage_seconds_remaining = _next_initial_wait_seconds() if enabled else 0.0
 	squeal_seconds_remaining = 0.0
 	state_changed.emit()
 
@@ -195,13 +196,20 @@ func _advance_global_squeals(delta: float) -> void:
 
 
 func _next_squeal_interval() -> float:
-	return _rng.randf_range(SQUEAL_INTERVAL_MIN_SECONDS, SQUEAL_INTERVAL_MAX_SECONDS)
+	return SQUEAL_INTERVAL_BASE_SECONDS + _rng.randf_range(
+		-SQUEAL_INTERVAL_JITTER_SECONDS,
+		SQUEAL_INTERVAL_JITTER_SECONDS,
+	)
+
+
+func _next_initial_wait_seconds() -> float:
+	return _rng.randf_range(INITIAL_WAIT_MIN_SECONDS, INITIAL_WAIT_MAX_SECONDS)
 
 
 func _default_seconds_for_state(state: String) -> float:
 	match state:
 		STATE_WAITING:
-			return INITIAL_WAIT_SECONDS
+			return _next_initial_wait_seconds()
 		STATE_DOOR_OPEN:
 			return DOOR_OPEN_WAIT_SECONDS
 		STATE_EMERGING:

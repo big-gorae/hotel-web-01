@@ -344,9 +344,9 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
 - ID: `room_105_closet_pig_man`
 - Scene: `room_105_bathroom_entry`
 - Logic:
-  - 90초 최초 대기 뒤 한쪽 눈이 보이는 `door_open`
-  - 45초 뒤 두 눈과 가면 대부분이 보이는 `emerging`
-  - 다시 30초 방치 시 전역 사망
+  - 닫힌 상태로 90~180초 랜덤 대기한 뒤 한쪽 눈이 보이는 `door_open`
+  - 30초 뒤 두 눈과 가면 대부분이 보이는 `emerging`
+  - 다시 40초 방치 시 전역 사망
   - 제한시간 종료 시 전역 사망
 - Visual:
   - 1단계는 거의 닫힌 옷장문의 좁은 검은 틈과 한쪽 눈·주둥이 일부
@@ -354,7 +354,7 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
   - 목, 어깨, 가슴, 팔과 하체를 옷장문과 어둠으로 완전히 가림
   - 남자가 문 밖으로 걸어 나오는 full-body 상태는 만들지 않음
 - Input: 옷장 hotspot을 5초간 마우스 홀드해 남자를 밀어 넣고 문을 닫음
-- Audio: 각 단계 시작 시 한 번, 활성 중 24~42초 간격의 전역 돼지 울음, 퇴각·문 닫힘
+- Audio: 각 단계 시작 시 한 번, 활성 중 30초 기준 ±10초 jitter 간격의 전역 돼지 울음, 퇴각·문 닫힘
 - SceneLock: 옷장 selection을 두 상태로 고정하고 장면 나머지를 protect
 - QA: 다른 장면에서도 타이머와 전역 울음이 진행되고, 홀드 중단 시 진행도가 초기화되는지 확인
 
