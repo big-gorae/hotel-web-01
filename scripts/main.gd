@@ -167,6 +167,7 @@ var debug_anomaly_selector: OptionButton
 var debug_jumpscare_lab_button: Button
 var debug_anomaly_transition_button: Button
 var anomaly_transition_duration_slider: HSlider
+var anomaly_transition_duration_value_label: Label
 var menu_overlay: ColorRect
 var brightness_slider: HSlider
 var brightness_value_label: Label
@@ -580,6 +581,16 @@ func _build_ui() -> void:
 	anomaly_transition_duration_slider.tooltip_text = _ui_text("debug.anomaly_transition.duration", "Anomaly fade duration")
 	anomaly_transition_duration_slider.value_changed.connect(_on_anomaly_transition_duration_changed)
 	tuning_row.add_child(anomaly_transition_duration_slider)
+
+	anomaly_transition_duration_value_label = Label.new()
+	anomaly_transition_duration_value_label.custom_minimum_size = Vector2(180.0, 32.0)
+	anomaly_transition_duration_value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	anomaly_transition_duration_value_label.add_theme_font_size_override("font_size", 14)
+	anomaly_transition_duration_value_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
+	tuning_row.add_child(anomaly_transition_duration_value_label)
+	_update_anomaly_transition_duration_value(
+		HotelSceneTransitionFaderScript.DEFAULT_ANOMALY_FADE_OUT_SECONDS
+	)
 
 	phone_bell_panel = PanelContainer.new()
 	phone_bell_panel.visible = false
@@ -1858,6 +1869,25 @@ func _on_eye_height_debug_changed(value: float) -> void:
 func _on_anomaly_transition_duration_changed(value: float) -> void:
 	if scene_transition_fader != null:
 		scene_transition_fader.set_anomaly_fade_seconds(value)
+	_update_anomaly_transition_duration_value(value)
+
+
+func _update_anomaly_transition_duration_value(fade_out_seconds: float) -> void:
+	if anomaly_transition_duration_value_label == null:
+		return
+	var fade_in_seconds := fade_out_seconds * 1.15
+	var hold_seconds := HotelSceneTransitionFaderScript.DEFAULT_ANOMALY_HOLD_SECONDS
+	if scene_transition_fader != null:
+		fade_out_seconds = scene_transition_fader.anomaly_fade_out_seconds
+		fade_in_seconds = scene_transition_fader.anomaly_fade_in_seconds
+		hold_seconds = scene_transition_fader.anomaly_hold_seconds
+	var total_seconds := fade_out_seconds + hold_seconds + fade_in_seconds
+	var displayed_fade_out_seconds := roundf((fade_out_seconds + 0.00001) * 100.0) / 100.0
+	var displayed_total_seconds := roundf((total_seconds + 0.00001) * 100.0) / 100.0
+	anomaly_transition_duration_value_label.text = localization.translate(
+		"ui.debug.anomaly_transition.value",
+		"Black %.2fs / total %.2fs",
+	) % [displayed_fade_out_seconds, displayed_total_seconds]
 
 
 func _preview_anomaly_resolution_transition() -> void:
