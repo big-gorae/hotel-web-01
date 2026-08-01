@@ -67,6 +67,18 @@ func test_collection_entries_separate_entity_stories_from_phenomenon_description
 	assert_str(String(phenomenon.get("collection_kind", ""))).is_equal("phenomenon")
 	assert_str(String(entity.get("body_key", ""))).ends_with(".body")
 	assert_str(String(phenomenon.get("body_key", ""))).ends_with(".body")
+	assert_dict(manager.get_discovered_kind_counts()).is_equal({
+		"entity": 1,
+		"phenomenon": 1,
+	})
+
+	var restored := HorrorEventManager.new()
+	restored.setup_default_catalog()
+	restored.import_collection_state(manager.export_collection_state())
+	assert_dict(restored.get_discovered_kind_counts()).is_equal({
+		"entity": 1,
+		"phenomenon": 1,
+	})
 
 
 func test_collection_copy_uses_korean_and_falls_back_to_english_for_untranslated_locales() -> void:

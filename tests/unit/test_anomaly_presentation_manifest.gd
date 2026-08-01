@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
 
 const Manifest := preload("res://scripts/horror/anomaly_presentation_manifest.gd")
+const HorrorCatalog := preload("res://scripts/horror/horror_catalog.gd")
 const VALID_SHA := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 
 
@@ -52,29 +53,25 @@ func test_missing_manifest_file_returns_structured_result() -> void:
 	)
 
 
-func test_all_mvp_manifests_match_their_real_source_and_artifact_files() -> void:
-	for filename in [
-		"laundry_red_washer.json",
-		"laundry_baby_face_surfaces.json",
-		"room_106_abandoned_child.json",
-		"vacant_room_blanket_child.json",
-		"room_108_tv_ghost.json",
-		"room_108_entrails_bathtub.json",
-		"room_107_empty_hanging_rope.json",
-		"bathroom_shower_legs.json",
-		"bathroom_shower_legs_room_106.json",
-		"bathroom_shower_legs_room_107.json",
-		"bathroom_shower_legs_room_108.json",
-		"front_monitor_ghost.json",
-		"front_glass_face.json",
-		"room_109_open_door.json",
-	]:
+func test_all_runtime_manifests_match_their_real_source_and_artifact_files() -> void:
+	var catalog_event_ids := {}
+	for definition in HorrorCatalog.build_definitions():
+		catalog_event_ids[definition.id] = true
+	var filenames := DirAccess.get_files_at("res://resource/anomaly_manifests")
+	filenames.sort()
+	for filename in filenames:
+		if filename.get_extension().to_lower() != "json" or filename == "schema.json":
+			continue
 		var result := Manifest.load_and_validate(
 			"res://resource/anomaly_manifests/%s" % filename,
 			true,
 		)
 		assert_bool(result["is_valid"]).override_failure_message(
 			"%s: %s" % [filename, result["errors"]],
+		).is_true()
+		var event_id := String(result["manifest"].get("event_id", ""))
+		assert_bool(catalog_event_ids.has(event_id)).override_failure_message(
+			"%s references an event missing from HotelHorrorCatalog: %s" % [filename, event_id],
 		).is_true()
 
 

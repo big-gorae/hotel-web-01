@@ -249,7 +249,7 @@ func import_collection_state(state: Dictionary) -> void:
 	collection_kind_counts.clear()
 	for event_id in collection_event_ids:
 		var definition = definitions_by_id[event_id]
-		var kind := String(definition.discovery_kind)
+		var kind := String(definition.collection_kind)
 		if not kind.is_empty():
 			collection_kind_counts[kind] = int(collection_kind_counts.get(kind, 0)) + 1
 
@@ -339,7 +339,7 @@ func _record_collection_event(event_id: String) -> void:
 
 	collection_event_ids.append(event_id)
 	var definition = definitions_by_id[event_id]
-	var kind := String(definition.discovery_kind)
+	var kind := String(definition.collection_kind)
 	if not kind.is_empty():
 		collection_kind_counts[kind] = int(collection_kind_counts.get(kind, 0)) + 1
 
