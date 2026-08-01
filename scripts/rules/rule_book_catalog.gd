@@ -9,7 +9,7 @@ static func build_definitions() -> Array:
 		_make_rule("make_vacant_beds", 1, 1, ["rooms", "housekeeping"]),
 		_make_rule("bin_room_trash", 2, 1, ["rooms", "housekeeping"]),
 		_make_rule("launder_bedding_every_other_day", 3, 1, ["laundry", "housekeeping"]),
-		_make_rule("remove_black_mold", 4, 2, ["room_105", "mold", "anomaly"]),
+		_make_rule("close_open_wardrobe", 4, 2, ["room_105", "wardrobe", "anomaly"]),
 		_make_rule("ignore_room_108_light_repair", 5, 3, ["room_108", "phone", "anomaly"]),
 		_make_rule("do_not_look_into_room_109", 6, 3, ["room_109", "door", "anomaly"]),
 		_make_rule("answer_before_thirteenth_ring", 7, 4, ["front_desk", "phone", "anomaly"]),

@@ -42,7 +42,7 @@ func test_lab_preview_uses_the_controller_without_triggering_game_over_state() -
 	var lab = auto_free(JumpscareLab.new())
 	add_child(lab)
 	lab.setup(manager, controller)
-	lab.select_event_by_id("room_105_closet_woman")
+	lab.select_event_by_id("room_105_closet_pig_man")
 
 	assert_bool(lab.preview_selected()).is_true()
 	assert_bool(controller.active).is_true()

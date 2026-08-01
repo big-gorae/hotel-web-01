@@ -23,8 +23,7 @@ const HotelInteractionActionRunnerScript = preload("res://scripts/interactions/i
 const HotelShowerCurtainStateScript = preload("res://scripts/interactions/shower_curtain_state.gd")
 const HotelSceneCatalogScript = preload("res://scripts/scenes/hotel_scene_catalog.gd")
 const HotelEyeCloseControllerScript = preload("res://scripts/systems/eye_close_controller.gd")
-const HotelMoldGrowthSystemScript = preload("res://scripts/horror/mold_growth_system.gd")
-const HotelMoldOverlayScript = preload("res://scripts/ui/mold_overlay.gd")
+const HotelClosetPigManSystemScript = preload("res://scripts/horror/closet_pig_man_system.gd")
 const HotelNightAnomalyDirectorScript = preload("res://scripts/horror/night_anomaly_director.gd")
 const HotelRoom109OverlayScript = preload("res://scripts/ui/room_109_overlay.gd")
 const HotelTypewriterDialogueControllerScript = preload("res://scripts/dialogue/typewriter_dialogue_controller.gd")
@@ -51,7 +50,6 @@ const MIN_BRIGHTNESS := 0.55
 const MAX_BRIGHTNESS := 1.45
 const LAUNDRY_OPEN_PHOTO := "res://resource/images/laundry_room.png"
 const LAUNDRY_CLOSED_PHOTO := "res://resource/images/laundry_room_washer_closed.png"
-const DEBUG_CURTAIN_PREV_PHOTO := "res://resource/images/prev/화장실 닫힌 커튼 후보.png"
 const FOOTSTEP_SOUND := "res://resource/sounds/footstep.ogg"
 const FOOTSTEP_COUNT := 3
 const FOOTSTEP_INTERVAL_SECONDS := 0.22
@@ -59,11 +57,10 @@ const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
 const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
 const LETHAL_GIMMICKS_ENABLED := true
-const MOLD_PIG_MASK_EVENT_ID := "room_105_closet_woman"
+const CLOSET_PIG_MAN_EVENT_ID := "room_105_closet_pig_man"
 const DEBUG_CURTAIN_GAMEPLAY := 0
 const DEBUG_CURTAIN_OPEN := 1
 const DEBUG_CURTAIN_CLOSED_EDIT := 2
-const DEBUG_CURTAIN_CLOSED_PREV := 3
 const MVP_NIGHT_DEBUG_EVENT_IDS := [
 	"laundry_red_washer",
 	"room_106_abandoned_child",
@@ -102,7 +99,7 @@ var rule_book_manager = null
 var interaction_runner = null
 var shower_curtain_state = null
 var eye_close_controller = null
-var mold_growth_system = null
+var closet_pig_man_system = null
 var night_anomaly_director = null
 var anomaly_content_runtime = null
 var equipped_item_hazard_controller = null
@@ -125,15 +122,13 @@ var footstep_stream: AudioStream
 var footstep_players: Array[AudioStreamPlayer] = []
 var footstep_timer: Timer
 var footstep_index := 0
-var mold_spray_player: AudioStreamPlayer
 var game_started := false
 var intro_dialogue_active := false
 var intro_dialogue_index := 0
-var mold_removal_in_progress := false
 var debug_curtain_preview_mode := DEBUG_CURTAIN_GAMEPLAY
 var debug_last_closed_curtain_preview := DEBUG_CURTAIN_CLOSED_EDIT
 var debug_anomaly_preview_event_id := ""
-var debug_mold_preview_previous_state: Dictionary = {}
+var debug_closet_pig_previous_state: Dictionary = {}
 
 var gameplay_layer: Control
 var photo: TextureRect
@@ -179,7 +174,6 @@ var jumpscare_controller
 var jumpscare_lab
 var scene_transition_fader
 var lobby_overlay: Control
-var mold_overlay
 var room_109_overlay
 var anomaly_visual_overlay
 var anomaly_presentation_layer
@@ -195,7 +189,6 @@ var phone_bell_label: Label
 var system_message_panel: PanelContainer
 var system_message_label: Label
 var system_message_tween: Tween
-var mold_closet_timer: Timer
 
 
 func _ready() -> void:
@@ -224,11 +217,6 @@ func _ready() -> void:
 	horror_event_manager.event_resolved.connect(_on_horror_collection_changed)
 	rule_book_manager = HotelRuleBookManagerScript.new()
 	rule_book_manager.setup_default_catalog()
-	mold_growth_system = HotelMoldGrowthSystemScript.new()
-	mold_growth_system.setup()
-	mold_growth_system.register_room("room_105")
-	mold_growth_system.stack_changed.connect(_on_mold_stack_changed)
-	mold_growth_system.maximum_reached.connect(_on_mold_maximum_reached)
 	interaction_runner = HotelInteractionActionRunnerScript.new()
 	interaction_runner.setup(flag_store, inventory_model, task_manager, horror_event_manager, rule_book_manager)
 	debug_ui_enabled = _is_debug_ui_enabled()
@@ -249,34 +237,27 @@ func _process(delta: float) -> void:
 		horror_event_manager.tick_scene_view(current_scene_id, delta)
 		var content_active: bool = anomaly_content_runtime != null and anomaly_content_runtime.has_active_anomaly()
 		var night_active: bool = night_anomaly_director != null and night_anomaly_director.has_active_anomaly()
-		var mold_entity_active: bool = (
-			mold_closet_timer != null
-			and not mold_closet_timer.is_stopped()
-			and mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK
-		)
+		var closet_pig_active: bool = closet_pig_man_system != null and closet_pig_man_system.is_active()
 		if anomaly_content_runtime != null:
-			anomaly_content_runtime.set_external_anomaly_active(night_active or mold_entity_active)
+			anomaly_content_runtime.set_external_anomaly_active(night_active or closet_pig_active)
 		if night_anomaly_director != null:
-			night_anomaly_director.set_external_anomaly_active(content_active or mold_entity_active)
-		if not content_active and not night_active and not mold_entity_active:
-			mold_growth_system.advance(delta)
-		mold_entity_active = (
-			mold_closet_timer != null
-			and not mold_closet_timer.is_stopped()
-			and mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK
-		)
+			night_anomaly_director.set_external_anomaly_active(content_active or closet_pig_active)
+		if closet_pig_man_system != null:
+			closet_pig_man_system.set_external_anomaly_active(content_active or night_active)
+			closet_pig_man_system.advance(delta)
+			closet_pig_active = closet_pig_man_system.is_active()
 		if night_anomaly_director != null:
-			night_anomaly_director.set_external_anomaly_active(content_active or mold_entity_active)
+			night_anomaly_director.set_external_anomaly_active(content_active or closet_pig_active)
 		if night_anomaly_director != null:
 			night_anomaly_director.advance(delta)
 		if anomaly_content_runtime != null:
 			anomaly_content_runtime.set_external_anomaly_active(
-				mold_entity_active or (night_anomaly_director != null and night_anomaly_director.has_active_anomaly())
+				closet_pig_active or (night_anomaly_director != null and night_anomaly_director.has_active_anomaly())
 			)
 			anomaly_content_runtime.advance(delta)
 		if equipped_item_hazard_controller != null:
 			equipped_item_hazard_controller.advance(delta)
-		if mold_closet_timer != null and not mold_closet_timer.is_stopped():
+		if closet_pig_active:
 			_sync_anomaly_visual_overlay()
 		_sync_eye_close_anomaly_context()
 		_update_shift_end_button()
@@ -321,6 +302,8 @@ func _input(event: InputEvent) -> void:
 					anomaly_content_runtime.release_hold()
 				if night_anomaly_director != null:
 					night_anomaly_director.release_hand_action()
+				if closet_pig_man_system != null:
+					closet_pig_man_system.release_hold()
 			get_viewport().set_input_as_handled()
 			return
 
@@ -379,21 +362,12 @@ func _apply_scene_change(scene_id: String, play_transition_sound := true) -> voi
 		night_anomaly_director.enter_scene(scene_id)
 	if anomaly_content_runtime != null:
 		anomaly_content_runtime.enter_scene(scene_id)
-	if (
-		mold_closet_timer != null
-		and not mold_closet_timer.is_stopped()
-		and scene_id.begins_with("room_105")
-		and eye_close_controller != null
-	):
-		eye_close_controller.close_eyes()
 	if anomaly_visual_overlay != null:
 		anomaly_visual_overlay.set_scene(scene_id)
 	_build_hotspots(_scene_hotspots(scene_id, scene_data))
 	_build_navigation(scene_data["exits"])
 	_apply_brightness()
 	_update_layout()
-	_sync_mold_display()
-	_sync_mold_closet_threat()
 	_sync_eye_close_anomaly_context()
 
 
@@ -409,9 +383,6 @@ func _build_ui() -> void:
 	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	photo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	gameplay_layer.add_child(photo)
-
-	mold_overlay = HotelMoldOverlayScript.new()
-	gameplay_layer.add_child(mold_overlay)
 
 	anomaly_visual_overlay = HotelAnomalyVisualOverlayScript.new()
 	gameplay_layer.add_child(anomaly_visual_overlay)
@@ -521,11 +492,10 @@ func _build_ui() -> void:
 	debug_curtain_preview_selector = OptionButton.new()
 	debug_curtain_preview_selector.custom_minimum_size = Vector2(232.0, 32.0)
 	debug_curtain_preview_selector.focus_mode = Control.FOCUS_NONE
-	debug_curtain_preview_selector.tooltip_text = "Bathroom photo comparison: gameplay, open, edit_002 closed, or prev closed."
+	debug_curtain_preview_selector.tooltip_text = "Bathroom photo comparison: gameplay, open, or edit_002 closed."
 	debug_curtain_preview_selector.add_item("🛁 Gameplay", DEBUG_CURTAIN_GAMEPLAY)
 	debug_curtain_preview_selector.add_item("🛁 Open", DEBUG_CURTAIN_OPEN)
 	debug_curtain_preview_selector.add_item("🛁 Closed A · edit_002", DEBUG_CURTAIN_CLOSED_EDIT)
-	debug_curtain_preview_selector.add_item("🛁 Closed B · prev", DEBUG_CURTAIN_CLOSED_PREV)
 	debug_curtain_preview_selector.item_selected.connect(_on_debug_curtain_preview_selected)
 	scene_tab.add_child(debug_curtain_preview_selector)
 
@@ -535,8 +505,8 @@ func _build_ui() -> void:
 	debug_anomaly_selector.tooltip_text = "Force one confirmed anomaly. Deferred-resolution events are preview-only."
 	debug_anomaly_selector.add_item("☠ Anomaly preview", 0)
 	var anomaly_debug_index := 1
-	debug_anomaly_selector.add_item("곰팡이 돼지 가면 남자 · %s" % MOLD_PIG_MASK_EVENT_ID, anomaly_debug_index)
-	debug_anomaly_selector.set_item_metadata(anomaly_debug_index, MOLD_PIG_MASK_EVENT_ID)
+	debug_anomaly_selector.add_item("옷장의 돼지 가면 남자 · %s" % CLOSET_PIG_MAN_EVENT_ID, anomaly_debug_index)
+	debug_anomaly_selector.set_item_metadata(anomaly_debug_index, CLOSET_PIG_MAN_EVENT_ID)
 	anomaly_debug_index += 1
 	for event_id in MVP_NIGHT_DEBUG_EVENT_IDS:
 		debug_anomaly_selector.add_item(String(event_id), anomaly_debug_index)
@@ -756,6 +726,18 @@ func _build_ui() -> void:
 
 
 func _build_anomaly_runtime() -> void:
+	closet_pig_man_system = HotelClosetPigManSystemScript.new()
+	gameplay_layer.add_child(closet_pig_man_system)
+	closet_pig_man_system.set_lethal_outcomes_enabled(LETHAL_GIMMICKS_ENABLED)
+	closet_pig_man_system.state_changed.connect(_on_closet_pig_state_changed)
+	closet_pig_man_system.event_started.connect(_on_anomaly_event_started)
+	closet_pig_man_system.event_resolved.connect(_on_closet_pig_resolved)
+	closet_pig_man_system.hold_started.connect(_on_anomaly_hold_started)
+	closet_pig_man_system.hold_progress_changed.connect(_on_anomaly_hold_progress_changed)
+	closet_pig_man_system.hold_ended.connect(_on_anomaly_hold_ended)
+	if LETHAL_GIMMICKS_ENABLED:
+		closet_pig_man_system.death_requested.connect(_trigger_game_over_event)
+
 	night_anomaly_director = HotelNightAnomalyDirectorScript.new()
 	gameplay_layer.add_child(night_anomaly_director)
 	night_anomaly_director.setup(eye_close_controller)
@@ -770,13 +752,6 @@ func _build_anomaly_runtime() -> void:
 	night_anomaly_director.hold_started.connect(_on_anomaly_hold_started)
 	night_anomaly_director.hold_progress_changed.connect(_on_anomaly_hold_progress_changed)
 	night_anomaly_director.hold_ended.connect(_on_anomaly_hold_ended)
-	if LETHAL_GIMMICKS_ENABLED:
-		mold_closet_timer = Timer.new()
-		mold_closet_timer.one_shot = true
-		mold_closet_timer.wait_time = 10.0
-		mold_closet_timer.timeout.connect(_on_mold_closet_timeout)
-		gameplay_layer.add_child(mold_closet_timer)
-
 	anomaly_content_runtime = HotelAnomalyContentRuntimeScript.new()
 	gameplay_layer.add_child(anomaly_content_runtime)
 	anomaly_content_runtime.setup(inventory_model, eye_close_controller)
@@ -819,12 +794,8 @@ func _build_audio() -> void:
 		anomaly_content_runtime.sound_requested.connect(anomaly_audio_controller.play_cue)
 	if night_anomaly_director != null:
 		night_anomaly_director.sound_requested.connect(anomaly_audio_controller.play_cue)
-
-	mold_spray_player = AudioStreamPlayer.new()
-	mold_spray_player.process_mode = Node.PROCESS_MODE_PAUSABLE
-	mold_spray_player.stream = _make_mold_spray_stream()
-	mold_spray_player.volume_db = -5.0
-	gameplay_layer.add_child(mold_spray_player)
+	if closet_pig_man_system != null:
+		closet_pig_man_system.sound_requested.connect(anomaly_audio_controller.play_cue)
 
 	footstep_stream = load(FOOTSTEP_SOUND) as AudioStream
 	if footstep_stream == null:
@@ -845,39 +816,6 @@ func _build_audio() -> void:
 	footstep_timer.wait_time = FOOTSTEP_INTERVAL_SECONDS
 	footstep_timer.timeout.connect(_on_footstep_timer_timeout)
 	gameplay_layer.add_child(footstep_timer)
-
-
-func _play_mold_spray_sound() -> void:
-	if mold_spray_player == null or DisplayServer.get_name() == "headless":
-		return
-	mold_spray_player.stop()
-	mold_spray_player.play()
-
-
-func _make_mold_spray_stream() -> AudioStreamWAV:
-	var mix_rate := 22050
-	var duration := 0.62
-	var samples := int(mix_rate * duration)
-	var data := PackedByteArray()
-	var noise_rng := RandomNumberGenerator.new()
-	noise_rng.seed = 44105
-	data.resize(samples * 2)
-	for index in range(samples):
-		var time := float(index) / float(mix_rate)
-		var first_burst := sin(PI * clampf(time / 0.22, 0.0, 1.0)) if time <= 0.22 else 0.0
-		var second_time := time - 0.31
-		var second_burst := sin(PI * clampf(second_time / 0.24, 0.0, 1.0)) if second_time >= 0.0 and second_time <= 0.24 else 0.0
-		var envelope := pow(maxf(first_burst, second_burst), 0.48)
-		var white_noise := noise_rng.randf_range(-1.0, 1.0)
-		var spray_body := white_noise * 0.78 + sin(TAU * 2850.0 * time) * 0.10 + sin(TAU * 910.0 * time) * 0.08
-		var value := spray_body * envelope * 0.30
-		data.encode_s16(index * 2, clampi(int(value * 32767.0), -32768, 32767))
-	var stream := AudioStreamWAV.new()
-	stream.format = AudioStreamWAV.FORMAT_16_BITS
-	stream.mix_rate = mix_rate
-	stream.stereo = false
-	stream.data = data
-	return stream
 
 
 func _build_menu() -> void:
@@ -949,9 +887,7 @@ func _start_shift() -> void:
 	flag_store.set_value(HotelInteractionActionRunnerScript.LAUNDRY_OPEN_FLAG, true)
 	laundry_second_washer_open = _is_laundry_second_washer_open()
 	game_brightness = DEFAULT_BRIGHTNESS
-	mold_growth_system.import_state({})
-	mold_growth_system.register_room("room_105")
-	mold_growth_system.set_enabled(false)
+	closet_pig_man_system.start_day(1)
 	eye_close_controller.open_eyes()
 	_start_day(1, false, false)
 
@@ -965,8 +901,6 @@ func _start_day(day: int, use_saved_state: bool, play_transition_sound: bool) ->
 	game_started = true
 	day_save_manager.set_current_day(day)
 	rule_book_manager.set_current_day(day)
-	mold_growth_system.set_enabled(day >= 2)
-
 	if lobby_overlay != null:
 		lobby_overlay.close()
 
@@ -1020,7 +954,7 @@ func _capture_day_state() -> Dictionary:
 		"tasks": task_manager.export_state(),
 		"horror": horror_event_manager.export_state(),
 		"rules": rule_book_manager.export_state(),
-		"mold": mold_growth_system.export_state(),
+		"closet_pig_man": closet_pig_man_system.export_state(),
 		"night_anomalies": night_anomaly_director.export_state(),
 		"content_anomalies": anomaly_content_runtime.export_state(),
 		"story_delivery": story_delivery_manager.export_state(),
@@ -1046,12 +980,10 @@ func _restore_day_state(day: int) -> String:
 	meta_progress_save_manager.save_collection_state(horror_event_manager.export_collection_state())
 	rule_book_manager.import_state(slot.get("rules", {}))
 	rule_book_manager.set_current_day(day)
-	if slot.has("mold"):
-		mold_growth_system.import_state(slot.get("mold", {}))
+	if slot.has("closet_pig_man"):
+		closet_pig_man_system.import_state(slot.get("closet_pig_man", {}))
 	else:
-		mold_growth_system.import_state({})
-		mold_growth_system.register_room("room_105")
-		mold_growth_system.set_enabled(day >= 2)
+		closet_pig_man_system.start_day(day)
 	if slot.has("night_anomalies"):
 		night_anomaly_director.import_state(slot.get("night_anomalies", {}))
 	else:
@@ -1080,9 +1012,7 @@ func _reset_day_runtime_state() -> void:
 	horror_event_manager.start_new_run()
 	rule_book_manager.import_state({})
 	rule_book_manager.set_current_day(day_save_manager.current_day)
-	mold_growth_system.import_state({})
-	mold_growth_system.register_room("room_105")
-	mold_growth_system.set_enabled(day_save_manager.current_day >= 2)
+	closet_pig_man_system.start_day(day_save_manager.current_day)
 	night_anomaly_director.start_day(day_save_manager.current_day)
 	anomaly_content_runtime.start_day(day_save_manager.current_day)
 	story_delivery_manager.prepare_day(day_save_manager.current_day)
@@ -1258,17 +1188,6 @@ func _use_equipped_item() -> void:
 			anomaly_content_runtime.begin_item_hold(anomaly_hotspot_id, item_id, get_viewport().get_mouse_position())
 			return
 
-	var room_id: String = String(horror_event_manager.room_registry.get_room_id(current_scene_id))
-	var removed_mold := false
-	if mold_overlay.visible:
-		mold_removal_in_progress = true
-		removed_mold = mold_growth_system.remove_mold(room_id, item_id)
-		mold_removal_in_progress = false
-	if removed_mold:
-		_play_mold_spray_sound()
-		_save_current_day()
-		return
-
 	for button in hotspot_buttons:
 		if button.is_hovered():
 			var hotspot: Dictionary = button.get_meta("hotspot")
@@ -1297,6 +1216,11 @@ func _try_dispose_equipped_hell_mirror(hotspot_id: String) -> bool:
 
 
 func _on_anomaly_hotspot_button_down(hotspot: Dictionary) -> void:
+	var hotspot_id := String(hotspot.get("id", ""))
+	if hotspot_id == HotelClosetPigManSystemScript.HOLD_HOTSPOT_ID:
+		if closet_pig_man_system != null:
+			closet_pig_man_system.begin_pointer_hold(hotspot_id, get_viewport().get_mouse_position())
+		return
 	if anomaly_content_runtime == null:
 		return
 	var item_id := ""
@@ -1319,6 +1243,8 @@ func _on_anomaly_hotspot_button_down(hotspot: Dictionary) -> void:
 func _on_anomaly_hotspot_button_up() -> void:
 	if anomaly_content_runtime != null:
 		anomaly_content_runtime.release_hold()
+	if closet_pig_man_system != null:
+		closet_pig_man_system.release_hold()
 
 
 func _is_content_anomaly_hotspot_id(hotspot_id: String) -> bool:
@@ -1328,6 +1254,7 @@ func _is_content_anomaly_hotspot_id(hotspot_id: String) -> bool:
 		or hotspot_id.begins_with("anomaly_surface:")
 		or hotspot_id.begins_with("anomaly_choice:")
 		or hotspot_id.begins_with("anomaly_pickup:")
+		or hotspot_id == HotelClosetPigManSystemScript.HOLD_HOTSPOT_ID
 	)
 
 
@@ -1474,8 +1401,8 @@ func _on_debug_anomaly_selected(index: int) -> void:
 	_stop_active_debug_anomaly_preview()
 	debug_anomaly_preview_event_id = event_id
 	var target_scene_id := ""
-	if event_id == MOLD_PIG_MASK_EVENT_ID:
-		_start_mold_pig_mask_preview()
+	if event_id == CLOSET_PIG_MAN_EVENT_ID:
+		_start_closet_pig_man_preview()
 		debug_anomaly_selector.select(0)
 		return
 	elif event_id in MVP_NIGHT_DEBUG_EVENT_IDS:
@@ -1515,12 +1442,9 @@ func _stop_active_debug_anomaly_preview() -> void:
 	var previous_event_id := debug_anomaly_preview_event_id
 	debug_anomaly_preview_event_id = ""
 
-	if mold_closet_timer != null:
-		mold_closet_timer.stop()
-	if previous_event_id == MOLD_PIG_MASK_EVENT_ID and not debug_mold_preview_previous_state.is_empty():
-		mold_growth_system.import_state(debug_mold_preview_previous_state)
-		debug_mold_preview_previous_state.clear()
-		_sync_mold_display()
+	if previous_event_id == CLOSET_PIG_MAN_EVENT_ID and not debug_closet_pig_previous_state.is_empty():
+		closet_pig_man_system.import_state(debug_closet_pig_previous_state)
+		debug_closet_pig_previous_state.clear()
 
 	if choice_dialogue_overlay != null:
 		choice_dialogue_overlay.close()
@@ -1535,36 +1459,29 @@ func _stop_active_debug_anomaly_preview() -> void:
 	if anomaly_content_runtime != null:
 		anomaly_content_runtime.release_hold()
 		anomaly_content_runtime.start_day(day_save_manager.current_day)
+	if closet_pig_man_system != null:
+		closet_pig_man_system.release_hold()
 
 	_sync_shadow_distress_audio()
 	_sync_eye_close_anomaly_context()
 	_sync_anomaly_visual_overlay()
 
 
-func _start_mold_pig_mask_preview() -> bool:
+func _start_closet_pig_man_preview() -> bool:
 	if (
-		mold_growth_system == null
-		or mold_closet_timer == null
+		closet_pig_man_system == null
 		or anomaly_content_runtime == null
 		or night_anomaly_director == null
 	):
 		return false
 	anomaly_content_runtime.start_day(day_save_manager.current_day)
 	night_anomaly_director.start_day(day_save_manager.current_day)
-	debug_anomaly_preview_event_id = MOLD_PIG_MASK_EVENT_ID
-	debug_mold_preview_previous_state = mold_growth_system.export_state()
-	if not mold_closet_timer.is_stopped():
-		mold_closet_timer.stop()
+	debug_anomaly_preview_event_id = CLOSET_PIG_MAN_EVENT_ID
+	debug_closet_pig_previous_state = closet_pig_man_system.export_state()
 	show_scene("room_105_bathroom_entry", false)
-	mold_growth_system.force_stack("room_105", HotelMoldGrowthSystemScript.MAX_STACK)
-	# The production event closes the player's eyes as an initial shock. The
-	# integrated preview reopens them so the door and pig-mask phases are visible.
-	if eye_close_controller != null:
-		eye_close_controller.open_eyes()
-	_sync_mold_display()
-	_sync_mold_closet_threat()
+	closet_pig_man_system.force_event()
 	_sync_anomaly_visual_overlay()
-	return not mold_closet_timer.is_stopped()
+	return closet_pig_man_system.is_active()
 
 
 func _open_jumpscare_lab() -> void:
@@ -1574,8 +1491,8 @@ func _open_jumpscare_lab() -> void:
 
 
 func _set_debug_curtain_preview_mode(mode: int) -> void:
-	debug_curtain_preview_mode = clampi(mode, DEBUG_CURTAIN_GAMEPLAY, DEBUG_CURTAIN_CLOSED_PREV)
-	if debug_curtain_preview_mode in [DEBUG_CURTAIN_CLOSED_EDIT, DEBUG_CURTAIN_CLOSED_PREV]:
+	debug_curtain_preview_mode = clampi(mode, DEBUG_CURTAIN_GAMEPLAY, DEBUG_CURTAIN_CLOSED_EDIT)
+	if debug_curtain_preview_mode == DEBUG_CURTAIN_CLOSED_EDIT:
 		debug_last_closed_curtain_preview = debug_curtain_preview_mode
 	if debug_curtain_preview_selector != null:
 		debug_curtain_preview_selector.select(debug_curtain_preview_mode)
@@ -1603,14 +1520,10 @@ func _debug_curtain_preview_photo(scene_data: Dictionary) -> String:
 			return String(scene_data.get("photo", ""))
 		DEBUG_CURTAIN_CLOSED_EDIT:
 			return String(scene_data.get("curtain_closed_photo", ""))
-		DEBUG_CURTAIN_CLOSED_PREV:
-			return DEBUG_CURTAIN_PREV_PHOTO
 	return ""
 
 
 func _debug_curtain_preview_label(mode: int) -> String:
-	if mode == DEBUG_CURTAIN_CLOSED_PREV:
-		return "closed B · prev"
 	return "closed A · edit_002"
 
 
@@ -1621,55 +1534,21 @@ func _is_laundry_second_washer_open() -> bool:
 	return laundry_second_washer_open
 
 
-func _on_mold_stack_changed(room_id: String, stack: int) -> void:
-	if room_id != "room_105":
-		return
-	_sync_mold_display()
-	_sync_eye_close_anomaly_context()
-	if not mold_removal_in_progress:
-		if stack > 0:
-			_show_system_message(_ui_text("mold.stack", "Black mold is spreading in Room 105. (%d/6)") % stack)
-	_sync_mold_closet_threat()
+func _on_closet_pig_state_changed() -> void:
+	if HOTEL_SCENES.has(current_scene_id):
+		_build_hotspots(_scene_hotspots(current_scene_id, HOTEL_SCENES[current_scene_id]))
+		_update_layout()
 	_sync_anomaly_visual_overlay()
+	_sync_eye_close_anomaly_context()
 
 
-func _on_mold_maximum_reached(room_id: String) -> void:
-	if room_id != "room_105":
-		return
-	if not LETHAL_GIMMICKS_ENABLED:
-		return
-	horror_event_manager.mark_event_seen(MOLD_PIG_MASK_EVENT_ID)
-	if anomaly_audio_controller != null:
-		anomaly_audio_controller.play_cue("closet_woman_laugh")
-	if current_scene_id.begins_with("room_105") and eye_close_controller != null:
-		eye_close_controller.close_eyes()
-	_sync_mold_closet_threat()
-
-
-func _sync_mold_display() -> void:
-	if mold_overlay == null or mold_growth_system == null:
-		return
-	var shows_mold_wall := current_scene_id == "room_105_bathroom_entry"
-	var mold_stack: int = mold_growth_system.get_mold_stack("room_105")
-	mold_overlay.set_stack(mold_stack if shows_mold_wall else 0)
-	mold_overlay.visible = shows_mold_wall and mold_stack > 0
-	if mold_overlay.visible and current_texture != null:
-		mold_overlay.set_photo_rect(_get_photo_draw_rect())
-
-
-func _sync_mold_closet_threat() -> void:
-	if mold_closet_timer == null:
-		return
-	var threatened: bool = mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK
-	if threatened and mold_closet_timer.is_stopped():
-		mold_closet_timer.start()
-	elif not threatened and not mold_closet_timer.is_stopped():
-		mold_closet_timer.stop()
-
-
-func _on_mold_closet_timeout() -> void:
-	if mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK:
-		_trigger_game_over_event(MOLD_PIG_MASK_EVENT_ID)
+func _on_closet_pig_resolved(event_id: String) -> void:
+	if debug_anomaly_preview_event_id == event_id:
+		debug_anomaly_preview_event_id = ""
+		debug_closet_pig_previous_state.clear()
+	horror_event_manager.mark_event_seen(event_id)
+	horror_event_manager.resolve_event(event_id)
+	_save_current_day()
 
 
 func _on_phone_bell_changed(count: int, maximum: int) -> void:
@@ -1727,17 +1606,8 @@ func _sync_anomaly_visual_overlay() -> void:
 	if anomaly_visual_overlay == null:
 		return
 	var presentation_state := {}
-	if (
-		mold_closet_timer != null
-		and not mold_closet_timer.is_stopped()
-		and mold_growth_system != null
-		and mold_growth_system.get_mold_stack("room_105") >= HotelMoldGrowthSystemScript.MAX_STACK
-	):
-		presentation_state = {
-			"event_id": MOLD_PIG_MASK_EVENT_ID,
-			"state": "face" if mold_closet_timer.time_left <= 5.0 else "door_open",
-			"scene_id": "room_105_bathroom_entry",
-		}
+	if closet_pig_man_system != null and closet_pig_man_system.is_active():
+		presentation_state = closet_pig_man_system.get_presentation_state()
 	elif anomaly_content_runtime != null and anomaly_content_runtime.has_active_anomaly():
 		presentation_state = anomaly_content_runtime.get_presentation_state()
 	elif (
@@ -1889,10 +1759,14 @@ func _on_night_event_survived(event_id: String) -> void:
 func _sync_eye_close_anomaly_context() -> void:
 	if eye_close_controller == null:
 		return
-	var has_mold: bool = current_scene_id == "room_105_bathroom_entry" and mold_growth_system.get_mold_stack("room_105") > 0
+	var has_closet_pig: bool = (
+		current_scene_id == HotelClosetPigManSystemScript.SCENE_ID
+		and closet_pig_man_system != null
+		and closet_pig_man_system.is_active()
+	)
 	var has_night_event: bool = night_anomaly_director != null and night_anomaly_director.is_scene_anomalous(current_scene_id)
 	var has_content_event: bool = anomaly_content_runtime != null and anomaly_content_runtime.is_scene_anomalous(current_scene_id)
-	eye_close_controller.set_anomaly_context(has_mold or has_night_event or has_content_event)
+	eye_close_controller.set_anomaly_context(has_closet_pig or has_night_event or has_content_event)
 
 
 func _trigger_game_over_event(event_id: String) -> void:
@@ -1960,12 +1834,6 @@ func _preview_anomaly_resolution_transition() -> void:
 	if not debug_ui_enabled or scene_transition_fader == null:
 		return
 	scene_transition_fader.play_anomaly_resolution()
-
-
-func _set_debug_mold_stage(stage: int) -> void:
-	var safe_stage := clampi(stage, 1, HotelMoldGrowthSystemScript.MAX_STACK)
-	if mold_growth_system != null:
-		mold_growth_system.force_stack("room_105", safe_stage)
 
 
 func _show_system_message(message: String) -> void:
@@ -2302,6 +2170,9 @@ func _scene_hotspots(scene_id: String, scene_data: Dictionary) -> Array:
 		hotspots.append(task_hotspot)
 	for horror_hotspot in horror_event_manager.get_revealed_hotspots(scene_id):
 		hotspots.append(horror_hotspot)
+	if closet_pig_man_system != null:
+		for closet_hotspot in closet_pig_man_system.get_dynamic_hotspots(scene_id):
+			hotspots.append(closet_hotspot)
 	if night_anomaly_director != null:
 		for anomaly_hotspot in night_anomaly_director.get_dynamic_hotspots(scene_id):
 			if String(anomaly_hotspot.get("id", "")) == "room_109_open_door":
@@ -2461,7 +2332,7 @@ func _sync_debug_toggles() -> void:
 		var supports_curtain_preview: bool = shower_curtain_state != null and shower_curtain_state.supports_scene(scene_data)
 		debug_curtain_preview_selector.disabled = not supports_curtain_preview
 		debug_curtain_preview_selector.select(debug_curtain_preview_mode)
-		debug_curtain_preview_selector.tooltip_text = "Bathroom photo comparison: gameplay, open, edit_002 closed, or prev closed." if supports_curtain_preview else "Enter a Room 105-108 bathroom to compare curtain photos."
+		debug_curtain_preview_selector.tooltip_text = "Bathroom photo comparison: gameplay, open, or edit_002 closed." if supports_curtain_preview else "Enter a Room 105-108 bathroom to compare curtain photos."
 
 	if filter_bar != null:
 		filter_bar.sync_selected_preset()
@@ -2517,8 +2388,6 @@ func _update_layout() -> void:
 	photo.size = viewport_size + Vector2(PARALLAX_PADDING * 2.0, PARALLAX_PADDING * 2.0)
 	if scene_3d_overlay != null:
 		scene_3d_overlay.apply_photo_parallax(offset, PARALLAX_PADDING)
-	if mold_overlay != null and mold_overlay.visible and current_texture != null:
-		mold_overlay.set_photo_rect(_get_photo_draw_rect())
 	if anomaly_visual_overlay != null and current_texture != null:
 		anomaly_visual_overlay.set_photo_rect(_get_photo_draw_rect())
 	if anomaly_presentation_layer != null and current_texture != null:

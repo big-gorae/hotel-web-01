@@ -123,8 +123,10 @@ func _stream_for_cue(cue_id: String) -> AudioStream:
 				stream = _make_sting_stream()
 		"girl_visit_laugh":
 			stream = _make_laugh_stream()
-		"closet_woman_laugh":
-			stream = _make_laugh_stream()
+		"pig_squeal":
+			stream = _make_pig_squeal_stream()
+		"closet_door_close":
+			stream = _make_door_stream()
 		"phone_pickup_laugh":
 			stream = _make_laugh_stream()
 		"washer_small_scream":
@@ -193,11 +195,42 @@ func _volume_for_cue(cue_id: String) -> float:
 			return -17.0
 		"girl_visit_laugh":
 			return -10.0
+		"pig_squeal":
+			return -6.0
+		"closet_door_close":
+			return -7.0
 		"bathtub_drain":
 			return -5.0
 		"hell_mirror_washer_destroy":
 			return -6.0
 	return -9.0
+
+
+func _make_pig_squeal_stream() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 1.55
+	var samples := int(mix_rate * duration)
+	var data := PackedByteArray()
+	data.resize(samples * 2)
+	var noise_state := 0x51A7C3
+	var phase := 0.0
+	for index in samples:
+		var time := float(index) / mix_rate
+		var progress := time / duration
+		var pitch_curve := pow(progress, 0.72)
+		var frequency := lerpf(720.0, 185.0, pitch_curve)
+		frequency += sin(TAU * 5.6 * time) * lerpf(95.0, 28.0, progress)
+		phase += TAU * frequency / mix_rate
+		noise_state = int((noise_state * 1664525 + 1013904223) & 0x7fffffff)
+		var noise := (float(noise_state) / 1073741824.0) - 1.0
+		var voice := sin(phase) * 0.52 + sin(phase * 2.03) * 0.26 + sin(phase * 0.51) * 0.12
+		var rasp := noise * (0.20 + absf(sin(phase)) * 0.18)
+		var pulse := 0.62 + sin(TAU * 9.0 * time) * 0.18 + sin(TAU * 14.0 * time) * 0.10
+		var attack := smoothstep(0.0, 0.045, time)
+		var release := 1.0 - smoothstep(duration - 0.32, duration, time)
+		var value := (voice + rasp) * pulse * attack * release * 0.58
+		data.encode_s16(index * 2, clampi(int(value * 32767.0), -32768, 32767))
+	return _make_wav(data, mix_rate, false)
 
 
 func _make_bathtub_drain_stream() -> AudioStreamWAV:

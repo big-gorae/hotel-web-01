@@ -30,9 +30,14 @@ func _run() -> void:
 	if main.rule_book_manager.get_visible_rules().size() != 3:
 		_fail("day one should expose exactly three ordinary rules")
 		return
-	if _find_inventory_item(main, "mold_remover") == null:
-		_fail("mold remover was not added to the initial inventory")
+	var initial_items: Array = main.inventory_model.get_items()
+	if initial_items.size() != main.HotelItemCatalogScript.INITIAL_ITEM_IDS.size():
+		_fail("initial inventory contains an unexpected retired item")
 		return
+	for item in initial_items:
+		if not main.HotelItemCatalogScript.INITIAL_ITEM_IDS.has(String(item.id)):
+			_fail("initial inventory contains an item outside the live catalog")
+			return
 
 	for task_id in main.task_manager.definitions_by_id.keys():
 		main.task_manager.complete_task(String(task_id))
@@ -123,55 +128,66 @@ func _run() -> void:
 		_fail("glass face disappearance transition did not finish")
 		return
 
-	var mold_preview_index := _find_anomaly_preview_index(main, main.MOLD_PIG_MASK_EVENT_ID)
-	if mold_preview_index < 0:
-		_fail("mold pig-mask event was missing from the integrated anomaly preview selector")
+	var closet_pig_preview_index := _find_anomaly_preview_index(main, main.CLOSET_PIG_MAN_EVENT_ID)
+	if closet_pig_preview_index < 0:
+		_fail("closet pig-mask event was missing from the integrated anomaly preview selector")
 		return
-	main._on_debug_anomaly_selected(mold_preview_index)
+	main._on_debug_anomaly_selected(closet_pig_preview_index)
 	if main.current_scene_id != "room_105_bathroom_entry":
-		_fail("integrated mold preview did not open the Room 105 closet scene")
+		_fail("integrated closet preview did not open the Room 105 wardrobe scene")
 		return
-	if not main.mold_overlay.visible or main.mold_overlay.stack != 6:
-		_fail("integrated mold preview did not begin at the fatal sixth mold stack")
-		return
-	if main.mold_closet_timer == null or main.mold_closet_timer.is_stopped():
-		_fail("integrated mold preview did not start the pig-mask threat timer")
+	if not main.closet_pig_man_system.is_active():
+		_fail("integrated closet preview did not start the pig-mask threat")
 		return
 	if (
-		main.anomaly_presentation_layer._active_event_id != main.MOLD_PIG_MASK_EVENT_ID
+		main.anomaly_presentation_layer._active_event_id != main.CLOSET_PIG_MAN_EVENT_ID
 		or main.anomaly_presentation_layer._active_state_id != "door_open"
 		or not main.anomaly_presentation_layer.is_rendering_artifact()
 	):
-		_fail("sixth mold stack did not reveal the authored open-closet phase")
+		_fail("closet event did not reveal the authored open-door phase")
 		return
-	main.mold_closet_timer.start(0.05)
+	var closet_hotspot := _find_dynamic_or_editor_hotspot(main, main.HotelClosetPigManSystemScript.HOLD_HOTSPOT_ID)
+	if closet_hotspot.is_empty():
+		_fail("open wardrobe did not expose its hold interaction")
+		return
+	if main.anomaly_audio_controller._stream_for_cue("pig_squeal") == null:
+		_fail("global pig squeal audio was not prepared")
+		return
 	main._on_debug_anomaly_selected(glass_preview_index)
-	await create_timer(0.08).timeout
-	if not main.mold_closet_timer.is_stopped():
-		_fail("selecting a second debug anomaly did not stop the previous mold threat timer")
-		return
 	if main.horror_event_manager.is_jumpscare_active():
-		_fail("the previous debug anomaly timer fired after another anomaly was selected")
+		_fail("the previous closet preview fired after another anomaly was selected")
 		return
 	if main.anomaly_content_runtime.current_event_id != "front_glass_face":
-		_fail("stopping the previous debug timer also stopped the newly selected anomaly")
+		_fail("stopping the closet preview also stopped the newly selected anomaly")
 		return
-	if main.mold_growth_system.get_mold_stack("room_105") != 0:
-		_fail("leaving the mold debug preview did not restore the previous mold state")
+	if main.closet_pig_man_system.is_active():
+		_fail("leaving the closet preview did not restore its previous scheduled state")
 		return
-	main._on_debug_anomaly_selected(mold_preview_index)
-	main.mold_closet_timer.start(4.9)
+	main._on_debug_anomaly_selected(closet_pig_preview_index)
+	main.closet_pig_man_system.stage_seconds_remaining = 0.05
+	main.closet_pig_man_system.advance(0.05)
 	main._sync_anomaly_visual_overlay()
 	if (
 		main.anomaly_presentation_layer._active_state_id != "face"
 		or not main.anomaly_presentation_layer.is_rendering_artifact()
 	):
-		_fail("closet threat did not advance to the pig-mask man in the door gap")
+		_fail("long closet sequence did not advance to the pig-mask man")
 		return
-	main.mold_closet_timer.start(0.05)
-	await create_timer(0.08).timeout
+	closet_hotspot = _find_dynamic_or_editor_hotspot(main, main.HotelClosetPigManSystemScript.HOLD_HOTSPOT_ID)
+	main._on_anomaly_hotspot_button_down(closet_hotspot)
+	main.closet_pig_man_system.advance(main.closet_pig_man_system.HOLD_SECONDS)
+	if main.closet_pig_man_system.is_active() or main.anomaly_presentation_layer.is_rendering_artifact():
+		_fail("holding the wardrobe did not push the man inside and close the door")
+		return
+	if not main.horror_event_manager.resolved_event_ids.has(main.CLOSET_PIG_MAN_EVENT_ID):
+		_fail("holding the wardrobe did not resolve the collection event")
+		return
+
+	main.closet_pig_man_system.force_event(main.closet_pig_man_system.STATE_EMERGING)
+	main.closet_pig_man_system.stage_seconds_remaining = 0.05
+	main.closet_pig_man_system.advance(0.05)
 	if not main.jumpscare_controller.active or not main.horror_event_manager.is_jumpscare_active():
-		_fail("pig-mask preview timer did not trigger the real fatal jumpscare")
+		_fail("unattended emerging phase did not trigger the real fatal jumpscare")
 		return
 	if (
 		main.jumpscare_controller.current_presentation == null
@@ -182,41 +198,9 @@ func _run() -> void:
 		return
 	main.jumpscare_controller.stop()
 	main.horror_event_manager.active_jumpscare_id = ""
-	if not main.mold_overlay.visible or main.mold_overlay.stack != 6:
-		_fail("mold stack was not preserved for cleanup after preview")
-		return
-	var remover = _find_inventory_item(main, "mold_remover")
-	main.inventory_model.equip_item(remover)
-	main.system_message_panel.visible = false
-	main._use_equipped_item()
-	if main.mold_growth_system.get_mold_stack("room_105") != 4:
-		_fail(
-			"first mold remover spray did not remove two stacks "
-			+ "(stack=%d, equipped=%s, room=%s, overlay=%s, eyes_closed=%s)"
-			% [
-				main.mold_growth_system.get_mold_stack("room_105"),
-				String(main.inventory_model.equipped_item.id) if main.inventory_model.equipped_item != null else "none",
-				String(main.horror_event_manager.room_registry.get_room_id(main.current_scene_id)),
-				str(main.mold_overlay.visible),
-				str(main.eye_close_controller.is_closed()),
-			]
-		)
-		return
-	if main.system_message_panel.visible:
-		_fail("mold remover spray should not show a system message")
-		return
-	main._use_equipped_item()
-	if main.mold_growth_system.get_mold_stack("room_105") != 2:
-		_fail("second mold remover spray did not remove two stacks")
-		return
-	main._use_equipped_item()
-	if main.mold_growth_system.get_mold_stack("room_105") != 0:
-		_fail("third mold remover spray did not clear the remaining stacks")
-		return
-	await process_frame
-	if main.mold_spray_player == null or main.mold_spray_player.stream == null:
-		_fail("mold remover spray sound was not prepared")
-		return
+	# The real game stops at this fatal outcome. Reset the isolated threat so the
+	# remainder of this broad smoke script can keep validating other systems.
+	main.closet_pig_man_system.start_day(1)
 
 	main.anomaly_content_runtime.force_event("laundry_baby_face_surfaces")
 	main.show_scene("laundry_room", false)
@@ -297,12 +281,12 @@ func _run() -> void:
 	if main.night_anomaly_director.blanket_state != main.night_anomaly_director.BLANKET_RESOLVED:
 		_fail(
 			"blanket child did not resolve after the closed-eye hold "
-			+ "(state=%s, external=%s, content=%s, mold=%d)"
+				+ "(state=%s, external=%s, content=%s, closet=%s)"
 			% [
 				main.night_anomaly_director.blanket_state,
 				str(main.night_anomaly_director.external_anomaly_active),
 				main.anomaly_content_runtime.current_event_id,
-				main.mold_growth_system.get_mold_stack("room_105"),
+					main.closet_pig_man_system.current_state,
 			]
 		)
 		return

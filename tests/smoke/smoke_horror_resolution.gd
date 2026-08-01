@@ -29,25 +29,33 @@ func _run() -> void:
 	while main.is_intro_dialogue_active():
 		main._advance_intro_dialogue()
 	main._hide_menu()
-	main.horror_event_manager.active_event_id_by_room["room_105"] = "room_105_shadow_stain"
-	main.flag_store.set_value("anomaly.room_105.shadow_stain.visible", true)
-	main.show_scene("room_105_door_window", false)
+
+	var rule = main.rule_book_manager.definitions_by_id.get("close_open_wardrobe")
+	if rule == null or main.localization.translate(rule.text_key) != "객실 옷장 문이 열려 있으면 닫으시오.":
+		_fail("wardrobe rule did not use the simplified Korean instruction")
+		return
+
+	main.closet_pig_man_system.force_event(main.closet_pig_man_system.STATE_EMERGING)
+	main.show_scene("room_105_bathroom_entry", false)
 	await process_frame
 
-	var anomaly_hotspot := _find_hotspot(main, "room_105_door_window", "anomaly_room_105_shadow_stain")
+	var anomaly_hotspot := _find_hotspot(
+		main,
+		"room_105_bathroom_entry",
+		main.HotelClosetPigManSystemScript.HOLD_HOTSPOT_ID,
+	)
 	if anomaly_hotspot.is_empty():
-		_fail("anomaly hotspot missing")
+		_fail("open wardrobe hold hotspot missing")
 		return
 
-	main._on_hotspot_pressed(anomaly_hotspot)
-	if main.horror_event_manager.resolved_event_ids.has("room_105_shadow_stain"):
-		_fail("anomaly resolved without required rule")
+	main._on_anomaly_hotspot_button_down(anomaly_hotspot)
+	main.closet_pig_man_system.advance(main.closet_pig_man_system.HOLD_SECONDS - 0.01)
+	if not main.closet_pig_man_system.is_active():
+		_fail("wardrobe resolved before the full hold duration")
 		return
-
-	main.rule_book_manager.mark_rule_read("remove_black_mold")
-	main._on_hotspot_pressed(anomaly_hotspot)
-	if not main.horror_event_manager.resolved_event_ids.has("room_105_shadow_stain"):
-		_fail("anomaly did not resolve after required rule")
+	main.closet_pig_man_system.advance(0.01)
+	if not main.horror_event_manager.resolved_event_ids.has(main.CLOSET_PIG_MAN_EVENT_ID):
+		_fail("holding the wardrobe did not push the man back and resolve the event")
 		return
 
 	_restore_save()

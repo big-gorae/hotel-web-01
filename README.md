@@ -24,8 +24,7 @@ Godot 4 GDScript starter for a 2.5D photo-based point-and-click hotel game.
 - `resource/images/exterior_stairs.png`: exterior stairs
 - `resource/images/laundry_room.png`: laundry room with the second washer door open
 - `resource/images/laundry_room_washer_closed.png`: laundry room with the second washer door closed
-- `resource/images/prev/prev_laundry_room.png`: archived previous laundry room photo, disconnected from scenes
-- `resource/images/prev/prev_room_106_bed_window.png`: archived previous room 106 photo, disconnected from scenes
+- `deprecated/2026-08-01-legacy-assets/images/`: archived previous image assets, disconnected from scenes
 - `resource/sounds/footstep.ogg`: movement footstep sound, repeated quickly during scene transitions
 - `resource/sounds/licenses/fantozzi_footsteps_license.txt`: source and license record for the footstep sound
 
@@ -34,7 +33,7 @@ Godot 4 GDScript starter for a 2.5D photo-based point-and-click hotel game.
 - Put photos and other image assets under `resource/images/`.
 - Put sound assets under `resource/sounds/`.
 - Put sound source/license records under `resource/sounds/licenses/`.
-- Keep disconnected older image assets under `resource/images/prev/`.
+- Keep retired documents, source files, tests, and resources in a date-prefixed directory under top-level `deprecated/`.
 
 ## Start
 
@@ -140,7 +139,7 @@ To move to another scene when clicked, use `target`:
 
 Current test items are seeded in `scripts/main.gd` so drag-to-hand equipment and item-to-item combination can be verified before pickup gameplay exists.
 
-The initial inventory now includes Mold Remover. Equip it in Hand and press `F` while viewing mold in Room 105 to remove two mold stacks per spray.
+The retired Room 105 cleanup item and mechanic are preserved under `deprecated/2026-08-01-mold-removal/` and are no longer registered in the live inventory.
 
 ## Controls
 
@@ -154,13 +153,13 @@ The closed-eye view uses an injectable profile in `scripts/systems/eye_close_pro
 
 Starting a new shift opens directly on the Front Desk photo with gameplay paused. A short story sequence appears at the start of every Day: the unclaimed-wages call and debt on Day 1, the prior employee record and two contacts on Days 2–3, the older sister's identity and investigation on Days 4–5, her warning on Day 6, and the player's recognition on Day 7. The sequence uses a raised, borderless dialogue layer whose black background fades toward the bottom. Text types from the upper-left with short punctuation pauses; clicking while it types reveals the whole line, and clicking again advances. Completed beats and the current step are saved so loading resumes at a safe boundary without replaying finished story.
 
-The Rule Book is split into one page per day. Each page contains only the rules newly issued that day, the latest page opens automatically whenever a day starts, and arrow navigation keeps earlier pages available. Day 1 begins with three ordinary housekeeping rules; later days reveal mold, Room 108 phone, Room 109, red washer, and abandoned-child rules. Day 7 ends with three short Room 109 instructions.
+The Rule Book is split into one page per day. Each page contains only the rules newly issued that day, the latest page opens automatically whenever a day starts, and arrow navigation keeps earlier pages available. Day 1 begins with three ordinary housekeeping rules; later days reveal the open-wardrobe rule, Room 108 phone, Room 109, red washer, and abandoned-child rules. Day 7 ends with three short Room 109 instructions.
 
 Rule Book presentation is image-ready. Drop photographed or scanned handwritten pages into `resource/images/rule_book/` as `day_01.png` through `day_07.png`; the matching image automatically replaces that Day's generated text cards. Locale-specific files such as `resource/images/rule_book/ko/day_01.png` take priority, and missing images fall back to the current localized text UI. See `resource/images/rule_book/README.md` for the complete convention.
 
 The production anomaly runtime allows only one active encounter at a time. Day 4–7 use the fixed main sequence of unanswered call, red washer, unregistered child, and the Room 109 passage; Day 2 onward can also schedule at most one separate production anomaly after conflicts clear. Runtime death, game-over, and jumpscare presentation are enabled.
 
-- Room 105 mold waits through a randomized long initial cooldown, then grows at a fixed interval from stack 1 through stack 6.
+- The Room 105 wardrobe waits five minutes before opening, then spends four minutes in each of its open-door and emerging-man stages. Global pig squeals recur every 24–42 seconds while active; holding the wardrobe for five seconds pushes the man back and closes it.
 - Calls originate from Room 108. The front desk phone must be answered before its thirteenth bell, and an answered light-repair request makes Room 108 unsafe to enter.
 - The unresolved Day 3 Room 109 encounter remains debug-only. On Day 7, first entry into the corridor starts the completed wait-and-footsteps passage; touching the door or leaving early is fatal.
 - A red washer must be stopped; its door and the laundry-room exit remain dangerous until the completion music finishes. The resulting load is discarded while the player's eyes are closed.
@@ -212,7 +211,7 @@ HOTEL_DEBUG_UI=1 /Applications/Godot.app/Contents/MacOS/Godot --path .
 - `▣`: shows or hides click area overlays. The real game view keeps them hidden by default.
 - `💬`: shows or hides the bottom chat/message panel. It is off by default.
 - `🧭`: shows or hides quick travel buttons. It is off by default and works independently from the chat panel.
-- `🛁 Gameplay / Open / Closed A / Closed B`: while viewing any Room 105-108 bathroom, immediately compares the gameplay state, the original open photo, the `edit_002` closed photo, and `resource/images/prev/화장실 닫힌 커튼 후보.png`. Preview choices do not modify or save the real curtain state.
+- `🛁 Gameplay / Open / Closed A`: while viewing any Room 105-108 bathroom, immediately compares the gameplay state, the original open photo, and the `edit_002` closed photo. Preview choices do not modify or save the real curtain state; retired candidates live only in `deprecated/`.
 
 ## Pause Menu
 

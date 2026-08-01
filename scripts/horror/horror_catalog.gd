@@ -10,22 +10,22 @@ const FAKE_MOTHER_REFERENCE := "res://resource/images/references/entities/room_1
 const HANGING_GIRL_REFERENCE := "res://resource/images/anomalies/room_107_hanging_girl/room_107_bed_nightstand/visible.png"
 
 const JUMPSCARE_IMAGE_BY_EVENT := {
-	"room_105_closet_woman": PIG_MASK_REFERENCE,
+	"room_105_closet_pig_man": PIG_MASK_REFERENCE,
 	"room_106_abandoned_child": FAKE_MOTHER_REFERENCE,
 	"room_107_hanging_girl": HANGING_GIRL_REFERENCE,
 }
 const JUMPSCARE_FOCUS_BY_EVENT := {
-	"room_105_closet_woman": Vector2(0.5, 0.3),
+	"room_105_closet_pig_man": Vector2(0.5, 0.3),
 	"room_106_abandoned_child": Vector2(0.5, 0.44),
 	"room_107_hanging_girl": Vector2(0.5, 0.36),
 }
 const JUMPSCARE_FIT_BY_EVENT := {
-	"room_105_closet_woman": "cover",
+	"room_105_closet_pig_man": "cover",
 	"room_106_abandoned_child": "contain",
 	"room_107_hanging_girl": "contain",
 }
 const JUMPSCARE_INITIAL_ZOOM_BY_EVENT := {
-	"room_105_closet_woman": 1.02,
+	"room_105_closet_pig_man": 1.02,
 	"room_106_abandoned_child": 1.02,
 	"room_107_hanging_girl": 1.02,
 }
@@ -35,7 +35,7 @@ const JUMPSCARE_SOURCE_RECT_BY_EVENT := {
 	"room_107_hanging_girl": Rect2(0.587, 0.120, 0.242, 0.516),
 }
 const JUMPSCARE_TUNING_BY_EVENT := {
-	"room_105_closet_woman": {
+	"room_105_closet_pig_man": {
 		"hold_seconds": 0.15,
 		"lunge_seconds": 0.13,
 		"lunge_zoom": 2.05,
@@ -67,8 +67,7 @@ const JUMPSCARE_TUNING_BY_EVENT := {
 
 static func build_definitions() -> Array:
 	var definitions := [
-		_make_room_105_shadow_anomaly(),
-		_make_game_over_event("room_105_closet_woman", "room_105", ["room_105_door_window", "room_105_bathroom_entry"], "Moldy Pig-Mask Man", "A man in a pale pig mask watches through the nearly closed wardrobe."),
+		_make_game_over_event("room_105_closet_pig_man", "room_105", ["room_105_door_window", "room_105_bathroom_entry"], "Closet Pig-Mask Man", "A man in a pale pig mask forces his way out through the open wardrobe."),
 		_make_game_over_event("room_106_abandoned_child", "room_106", ["room_106_bathroom"], "Abandoned Child", "The crying stops directly behind you."),
 		_make_game_over_event("room_108_light_repair_call", "room_108", ["front_desk", "room_108_bed_window"], "Thirteenth Ring", "Room 108 calls once more. This time the voice is beside you."),
 		_make_game_over_event("room_109_open_door", "room_109", ["corridor"], "Room 109", "Something inside notices you looking."),
@@ -94,36 +93,6 @@ static func build_definitions() -> Array:
 	for definition in definitions:
 		CollectionContent.apply_to_definition(definition)
 	return definitions
-
-
-static func _make_room_105_shadow_anomaly():
-	var definition := HorrorEventDefinition.new()
-	definition.id = "room_105_shadow_stain"
-	definition.event_type = HorrorEventDefinition.TYPE_ANOMALY
-	definition.room_id = "room_105"
-	definition.scene_ids = ["room_105_door_window", "room_105_bathroom_entry"]
-	definition.flag_id = "anomaly.room_105.shadow_stain.visible"
-	definition.discovery_kind = "visual_anomaly"
-	# Kept in the catalog for collection/save compatibility, but runtime mold is
-	# now owned by MoldGrowthSystem so the legacy random stain must not spawn.
-	definition.enabled = false
-	definition.spawn_chance = 0.0
-	definition.view_seconds_to_discover = 1.25
-	definition.fallback_title = "Shadow Stain"
-	definition.fallback_description = "A damp shadow has appeared where the wall was clean before."
-	definition.required_rule_id = "remove_black_mold"
-	definition.blocked_text_key = "horror_event.room_105_shadow_stain.blocked"
-	definition.fallback_blocked_text = "The stain does not react. Check the Rule Book before deciding what this is."
-	definition.reveal_hotspots = [
-		{
-			"id": "anomaly_room_105_shadow_stain",
-			"label": "Stain",
-			"rect": Rect2(0.655, 0.255, 0.120, 0.180),
-			"text": "The stain is too dark for water damage. It looks recent.",
-			"action": "resolve_horror_event:room_105_shadow_stain",
-		},
-	]
-	return definition
 
 
 static func _make_game_over_event(event_id: String, room_id: String, scene_ids: Array[String], fallback_title: String, fallback_description: String):

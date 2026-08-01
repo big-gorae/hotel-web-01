@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "event_id": "room_105_closet_pig_man",
+  "source_scene_id": "room_105_bathroom_entry",
+  "source_path": "res://resource/images/room_105_bathroom_entry.png",
+  "source_sha256": "f08d002b70d9129c49f50fe2403f7ecccf7a49db44959d2101661cbbe79b66e3",
+  "canvas": {
+    "width": 1535,
+    "height": 1024
+  },
+  "states": {
+    "door_open": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/room_105_closet_pig_man/room_105_bathroom_entry/visible.png",
+        "sha256": "fc1f4bb89bf6dff7582bfde6cc0716c7c34d2580e6db9d5f9b01e0a30f01fe4f",
+        "width": 1535,
+        "height": 1024
+      }
+    },
+    "face": {
+      "full_scene_variant": {
+        "path": "res://resource/images/anomalies/room_105_closet_pig_man/room_105_bathroom_entry/stage_2.png",
+        "sha256": "379b8a4766ebd7c630aa1f4408d07505f7edebea7ce18fad1d5fea702039383d",
+        "width": 1535,
+        "height": 1024
+      }
+    }
+  }
+}

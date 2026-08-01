@@ -100,7 +100,7 @@ Initial action types:
 {"type": "add_item", "item_id": "trash_bag"}
 {"type": "complete_task", "task_id": "room_105_fold_bed"}
 {"type": "use_equipped_item_on_task", "task_id": "room_105_clean_stain"}
-{"type": "resolve_horror_event", "event_id": "room_105_shadow_stain"}
+{"type": "resolve_horror_event", "event_id": "corridor_red_room_light"}
 {"type": "trigger_jumpscare", "event_id": "room_108_light_repair_call"}
 {"type": "set_flag", "flag_id": "laundry.second_washer.open", "value": false}
 ```
@@ -232,7 +232,7 @@ Examples:
 
 - `rule.stop_red_washer`
 - `rule.knock_before_vacant_open_room`
-- `rule.remove_black_mold`
+- `rule.close_open_wardrobe`
 - `rule.do_not_return_revealed_note_after_midnight`
 
 The UI can still render a simple localized list, but systems can query rule ids and tags.
@@ -266,8 +266,8 @@ Examples:
 
 - `laundry.second_washer.open`
 - `task.room_105.fold_bed.done`
-- `anomaly.room_105.shadow_stain.visible`
-- `rule.remove_black_mold.read`
+- `anomaly.corridor.red_room_light.visible`
+- `rule.close_open_wardrobe.read`
 
 This prevents every new feature from adding a new top-level variable to `main.gd`.
 

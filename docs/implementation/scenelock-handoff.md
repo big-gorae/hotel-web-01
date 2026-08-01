@@ -56,7 +56,7 @@ receipts/
 - 기본 장면과 같은 캔버스 크기의 투명 PNG다.
 - 실제 내용이 화면 일부에만 있어도 좌표를 자르지 않는다.
 - Godot에서는 `position=(0,0)`, 화면 맞춤으로 올린다.
-- 얼굴, 피 웅덩이, 손자국, 곰팡이와 같은 국소 삽입에 우선 사용한다.
+- 얼굴, 피 웅덩이, 손자국, 얼룩과 같은 국소 삽입에 우선 사용한다.
 
 ### Insert asset
 
@@ -173,7 +173,7 @@ SceneLock MCP가 아직 설치되지 않았거나 daemon이 준비되지 않았�
 | 빈 자살 로프 | `submit_image_composite` | 천장 부착과 바닥 관계를 함께 검수 |
 | 거울 속 다른 화장실 | `structural_edit` | 실제 욕실은 보호하고 반사 내부만 재구성 |
 | 이불 속 아이 | `structural_edit` | 이불 무늬와 부피 변화를 동시에 보존 |
-| 곰팡이 돼지 가면 남자 | `object_variant` + composite | 옷장문 상태와 돼지 가면 남자 삽입을 분리 |
+| 옷장의 돼지 가면 남자 | `object_variant` + composite | 옷장문 상태와 돼지 가면 남자 삽입을 분리 |
 | 룰북 촬영본 | import 또는 `tone_light` | 실제 종이 질감과 필기를 보존 |
 
 ## Prompt intent 원칙

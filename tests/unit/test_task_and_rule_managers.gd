@@ -29,12 +29,12 @@ func test_rule_book_manager_tracks_read_rules() -> void:
 	manager.mark_all_visible_read()
 
 	assert_that(manager.has_read_rule("make_vacant_beds")).is_true()
-	assert_that(manager.has_read_rule("remove_black_mold")).is_false()
+	assert_that(manager.has_read_rule("close_open_wardrobe")).is_false()
 
 	manager.set_current_day(3)
 	assert_that(manager.get_visible_rules().size()).is_equal(8)
 	manager.mark_all_visible_read()
-	assert_that(manager.has_read_rule("remove_black_mold")).is_true()
+	assert_that(manager.has_read_rule("close_open_wardrobe")).is_true()
 	assert_that(manager.export_state().get("read_rule_ids", []).has("do_not_look_into_room_109")).is_true()
 
 	manager.set_current_day(7)

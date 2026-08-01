@@ -8,11 +8,11 @@ const TYPE_ENTITY := "entity"
 const TYPE_PHENOMENON := "phenomenon"
 
 static var ENTRIES := {
-	"room_105_closet_woman": _entry(TYPE_ENTITY,
-		"Moldy Pig-Mask Man",
-		"The black mold in Room 105 is the trace of a man in a pale pig mask seeping out of the wardrobe. Cleaning it does not banish him; it only narrows his passage and forces him back into the dark.",
-		"곰팡이 돼지 가면 남자",
-		"105호의 검은 곰팡이는 옷장 속 돼지 가면 남자가 방 밖으로 번져 나오는 흔적이다. 곰팡이를 지우는 일은 그를 퇴치하는 것이 아니라 통로를 좁혀 잠시 어둠 속으로 밀어 넣는 일이다."),
+	"room_105_closet_pig_man": _entry(TYPE_ENTITY,
+		"Closet Pig-Mask Man",
+		"A man in a pale pig mask slowly forces open the wardrobe in Room 105. Hold the door shut long enough to push him back into the dark.",
+		"옷장의 돼지 가면 남자",
+		"창백한 돼지 가면을 쓴 남자가 105호 옷장을 아주 천천히 밀어 연다. 문을 계속 눌러 어둠 속으로 밀어 넣어야 한다."),
 	"room_106_abandoned_child": _entry(TYPE_ENTITY,
 		"The Unregistered Child",
 		"A child born and abandoned in the hotel was never entered in the guest register. It attacks anyone who repeats its mother's betrayal, while a false image of that mother waits only in the bathroom where she died.",
@@ -54,7 +54,6 @@ static var ENTRIES := {
 		"목을 맨 목각 여자 인형",
 		"107호에 목을 맨 목각 여자 인형은 죽음을 ‘데롱데롱 놀이’라 부르며 직원에게 함께하자고 권한다. 다른 놀이는 모두 거부하지만, 자신과 같은 작은 목각 인형 ‘윌터’를 친구로 건네면 잠시 만족한다."),
 
-	"room_105_shadow_stain": _entry(TYPE_PHENOMENON, "Shadow Stain", "A damp, lightless stain spreads across a wall that was clean moments ago.", "그림자 얼룩", "방금 전까지 깨끗했던 벽에 빛을 삼키는 축축한 얼룩이 번져 있다."),
 	"front_monitor_ghost": _entry(TYPE_PHENOMENON, "Figure in the Monitor", "A still upper-body silhouette occupies the dark front-desk monitor as though the screen were reflecting someone who is not in the room.", "모니터 속 귀신 형상", "프런트의 검은 모니터에 방 안에는 없는 상반신 형상이 비친 듯 흐릿하고 움직이지 않은 채 서 있다."),
 	"front_glass_face": _entry(TYPE_PHENOMENON, "Face Beyond the Glass", "Half a face remains fixed beyond the front glass door, changing only into a crueler expression after the first rapid sequence of bell strikes.", "유리문 너머의 얼굴", "프런트 유리문 프레임 너머로 얼굴 절반이 같은 자리에 붙어 있고, 첫 번째 벨 연타 뒤에만 더 악독한 표정으로 변한다."),
 	"front_die_sign": _entry(TYPE_PHENOMENON, "The Death Sign", "The front-desk notice has already been replaced by a single rough word written in red: DIE.", "‘죽어’라고 적힌 안내판", "정상 문구가 있어야 할 프런트 안내판이 붉고 거친 글씨로 적힌 ‘죽어’ 한마디로 바뀌어 있다."),

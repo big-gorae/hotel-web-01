@@ -2,6 +2,7 @@ extends GdUnitTestSuite
 
 const FlagStore := preload("res://scripts/systems/flag_store.gd")
 const HorrorEventManager := preload("res://scripts/horror/horror_event_manager.gd")
+const HorrorEventDefinition := preload("res://scripts/horror/horror_event_definition.gd")
 const Localization := preload("res://scripts/localization.gd")
 
 
@@ -9,9 +10,16 @@ func test_anomaly_flag_lifecycle_and_collection_survive_new_run() -> void:
 	var flags := FlagStore.new()
 	var manager := HorrorEventManager.new()
 	manager.setup_default_catalog(flags)
-	var definition = manager.get_definition("room_105_shadow_stain")
-	definition.enabled = true
+	var definition := HorrorEventDefinition.new()
+	definition.id = "test_room_105_anomaly"
+	definition.room_id = "room_105"
+	definition.scene_ids = ["room_105_door_window"]
+	definition.flag_id = "test.room_105.anomaly"
+	definition.discovery_kind = "visual_anomaly"
 	definition.spawn_chance = 1.0
+	definition.reveal_hotspots = [{"id": "test_anomaly"}]
+	manager.register_definition(definition)
+	definition = manager.get_definition(definition.id)
 	manager.rng.seed = 7
 
 	manager.enter_scene("room_105_door_window")
@@ -49,7 +57,7 @@ func test_collection_state_round_trips_independently_from_run_state() -> void:
 func test_collection_entries_separate_entity_stories_from_phenomenon_descriptions() -> void:
 	var manager := HorrorEventManager.new()
 	manager.setup_default_catalog()
-	manager.mark_event_seen("room_105_closet_woman")
+	manager.mark_event_seen("room_105_closet_pig_man")
 	manager.mark_event_seen("corridor_red_room_light")
 
 	var entries := manager.get_discovered_entries()
@@ -85,7 +93,7 @@ func test_every_catalog_entry_has_editable_collection_copy_and_canon_kind() -> v
 func test_weighted_selection_uses_definition_weights() -> void:
 	var manager := HorrorEventManager.new()
 	manager.setup_default_catalog()
-	var zero_weight = manager.get_definition("room_105_shadow_stain")
+	var zero_weight = manager.get_definition("room_105_closet_pig_man")
 	var selected = manager.get_definition("room_108_light_repair_call")
 	zero_weight.random_weight = 0.0
 	selected.random_weight = 1.0

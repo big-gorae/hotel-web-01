@@ -56,16 +56,19 @@ func test_equipped_item_completes_item_gated_task() -> void:
 
 
 func test_anomaly_requires_rule_before_resolution() -> void:
-	horror.active_event_id_by_room["room_105"] = "room_105_shadow_stain"
-	var blocked_result = runner.execute_action("resolve_horror_event:room_105_shadow_stain", _context("room_105_door_window"))
+	var event_id := "room_105_closet_pig_man"
+	var definition = horror.get_definition(event_id)
+	definition.required_rule_id = "close_open_wardrobe"
+	horror.active_event_id_by_room["room_105"] = event_id
+	var blocked_result = runner.execute_action("resolve_horror_event:%s" % event_id, _context("room_105_bathroom_entry"))
 
-	assert_that(horror.resolved_event_ids.has("room_105_shadow_stain")).is_false()
-	assert_that(blocked_result.blocked_reason_key).is_equal("horror_event.room_105_shadow_stain.blocked")
+	assert_that(horror.resolved_event_ids.has(event_id)).is_false()
+	assert_that(blocked_result.blocked_reason_key).is_equal("horror_event.%s.blocked" % event_id)
 
-	rules.mark_rule_read("remove_black_mold")
-	var resolved_result = runner.execute_action("resolve_horror_event:room_105_shadow_stain", _context("room_105_door_window"))
+	rules.mark_rule_read("close_open_wardrobe")
+	var resolved_result = runner.execute_action("resolve_horror_event:%s" % event_id, _context("room_105_bathroom_entry"))
 
-	assert_that(horror.resolved_event_ids.has("room_105_shadow_stain")).is_true()
+	assert_that(horror.resolved_event_ids.has(event_id)).is_true()
 	assert_that(resolved_result.should_refresh_hotspots).is_true()
 	assert_that(resolved_result.should_save).is_true()
 

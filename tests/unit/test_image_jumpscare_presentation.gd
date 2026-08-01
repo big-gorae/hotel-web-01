@@ -9,7 +9,7 @@ func test_user_reference_images_drive_pig_mask_and_fake_mother_jumpscares() -> v
 	for definition in HorrorCatalog.build_definitions():
 		definitions_by_id[definition.id] = definition
 
-	var pig = definitions_by_id["room_105_closet_woman"]
+	var pig = definitions_by_id["room_105_closet_pig_man"]
 	var mother = definitions_by_id["room_106_abandoned_child"]
 	assert_str(pig.jumpscare_image_path).is_equal(HorrorCatalog.PIG_MASK_REFERENCE)
 	assert_str(mother.jumpscare_image_path).is_equal(HorrorCatalog.FAKE_MOTHER_REFERENCE)
@@ -45,7 +45,7 @@ func test_user_reference_images_drive_pig_mask_and_fake_mother_jumpscares() -> v
 func test_image_jumpscare_reveals_immediately_and_has_a_second_lunge_phase() -> void:
 	var definition
 	for candidate in HorrorCatalog.build_definitions():
-		if candidate.id == "room_105_closet_woman":
+		if candidate.id == "room_105_closet_pig_man":
 			definition = candidate
 			break
 	assert_object(definition).is_not_null()

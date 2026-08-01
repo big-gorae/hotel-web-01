@@ -7,7 +7,7 @@ the anomaly MVP so the work remains recoverable without the original chat.
 
 - `resource/images/anomalies/`: images currently used by the game.
 - `resource/images/references/`: canonical entity and phenomenon references.
-- `resource/images/prev/`: replaced production images and earlier references.
+- `deprecated/2026-08-01-legacy-assets/images/`: replaced production images and earlier references.
 - `resource/reference/`: raw reference imports retained with their original names.
 
 ## Generation archives

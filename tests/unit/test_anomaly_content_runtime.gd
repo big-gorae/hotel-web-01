@@ -43,7 +43,7 @@ func test_item_hold_silently_rejects_wrong_item_and_accepts_required_item() -> v
 	runtime.force_event("corridor_blood_puddle")
 	var hotspot: Dictionary = runtime.get_dynamic_hotspots("corridor")[0]
 
-	assert_bool(runtime.begin_item_hold(String(hotspot["id"]), "mold_remover", Vector2.ZERO)).is_false()
+	assert_bool(runtime.begin_item_hold(String(hotspot["id"]), "small_flashlight", Vector2.ZERO)).is_false()
 	assert_bool(runtime.begin_item_hold(String(hotspot["id"]), "cleaning_cloth", Vector2.ZERO)).is_true()
 
 

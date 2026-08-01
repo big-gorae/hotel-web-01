@@ -134,8 +134,8 @@ func _draw() -> void:
 			_draw_abandoned_child()
 		"vacant_room_blanket_child":
 			_draw_blanket_child()
-		"room_105_closet_woman":
-			_draw_closet_woman(state)
+		"room_105_closet_pig_man":
+				_draw_closet_pig_man(state)
 
 
 func get_shadow_flicker_alpha() -> float:
@@ -458,7 +458,7 @@ func _draw_blanket_child() -> void:
 	draw_colored_polygon(mound, Color(0.57, 0.53, 0.47, 0.94))
 
 
-func _draw_closet_woman(state: String) -> void:
+func _draw_closet_pig_man(state: String) -> void:
 	var rect := _map_rect(Rect2(0.655, 0.175, 0.185, 0.555))
 	var gap_width := rect.size.x * (0.20 if state == "door_open" else 0.34)
 	var gap := Rect2(Vector2(rect.get_center().x - gap_width * 0.5, rect.position.y), Vector2(gap_width, rect.size.y))

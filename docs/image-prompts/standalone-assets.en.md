@@ -105,10 +105,10 @@ Isolated cutout of a photoreal fictional entrail mass for filling a bathtub. Gra
 
 # B. Entities
 
-## E01. Moldy pig-mask man and mold
+## E01. Closet pig-mask man
 
 ```text
-ASSET=MOLD, PIG_MASK_MAN_PEEK, or PIG_MASK_MAN_FATAL. MOLD is an irregular alpha colony growing from black specks into damp centers and fuzzy filaments, with no eye, face, or hand. PIG_MASK_MAN_PEEK is a narrow door-gap fragment of the exact approved pale peach-pink pig mask. Lock its relatively smooth surface, very high rounded forehead, asymmetric ears, tiny low-set recessed circular eye holes, broad short snout, round black nostrils, and tiny mouth. Show part of one ear, one side of the forehead, exactly one complete eye hole with a pale gray human eye, and half of the snout with one full nostril plus only the inner edge of the second nostril; show no second eye, full mask, or body. Do not obscure the design with black mold crust or mud. PIG_MASK_MAN_FATAL is a frontal close-up of the same mask. No forest, black coat, wardrobe, door, room, woman’s face, literal pig head, alternate pig-mask design, or bloody wounds. Transparent background.
+ASSET=PIG_MASK_MAN_PEEK or PIG_MASK_MAN_FATAL. PIG_MASK_MAN_PEEK is a narrow door-gap fragment of the exact approved pale peach-pink pig mask. Lock its relatively smooth surface, very high rounded forehead, asymmetric ears, tiny low-set recessed circular eye holes, broad short snout, round black nostrils, and tiny mouth. Show part of one ear, one side of the forehead, exactly one complete eye hole with a pale gray human eye, and half of the snout with one full nostril plus only the inner edge of the second nostril; show no second eye, full mask, or body. Do not obscure the design with mud or heavy grime. PIG_MASK_MAN_FATAL is a frontal close-up of the same mask. No forest, black coat, wardrobe, door, room, woman’s face, literal pig head, alternate pig-mask design, or bloody wounds. Transparent background.
 ```
 
 ## E02. Unanswered call

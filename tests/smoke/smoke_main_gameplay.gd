@@ -121,7 +121,7 @@ func _run() -> void:
 	if not main.jumpscare_lab.visible:
 		_fail("jumpscare lab did not open")
 		return
-	if not main.jumpscare_lab.select_event_by_id("room_105_closet_woman"):
+	if not main.jumpscare_lab.select_event_by_id("room_105_closet_pig_man"):
 		_fail("pig-mask jumpscare lab entry is missing")
 		return
 	main.jumpscare_lab.set_control_value("jumpscare_hold_seconds", 0.24)
@@ -318,21 +318,15 @@ func _run() -> void:
 	if main.shower_curtain_state.is_closed("room_105_bathroom"):
 		_fail("debug edit_002 preview changed the saved curtain state")
 		return
-
-	main._set_debug_curtain_preview_mode(main.DEBUG_CURTAIN_CLOSED_PREV)
-	await process_frame
-	if main.current_texture.resource_path != main.DEBUG_CURTAIN_PREV_PHOTO:
-		_fail("debug prev closed curtain preview did not load")
-		return
-	var debug_prev_hotspot := _find_hotspot(main, "room_105_bathroom", "shower_curtain")
-	var debug_prev_rect: Rect2 = debug_prev_hotspot.get("rect")
-	if debug_prev_rect.size.x <= debug_open_rect.size.x:
+	var debug_closed_hotspot := _find_hotspot(main, "room_105_bathroom", "shower_curtain")
+	var debug_closed_rect: Rect2 = debug_closed_hotspot.get("rect")
+	if debug_closed_rect.size.x <= debug_open_rect.size.x:
 		_fail("debug closed preview did not use the full curtain click area")
 		return
 	if main.scene_3d_overlay.visible:
 		_fail("room 105 tub overlay remained visible in the debug closed preview")
 		return
-	main._on_hotspot_pressed(debug_prev_hotspot)
+	main._on_hotspot_pressed(debug_closed_hotspot)
 	await process_frame
 	if main.debug_curtain_preview_mode != main.DEBUG_CURTAIN_OPEN or main.shower_curtain_state.is_closed("room_105_bathroom"):
 		_fail("clicking the debug curtain preview did not compare against the open photo")

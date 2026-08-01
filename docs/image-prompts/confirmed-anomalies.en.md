@@ -2,7 +2,7 @@
 
 Baseline date: 2026-07-26
 
-This document contains final-production image prompts for the **15 confirmed phenomena**, **8 confirmed entities**, and the mold and mirror items directly required by them. It does not authorize image generation yet. Review and revise the Korean document first, then apply the same revisions to matching IDs in this English set.
+This document contains final-production image prompts for the **15 confirmed phenomena**, **8 confirmed entities**, and the mirror items directly required by them. It does not authorize image generation yet. Review and revise the Korean document first, then apply the same revisions to matching IDs in this English set.
 
 ## How to use this document
 
@@ -243,24 +243,21 @@ Do not include a human head, face, eyes, hands, feet, complete limbs, fetus, or 
 
 # B. Eight entities
 
-## E01. The Moldy Pig-Mask Man and room 105 mold
+## E01. The Closet Pig-Mask Man
 
-- Canon entity name: `Moldy Pig-Mask Man`
-- Event ID: `room_105_closet_woman` (legacy ID retained for save compatibility)
+- Canon entity name: `Closet Pig-Mask Man`
+- Event ID: `room_105_closet_pig_man`
 - Source: `resource/images/room_105_bathroom_entry.png`
-- Deliverables: mold `stack_1..6`; man `door_open`, `peek`, `fatal`
-- Status: Mold placement, six stacks, opening door, and the pig-mask man are canon confirmed.
+- Deliverables: man `door_open`, `peek`, `fatal`
+- Status: The opening door and pig-mask man are canon confirmed.
 - Identity reference: `resource/images/references/entities/room_105_closet_pig_mask_man/reference_pig_mask_01.png`
 
 ```text
-[SIX MOLD STAGES]
-Use the wall beside the closed wooden wardrobe immediately to the right of the bathroom opening in room 105 as the growth origin. Create six overlays that accumulate the exact same black mold formation. STACK 1 consists of a few coin-sized irregular black specks and damp discoloration. STACK 2 links the specks with fine fungal filaments into a small colony. STACK 3 expands into a branching patch larger than a palm. STACK 4 thickens into black spotting that follows the wall finish and doorframe seams. STACK 5 becomes a broad colony of layered fuzz and wet centers leading toward the wardrobe. STACK 6 is the maximum state, covering a large area beside the wardrobe and entering the frame seams. Every stage must include all prior geometry and grow naturally from it. Do not form eyes, faces, hands, or writing inside the mold. Prefer full-source-size transparent PNGs with complete transparency outside the selected region.
-
 [DOOR_OPEN]
-In the identical room with mold at STACK 6, open only the wardrobe door by a narrow amount, revealing complete darkness inside. Preserve door dimensions, hinge axis, perspective, and surrounding shadows. Do not show a person, eye, face, or clothing inside yet. Do not open any other door or alter the room layout.
+In the original Room 105 scene, open only the wardrobe door by a narrow amount, revealing complete darkness inside. Preserve door dimensions, hinge axis, perspective, and surrounding shadows. Do not show a person, eye, face, or clothing inside yet. Do not open any other door or alter the room layout.
 
 [PEEK]
-Use the accepted DOOR_OPEN state, lock the entire room, and close the wardrobe until an approximately 40–50 px black gap remains in the 1535 px-wide scene. Deep in the darkness is an adult man wearing the exact pale peach-pink pig mask from the identity reference. Preserve its relatively smooth surface, very high rounded forehead, asymmetric outward ears, tiny low-set circular recessed eye holes, broad short cylindrical snout, two round black nostrils, and tiny mouth immediately below. Allow only faint scuffs and small gray marks; do not obscure its form with black mold crust or mud. Through the gap reveal part of one ear, one side of the high smooth forehead, exactly one complete eye hole with a pale gray human eye, and approximately half of the broad short snout with one full nostril plus only the inner edge of the second nostril. Do not reveal the second eye, full mask, readable full face, neck, or body. He does not hold the door or step into the room. Match the room perspective, warm lighting, deep wardrobe shadow, and film grain. Do not copy the forest or black coat from the reference, and do not create a woman’s face, literal animal head, alternate pig-mask design, or bloody wounds.
+Use the accepted DOOR_OPEN state, lock the entire room, and close the wardrobe until an approximately 40–50 px black gap remains in the 1535 px-wide scene. Deep in the darkness is an adult man wearing the exact pale peach-pink pig mask from the identity reference. Preserve its relatively smooth surface, very high rounded forehead, asymmetric outward ears, tiny low-set circular recessed eye holes, broad short cylindrical snout, two round black nostrils, and tiny mouth immediately below. Allow only faint scuffs and small gray marks; do not obscure its form with mud or heavy grime. Through the gap reveal part of one ear, one side of the high smooth forehead, exactly one complete eye hole with a pale gray human eye, and approximately half of the broad short snout with one full nostril plus only the inner edge of the second nostril. Do not reveal the second eye, full mask, readable full face, neck, or body. He does not hold the door or step into the room. Match the room perspective, warm lighting, deep wardrobe shadow, and film grain. Do not copy the forest or black coat from the reference, and do not create a woman’s face, literal animal head, alternate pig-mask design, or bloody wounds.
 
 [FATAL]
 Append the jumpscare master prompt and reveal the exact same pale peach-pink pig mask frontally. Preserve the reference's high rounded forehead, asymmetric ears, tiny recessed circular eye holes, broad short snout, round black nostrils, and tiny mouth. Pale gray human eyes inside the holes stare with excessive clarity. Keep the wardrobe, room, and lower body almost invisible, with no sexual exposure.
@@ -419,7 +416,7 @@ The event logic and danger below are confirmed, but this document proposes their
 3. Material and intensity of the baby-face wallpaper
 4. Exact distortion of the framed portrait
 5. Facial identity of the TV ghost
-6. Grime level of the moldy pig mask and the safe framing of the nude body
+6. Grime level of the closet pig mask and the safe framing of the nude body
 7. Fatal face of the Unanswered Call
 8. Fatal face of the Red Washer
 9. Costume, pose, and expression of the False Mother

@@ -31,7 +31,7 @@
 
 | 이상현상 | 장소 | 핵심 압박 | 문서 |
 | --- | --- | --- | --- |
-| 곰팡이 돼지 가면 남자 | 105호 | 곰팡이 6스택 이후 전역 사망 타이머 | [pig-mask-man.md](entities/pig-mask-man.md) |
+| 옷장의 돼지 가면 남자 | 105호 | 긴 옷장 단계, 전역 돼지 울음, 5초 홀드 해결 | [pig-mask-man.md](entities/pig-mask-man.md) |
 | 받지 못한 전화 | 프런트·지목된 객실 | 전화를 늦게 받거나 통화 후 지목된 방에 진입하면 사망 | [unanswered-call.md](entities/unanswered-call.md) |
 | 붉은 세탁기 | 세탁실 | 붉은 유리, 완료 음악, 세탁물 폐기 순서 준수 | [red-washer.md](entities/red-washer.md) |
 | 등록되지 않은 아이 | 106호 화장실 | 외면하지 않고 눈을 감아 노래한 뒤 안아 주기 | [unregistered-child.md](entities/unregistered-child.md) |

@@ -14,7 +14,7 @@
 
 | 이벤트 | 사용 이미지 |
 | --- | --- |
-| `room_105_closet_woman` | `res://resource/images/references/entities/room_105_closet_pig_mask_man/reference_pig_mask_01.png` · 화면 채우기 `Cover` · 초기 1.02배 · 0.15초 후 돌진 |
+| `room_105_closet_pig_man` | `res://resource/images/references/entities/room_105_closet_pig_mask_man/reference_pig_mask_01.png` · 화면 채우기 `Cover` · 초기 1.02배 · 0.15초 후 돌진 |
 | `room_106_abandoned_child` | `res://resource/images/references/entities/room_106_fake_mother/reference_face_01.png` · 원본 비율 유지 `Contain` · 초기 1.02배 · 0.25초 후 돌진 |
 
 두 이미지는 생성형 재해석이나 SceneLock 재합성 없이 승인된 원본을 런타임에서 직접 읽는다. 얼굴이 돌진 중 화면 밖으로 빠지지 않도록 이벤트마다 별도의 확대 중심점을 갖는다.

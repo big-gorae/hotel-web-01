@@ -6,7 +6,7 @@ signal preview_requested(event_id: String)
 const FIT_COVER := "cover"
 const FIT_CONTAIN := "contain"
 const EVENT_LABELS := {
-	"room_105_closet_woman": "곰팡이 돼지 가면 남자",
+	"room_105_closet_pig_man": "옷장의 돼지 가면 남자",
 	"room_106_abandoned_child": "가짜 엄마",
 }
 
