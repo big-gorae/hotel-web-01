@@ -20,20 +20,23 @@ func test_closet_pig_runs_only_when_the_daily_primary_schedule_selects_it() -> v
 	assert_bool(system.enabled).is_false()
 
 
-func test_closet_pig_uses_very_long_waits_and_announces_each_stage() -> void:
+func test_closet_pig_uses_escalating_short_waits_and_announces_each_stage() -> void:
 	var system = auto_free(ClosetPigManSystem.new())
 	add_child(system)
 	var cues: Array[String] = []
 	system.sound_requested.connect(func(cue_id: String): cues.append(cue_id))
 	system.start_day(2)
 
-	system.advance(299.0)
+	assert_float(system.INITIAL_WAIT_SECONDS).is_equal(90.0)
+	assert_float(system.DOOR_OPEN_WAIT_SECONDS).is_equal(45.0)
+	assert_float(system.EMERGING_WAIT_SECONDS).is_equal(30.0)
+	system.advance(89.0)
 	assert_str(system.current_state).is_equal(system.STATE_WAITING)
 	system.advance(1.0)
 	assert_str(system.current_state).is_equal(system.STATE_DOOR_OPEN)
 	assert_array(cues).contains_exactly(["pig_squeal"])
 
-	system.advance(239.0)
+	system.advance(44.0)
 	assert_str(system.current_state).is_equal(system.STATE_DOOR_OPEN)
 	system.advance(1.0)
 	assert_str(system.current_state).is_equal(system.STATE_EMERGING)

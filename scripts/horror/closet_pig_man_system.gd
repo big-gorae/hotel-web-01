@@ -22,11 +22,11 @@ const STATE_DOOR_OPEN := "door_open"
 const STATE_EMERGING := "emerging"
 const STATE_RESOLVED := "resolved"
 
-# These waits are deliberately long. The event is announced by recurring global
-# squeals, so players have time to infer the rule and reach Room 105.
-const INITIAL_WAIT_SECONDS := 300.0
-const DOOR_OPEN_WAIT_SECONDS := 240.0
-const EMERGING_WAIT_SECONDS := 240.0
+# The first squeal starts the readable response window quickly. Each visual
+# phase is deliberately shorter than the last so the stare keeps escalating.
+const INITIAL_WAIT_SECONDS := 90.0
+const DOOR_OPEN_WAIT_SECONDS := 45.0
+const EMERGING_WAIT_SECONDS := 30.0
 const HOLD_SECONDS := 5.0
 const SQUEAL_INTERVAL_MIN_SECONDS := 24.0
 const SQUEAL_INTERVAL_MAX_SECONDS := 42.0

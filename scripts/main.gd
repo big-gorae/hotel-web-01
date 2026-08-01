@@ -1424,13 +1424,13 @@ func _on_debug_curtain_preview_selected(index: int) -> void:
 func _on_debug_anomaly_selected(index: int) -> void:
 	if debug_anomaly_selector == null or anomaly_content_runtime == null or index <= 0:
 		return
+	debug_anomaly_selector.select(index)
 	var event_id := String(debug_anomaly_selector.get_item_metadata(index))
 	_stop_active_debug_anomaly_preview()
 	debug_anomaly_preview_event_id = event_id
 	var target_scene_id := ""
 	if event_id == CLOSET_PIG_MAN_EVENT_ID:
 		_start_closet_pig_man_preview()
-		debug_anomaly_selector.select(0)
 		return
 	elif event_id in MVP_NIGHT_DEBUG_EVENT_IDS:
 		anomaly_content_runtime.start_day(day_save_manager.current_day)
@@ -1460,7 +1460,6 @@ func _on_debug_anomaly_selected(index: int) -> void:
 			target_scene_id = "laundry_room"
 	if not target_scene_id.is_empty() and HOTEL_SCENES.has(target_scene_id):
 		show_scene(target_scene_id, false)
-	debug_anomaly_selector.select(0)
 
 
 func _stop_active_debug_anomaly_preview() -> void:

@@ -141,6 +141,9 @@ func _run() -> void:
 		_fail("closet pig-mask event was missing from the integrated anomaly preview selector")
 		return
 	main._on_debug_anomaly_selected(closet_pig_preview_index)
+	if main.debug_anomaly_selector.selected != closet_pig_preview_index:
+		_fail("anomaly preview selector did not keep the currently selected event visible")
+		return
 	if main.current_scene_id != "room_105_bathroom_entry":
 		_fail("integrated closet preview did not open the Room 105 wardrobe scene")
 		return
@@ -162,6 +165,9 @@ func _run() -> void:
 		_fail("global pig squeal audio was not prepared")
 		return
 	main._on_debug_anomaly_selected(glass_preview_index)
+	if main.debug_anomaly_selector.selected != glass_preview_index:
+		_fail("anomaly preview selector reset after choosing another event")
+		return
 	if main.horror_event_manager.is_jumpscare_active():
 		_fail("the previous closet preview fired after another anomaly was selected")
 		return
@@ -179,7 +185,7 @@ func _run() -> void:
 		main.anomaly_presentation_layer._active_state_id != "face"
 		or not main.anomaly_presentation_layer.is_rendering_artifact()
 	):
-		_fail("long closet sequence did not advance to the pig-mask man")
+		_fail("closet sequence did not advance to the more visible pig-mask phase")
 		return
 	closet_hotspot = _find_dynamic_or_editor_hotspot(main, main.HotelClosetPigManSystemScript.HOLD_HOTSPOT_ID)
 	main._on_anomaly_hotspot_button_down(closet_hotspot)

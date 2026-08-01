@@ -248,19 +248,19 @@ Do not include a human head, face, eyes, hands, feet, complete limbs, fetus, or 
 - Canon entity name: `Closet Pig-Mask Man`
 - Event ID: `room_105_closet_pig_man`
 - Source: `resource/images/room_105_bathroom_entry.png`
-- Deliverables: man `door_open`, `peek`, `fatal`
+- Deliverables: man `stage_1`, `stage_2`, `fatal`
 - Status: The opening door and pig-mask man are canon confirmed.
 - Identity reference: `resource/images/references/entities/room_105_closet_pig_mask_man/reference_pig_mask_01.png`
 
 ```text
-[DOOR_OPEN]
-In the original Room 105 scene, open only the wardrobe door by a narrow amount, revealing complete darkness inside. Preserve door dimensions, hinge axis, perspective, and surrounding shadows. Do not show a person, eye, face, or clothing inside yet. Do not open any other door or alter the room layout.
+[STAGE_1]
+Lock the entire original Room 105 scene and leave only a narrow black gap in the nearly closed wardrobe. Deep in the darkness, an adult man wearing the exact pale peach-pink pig mask from the identity reference stares at the player. Reveal part of one ear, one side of the forehead, exactly one complete eye hole with a pale gray human eye, and half of the snout. Do not reveal the second eye, full mask, neck, or body. He does not hold the door or step into the room.
 
-[PEEK]
-Use the accepted DOOR_OPEN state, lock the entire room, and close the wardrobe until an approximately 40–50 px black gap remains in the 1535 px-wide scene. Deep in the darkness is an adult man wearing the exact pale peach-pink pig mask from the identity reference. Preserve its relatively smooth surface, very high rounded forehead, asymmetric outward ears, tiny low-set circular recessed eye holes, broad short cylindrical snout, two round black nostrils, and tiny mouth immediately below. Allow only faint scuffs and small gray marks; do not obscure its form with mud or heavy grime. Through the gap reveal part of one ear, one side of the high smooth forehead, exactly one complete eye hole with a pale gray human eye, and approximately half of the broad short snout with one full nostril plus only the inner edge of the second nostril. Do not reveal the second eye, full mask, readable full face, neck, or body. He does not hold the door or step into the room. Match the room perspective, warm lighting, deep wardrobe shadow, and film grain. Do not copy the forest or black coat from the reference, and do not create a woman’s face, literal animal head, alternate pig-mask design, or bloody wounds.
+[STAGE_2]
+Keep the accepted STAGE_1 room, camera, furniture, lighting, perspective, and film grain locked, and open only the wardrobe door moderately wider. The same man remains motionless in the same position and stares directly at the player through both eyes. Both eyes, the full snout, and most of the mask must be readable, while the neck, shoulders, and body remain completely swallowed by the black wardrobe. Preserve the high rounded forehead, asymmetric ears, small recessed circular eye holes, broad short snout, round nostrils, and tiny mouth. Add no forest background, black coat, female face, literal pig head, alternate mask, blood, wounds, glow, or theatrical effects.
 
 [FATAL]
-Append the jumpscare master prompt and reveal the exact same pale peach-pink pig mask frontally. Preserve the reference's high rounded forehead, asymmetric ears, tiny recessed circular eye holes, broad short snout, round black nostrils, and tiny mouth. Pale gray human eyes inside the holes stare with excessive clarity. Keep the wardrobe, room, and lower body almost invisible, with no sexual exposure.
+Append the jumpscare master prompt and reveal the exact same pale peach-pink pig mask from STAGE_2 frontally. Preserve the reference's high rounded forehead, asymmetric ears, tiny recessed circular eye holes, broad short snout, round black nostrils, and tiny mouth. Pale gray human eyes inside the holes stare with excessive clarity. Keep the wardrobe, room, and lower body almost invisible, with no sexual exposure.
 ```
 
 ## E02. The Unanswered Call
