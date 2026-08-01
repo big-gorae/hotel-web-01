@@ -1,5 +1,11 @@
 # Rule Book Page Images
 
+## Active notebook background
+
+`notebook_background.png` is the shared background for generated Rule Book pages. It is the selected spiral-notebook direction from draft 04. Replace this one file to change the notebook artwork without editing code.
+
+Korean and English rule copy remains live localized UI text drawn over the background. Do not bake readable copy into this image.
+
 Place finished photographed or scanned Rule Book pages in this directory. No code change is required.
 
 ## Shared images

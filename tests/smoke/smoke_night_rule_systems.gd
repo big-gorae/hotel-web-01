@@ -25,6 +25,9 @@ func _run() -> void:
 	if not _latest_rule_page_is_open(main, 1, 3):
 		_fail("day one did not automatically open its three-rule page")
 		return
+	if main.menu_overlay.rule_book_screen.page_background.texture == null or not main.menu_overlay.rule_book_screen.page_background.visible:
+		_fail("rule book text page did not use the selected notebook background")
+		return
 	main._hide_menu()
 
 	if main.rule_book_manager.get_visible_rules().size() != 3:
@@ -65,11 +68,11 @@ func _run() -> void:
 		_fail("rule book previous-page navigation did not show day two")
 		return
 	main.menu_overlay.rule_book_screen.set_page_image_override(2, "res://resource/images/front_desk.png")
-	if not main.menu_overlay.rule_book_screen.is_page_image_mode() or main.menu_overlay.rule_book_screen.text_page_scroll.visible:
+	if not main.menu_overlay.rule_book_screen.is_page_image_mode() or main.menu_overlay.rule_book_screen.text_page_scroll.visible or main.menu_overlay.rule_book_screen.page_background.visible:
 		_fail("rule book page image did not replace the generated text layout")
 		return
 	main.menu_overlay.rule_book_screen.set_page_image_override(2, "")
-	if main.menu_overlay.rule_book_screen.is_page_image_mode() or not main.menu_overlay.rule_book_screen.text_page_scroll.visible:
+	if main.menu_overlay.rule_book_screen.is_page_image_mode() or not main.menu_overlay.rule_book_screen.text_page_scroll.visible or not main.menu_overlay.rule_book_screen.page_background.visible:
 		_fail("missing rule book image did not fall back to generated text")
 		return
 	main._hide_menu()

@@ -17,6 +17,7 @@ var page_label: Label
 var previous_button: Button
 var next_button: Button
 var text_page_scroll: ScrollContainer
+var page_background: TextureRect
 var page_photo: TextureRect
 var rules_box: VBoxContainer
 var page_image_overrides: Dictionary = {}
@@ -93,7 +94,7 @@ func refresh_text() -> void:
 	for index in range(page_rules.size()):
 		var rule_data: Dictionary = page_rules[index]
 		var card := PanelContainer.new()
-		card.add_theme_stylebox_override("panel", _make_rule_style())
+		card.add_theme_stylebox_override("panel", _make_rule_style(index))
 		rules_box.add_child(card)
 
 		var row := HBoxContainer.new()
@@ -105,11 +106,11 @@ func refresh_text() -> void:
 		number.custom_minimum_size = Vector2(44.0, 0.0)
 		number.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		number.add_theme_font_size_override("font_size", 18)
-		number.add_theme_color_override("font_color", Color(1.0, 0.79, 0.24))
+		number.add_theme_color_override("font_color", Color(0.36, 0.13, 0.09, 0.92))
 		row.add_child(number)
 
 		var divider := VSeparator.new()
-		divider.modulate = Color(1.0, 0.78, 0.28, 0.22)
+		divider.modulate = Color(0.24, 0.16, 0.10, 0.30)
 		row.add_child(divider)
 
 		var rule := Label.new()
@@ -118,7 +119,7 @@ func refresh_text() -> void:
 		rule.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		rule.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		rule.add_theme_font_size_override("font_size", 17)
-		rule.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
+		rule.add_theme_color_override("font_color", Color(0.11, 0.10, 0.085, 0.96))
 		row.add_child(rule)
 
 
@@ -167,13 +168,30 @@ func _build() -> void:
 
 	var page_content := PanelContainer.new()
 	page_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	page_content.clip_contents = true
 	page_content.add_theme_stylebox_override("panel", _make_page_content_style())
 	layout.add_child(page_content)
 
+	page_background = TextureRect.new()
+	page_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	page_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	page_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	page_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	page_background.texture = load(RuleBookPageCatalog.get_text_background_path()) as Texture2D
+	page_content.add_child(page_background)
+
+	var text_margin := MarginContainer.new()
+	text_margin.add_theme_constant_override("margin_left", 88)
+	text_margin.add_theme_constant_override("margin_right", 42)
+	text_margin.add_theme_constant_override("margin_top", 12)
+	text_margin.add_theme_constant_override("margin_bottom", 12)
+	page_content.add_child(text_margin)
+
 	text_page_scroll = ScrollContainer.new()
+	text_page_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text_page_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	text_page_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	page_content.add_child(text_page_scroll)
+	text_margin.add_child(text_page_scroll)
 
 	rules_box = VBoxContainer.new()
 	rules_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -270,6 +288,7 @@ func _refresh_page_image() -> void:
 	page_photo.texture = texture
 	page_photo.visible = texture != null
 	text_page_scroll.visible = texture == null
+	page_background.visible = texture == null
 	custom_minimum_size = Vector2(570.0, 560.0 if texture != null else 420.0)
 
 
@@ -286,29 +305,22 @@ func _make_panel_style(background: Color, border: Color, radius: int) -> StyleBo
 	return style
 
 
-func _make_rule_style() -> StyleBoxFlat:
+func _make_rule_style(index: int) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.055, 0.057, 0.058, 0.86)
-	style.border_color = Color(1.0, 1.0, 1.0, 0.07)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(7)
-	style.content_margin_left = 14.0
-	style.content_margin_right = 14.0
-	style.content_margin_top = 12.0
-	style.content_margin_bottom = 12.0
+	style.bg_color = Color(0.92, 0.88, 0.73, 0.10 if index % 2 == 0 else 0.04)
+	style.content_margin_left = 10.0
+	style.content_margin_right = 10.0
+	style.content_margin_top = 9.0
+	style.content_margin_bottom = 9.0
 	return style
 
 
 func _make_page_content_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.012, 0.013, 0.014, 0.62)
-	style.border_color = Color(1.0, 1.0, 1.0, 0.055)
+	style.bg_color = Color(0.20, 0.19, 0.15, 0.96)
+	style.border_color = Color(0.48, 0.42, 0.30, 0.52)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(7)
-	style.content_margin_left = 8.0
-	style.content_margin_right = 8.0
-	style.content_margin_top = 8.0
-	style.content_margin_bottom = 8.0
 	return style
 
 

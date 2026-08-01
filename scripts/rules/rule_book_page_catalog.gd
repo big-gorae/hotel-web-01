@@ -2,6 +2,7 @@ class_name HotelRuleBookPageCatalog
 extends RefCounted
 
 const IMAGE_ROOT := "res://resource/images/rule_book"
+const TEXT_BACKGROUND_PATH := IMAGE_ROOT + "/notebook_background.png"
 const IMAGE_EXTENSIONS := ["png", "webp", "jpg", "jpeg"]
 
 
@@ -25,3 +26,7 @@ static func resolve_page_image_path(day: int, language_code := "") -> String:
 		if ResourceLoader.exists(path, "Texture2D"):
 			return path
 	return ""
+
+
+static func get_text_background_path() -> String:
+	return TEXT_BACKGROUND_PATH

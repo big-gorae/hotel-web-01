@@ -66,3 +66,10 @@ func test_rule_book_page_images_prefer_locale_then_shared_fallback() -> void:
 	assert_that(candidates[4]).is_equal("res://resource/images/rule_book/day_03.png")
 	assert_that(candidates.size()).is_equal(8)
 	assert_that(RuleBookPageCatalog.resolve_page_image_path(3, "ko")).is_empty()
+
+
+func test_rule_book_text_pages_use_the_selected_notebook_background() -> void:
+	var background_path := RuleBookPageCatalog.get_text_background_path()
+
+	assert_that(background_path).is_equal("res://resource/images/rule_book/notebook_background.png")
+	assert_that(ResourceLoader.exists(background_path, "Texture2D")).is_true()
