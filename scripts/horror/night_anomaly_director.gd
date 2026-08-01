@@ -22,6 +22,7 @@ const ROOM_109_PASSAGE_EVENT_ID := "room_109_day7_passage"
 const HELL_MIRROR_ITEM_ID := "hell_mirror"
 const CLOSET_PIG_EVENT_ID := "room_105_closet_pig_man"
 const GameMode := preload("res://scripts/systems/game_mode.gd")
+const HoldController := preload("res://scripts/interactions/hold_interaction_controller.gd")
 
 # Keep the Story route editable as one plain Day table. An omitted Day has no
 # primary event. Infinity uses the separate random pool in _eligible_daily_events().
@@ -34,11 +35,10 @@ const STORY_PRIMARY_EVENT_BY_DAY := {
 }
 
 const LAUNDRY_IDLE := "idle"
-const LAUNDRY_WASHING := "washing"
 const LAUNDRY_RED := "red"
 const LAUNDRY_MUSIC := "music"
-const LAUNDRY_READY := "ready"
-const LAUNDRY_DISCARDED := "discarded"
+const LAUNDRY_RESOLVED := "resolved"
+const LAUNDRY_STOP_HOLD_ID := "laundry_stop:red_washer"
 
 const CHILD_IDLE := "idle"
 const CHILD_WAITING := "waiting"
@@ -59,13 +59,13 @@ const ROOM_109_PASSAGE_DONE := "done"
 var phone_initial_delay := 24.0
 var phone_repeat_delay := 58.0
 var phone_bell_interval := 1.15
-var laundry_red_delay := 9.0
 var laundry_music_duration := 7.0
+var laundry_stop_hold_duration := 1.5
+var laundry_eye_close_grace_duration := 1.5
 var child_appearance_delay := 7.0
 var child_response_seconds := 6.0
 var child_song_duration := 6.5
-var laundry_neglect_duration := 18.0
-var laundry_post_music_death_delay := 2.4
+var laundry_neglect_duration := 30.0
 var phone_death_delay := 2.4
 var phone_forbidden_duration := 18.0
 var blanket_response_seconds := 18.0
@@ -85,6 +85,7 @@ var phone_ringing := false
 var phone_bell_count := 0
 var room_108_forbidden := false
 var laundry_state := LAUNDRY_IDLE
+var laundry_discovered := false
 var child_state := CHILD_IDLE
 var blanket_state := BLANKET_IDLE
 var blanket_scene_id := ""
@@ -94,7 +95,9 @@ var _phone_seconds := 0.0
 var _laundry_seconds := 0.0
 var _child_seconds := 0.0
 var _laundry_neglect_seconds := 0.0
-var _laundry_fatal_pending := false
+var _laundry_eye_close_grace_seconds := 0.0
+var _laundry_eyes_closed_once := false
+var _laundry_death_requested := false
 var _phone_fatal_pending := false
 var _phone_death_seconds := 0.0
 var _phone_forbidden_seconds := 0.0
@@ -114,6 +117,16 @@ var _planned_event_started := false
 var _planned_event_completed := false
 var _rng := RandomNumberGenerator.new()
 var _random_seed_override := -1
+var _laundry_hold_controller = null
+var _laundry_hold_focus_position := Vector2.ZERO
+
+
+func _init() -> void:
+	_laundry_hold_controller = HoldController.new()
+	_laundry_hold_controller.hold_started.connect(_on_laundry_hold_started)
+	_laundry_hold_controller.progress_changed.connect(_on_laundry_hold_progress_changed)
+	_laundry_hold_controller.hold_cancelled.connect(_on_laundry_hold_cancelled)
+	_laundry_hold_controller.hold_completed.connect(_on_laundry_hold_completed)
 
 
 func _ready() -> void:
@@ -168,7 +181,7 @@ func has_active_anomaly() -> bool:
 		phone_ringing
 		or _phone_fatal_pending
 		or room_108_forbidden
-		or laundry_state in [LAUNDRY_WASHING, LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_READY]
+		or laundry_state in [LAUNDRY_RED, LAUNDRY_MUSIC]
 		or child_state in [CHILD_WAITING, CHILD_CRYING]
 		or blanket_state == BLANKET_VISIBLE
 		or room_109_passage_state in [ROOM_109_PASSAGE_WAITING, ROOM_109_PASSAGE_FOOTSTEPS]
@@ -185,7 +198,9 @@ func start_day(day: int) -> void:
 	phone_ringing = false
 	phone_bell_count = 0
 	room_108_forbidden = false
+	release_laundry_stop_hold()
 	laundry_state = LAUNDRY_IDLE
+	laundry_discovered = false
 	child_state = CHILD_IDLE
 	blanket_state = BLANKET_IDLE
 	blanket_scene_id = ""
@@ -194,7 +209,9 @@ func start_day(day: int) -> void:
 	_laundry_seconds = 0.0
 	_child_seconds = 0.0
 	_laundry_neglect_seconds = 0.0
-	_laundry_fatal_pending = false
+	_laundry_eye_close_grace_seconds = 0.0
+	_laundry_eyes_closed_once = false
+	_laundry_death_requested = false
 	_phone_fatal_pending = false
 	_phone_death_seconds = 0.0
 	_phone_forbidden_seconds = 0.0
@@ -219,6 +236,8 @@ func start_day(day: int) -> void:
 
 func enter_scene(scene_id: String) -> void:
 	current_scene_id = scene_id
+	if scene_id != "laundry_room":
+		release_laundry_stop_hold()
 	if (
 		_can_start_planned_event(ROOM_109_PASSAGE_EVENT_ID)
 		and scene_id == "corridor"
@@ -229,16 +248,11 @@ func enter_scene(scene_id: String) -> void:
 		_room_109_footstep_cue_seconds = 0.0
 		_mark_planned_event_started(ROOM_109_PASSAGE_EVENT_ID)
 		state_changed.emit()
-	if scene_id == "laundry_room" and laundry_state == LAUNDRY_RED:
-		sound_requested.emit("washer_small_scream")
 	if external_anomaly_active:
 		return
 	if _can_start_planned_event(LAUNDRY_EVENT_ID) and scene_id == "laundry_room" and laundry_state == LAUNDRY_IDLE:
-		laundry_state = LAUNDRY_WASHING
-		_laundry_seconds = laundry_red_delay
+		_begin_red_laundry()
 		_mark_planned_event_started(LAUNDRY_EVENT_ID)
-		if _audio_playback_allowed() and _washer_spin_player != null:
-			_washer_spin_player.play()
 		state_changed.emit()
 	if _can_start_planned_event(CHILD_EVENT_ID) and scene_id == "room_106_bathroom" and child_state == CHILD_IDLE:
 		child_state = CHILD_WAITING
@@ -249,7 +263,14 @@ func enter_scene(scene_id: String) -> void:
 
 
 func advance(delta: float) -> void:
-	if delta <= 0.0 or external_anomaly_active:
+	if delta <= 0.0:
+		return
+	var laundry_state_before_hold := laundry_state
+	if _laundry_hold_controller != null:
+		_laundry_hold_controller.advance(delta)
+	if laundry_state_before_hold == LAUNDRY_RED and laundry_state == LAUNDRY_MUSIC:
+		return
+	if external_anomaly_active:
 		return
 	if room_108_forbidden:
 		_phone_forbidden_seconds = maxf(_phone_forbidden_seconds - delta, 0.0)
@@ -264,7 +285,7 @@ func advance(delta: float) -> void:
 	if _phone_fatal_pending:
 		_advance_phone(delta)
 		return
-	if laundry_state in [LAUNDRY_WASHING, LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_READY]:
+	if laundry_state in [LAUNDRY_RED, LAUNDRY_MUSIC]:
 		_advance_laundry(delta)
 		return
 	if child_state in [CHILD_WAITING, CHILD_CRYING]:
@@ -287,7 +308,7 @@ func can_change_scene(target_scene_id: String) -> bool:
 		death_requested.emit(PHONE_EVENT_ID)
 		return false
 	if current_scene_id == "laundry_room" and laundry_state == LAUNDRY_MUSIC and target_scene_id != "laundry_room":
-		death_requested.emit(LAUNDRY_EVENT_ID)
+		_request_laundry_death()
 		return false
 	if current_scene_id == "room_106_bathroom" and child_state == CHILD_CRYING and target_scene_id != "room_106_bathroom":
 		death_requested.emit(CHILD_EVENT_ID)
@@ -303,7 +324,7 @@ func handle_hotspot(hotspot_id: String) -> bool:
 		"phone":
 			return _answer_phone()
 		"laundry_second_washer":
-			return _handle_washer()
+			return laundry_state in [LAUNDRY_RED, LAUNDRY_MUSIC]
 		"room_109_open_door":
 			if not lethal_outcomes_enabled:
 				return false
@@ -318,7 +339,7 @@ func handle_hotspot(hotspot_id: String) -> bool:
 func destroy_hell_mirror_in_washer(target_inventory) -> bool:
 	if (
 		current_scene_id != "laundry_room"
-		or laundry_state not in [LAUNDRY_IDLE, LAUNDRY_DISCARDED]
+		or laundry_state not in [LAUNDRY_IDLE, LAUNDRY_RESOLVED]
 		or target_inventory == null
 		or not target_inventory.has_item_id(HELL_MIRROR_ITEM_ID)
 	):
@@ -349,7 +370,7 @@ func get_dynamic_hotspots(scene_id: String) -> Array:
 
 
 func is_scene_anomalous(scene_id: String) -> bool:
-	if scene_id == "laundry_room" and laundry_state in [LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_READY]:
+	if scene_id == "laundry_room" and laundry_state in [LAUNDRY_RED, LAUNDRY_MUSIC]:
 		return true
 	if scene_id == "room_106_bathroom" and child_state == CHILD_CRYING:
 		return true
@@ -363,7 +384,7 @@ func is_scene_anomalous(scene_id: String) -> bool:
 
 
 func is_laundry_washer_locked_closed() -> bool:
-	return laundry_state in [LAUNDRY_WASHING, LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_READY]
+	return laundry_state in [LAUNDRY_RED, LAUNDRY_MUSIC]
 
 
 func force_phone_ring() -> void:
@@ -383,14 +404,9 @@ func force_phone_ring() -> void:
 func force_red_laundry() -> void:
 	if current_day < 5:
 		current_day = 5
-	laundry_state = LAUNDRY_RED
-	_laundry_seconds = 0.0
-	_laundry_neglect_seconds = laundry_neglect_duration
-	_laundry_fatal_pending = false
+	_begin_red_laundry()
 	_prepare_forced_event(LAUNDRY_EVENT_ID)
 	_mark_planned_event_started(LAUNDRY_EVENT_ID)
-	if _audio_playback_allowed() and _washer_spin_player != null and not _washer_spin_player.playing:
-		_washer_spin_player.play()
 	state_changed.emit()
 
 
@@ -419,6 +435,29 @@ func force_blanket_child(scene_id := "room_108_bed_window") -> void:
 	state_changed.emit()
 
 
+func discover_red_laundry() -> bool:
+	if current_scene_id != "laundry_room" or laundry_state != LAUNDRY_RED:
+		return false
+	if laundry_discovered:
+		return false
+	laundry_discovered = true
+	_laundry_neglect_seconds = laundry_neglect_duration
+	return true
+
+
+func begin_laundry_stop_hold(focus_position: Vector2) -> bool:
+	if current_scene_id != "laundry_room" or laundry_state != LAUNDRY_RED:
+		return false
+	discover_red_laundry()
+	_laundry_hold_focus_position = focus_position
+	return _laundry_hold_controller.begin(LAUNDRY_STOP_HOLD_ID, laundry_stop_hold_duration)
+
+
+func release_laundry_stop_hold() -> void:
+	if _laundry_hold_controller != null and _laundry_hold_controller.is_active():
+		_laundry_hold_controller.cancel()
+
+
 func begin_hand_action() -> bool:
 	if child_state != CHILD_CRYING or eye_close_controller == null or not eye_close_controller.is_closed():
 		return false
@@ -444,7 +483,7 @@ func release_hand_action() -> void:
 
 
 func get_presentation_state() -> Dictionary:
-	if laundry_state in [LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_READY]:
+	if laundry_state in [LAUNDRY_RED, LAUNDRY_MUSIC]:
 		return {
 			"event_id": LAUNDRY_EVENT_ID,
 			"state": laundry_state,
@@ -480,11 +519,13 @@ func export_state() -> Dictionary:
 		"phone_seconds": _phone_seconds,
 		"room_108_forbidden": room_108_forbidden,
 		"laundry_state": laundry_state,
+		"laundry_discovered": laundry_discovered,
 		"laundry_seconds": _laundry_seconds,
 		"child_state": child_state,
 		"child_seconds": _child_seconds,
 		"laundry_neglect_seconds": _laundry_neglect_seconds,
-		"laundry_fatal_pending": _laundry_fatal_pending,
+		"laundry_eye_close_grace_seconds": _laundry_eye_close_grace_seconds,
+		"laundry_eyes_closed_once": _laundry_eyes_closed_once,
 		"phone_fatal_pending": _phone_fatal_pending,
 		"phone_death_seconds": _phone_death_seconds,
 		"phone_forbidden_seconds": _phone_forbidden_seconds,
@@ -512,12 +553,25 @@ func import_state(state: Dictionary) -> void:
 	phone_bell_count = clampi(int(state.get("phone_bell_count", 0)), 0, PHONE_MAX_BELLS)
 	_phone_seconds = float(state.get("phone_seconds", phone_initial_delay))
 	room_108_forbidden = bool(state.get("room_108_forbidden", false))
+	release_laundry_stop_hold()
 	laundry_state = String(state.get("laundry_state", LAUNDRY_IDLE))
+	if laundry_state == "washing":
+		laundry_state = LAUNDRY_RED
+	elif laundry_state in ["ready", "discarded"]:
+		laundry_state = LAUNDRY_RESOLVED
+	if laundry_state not in [LAUNDRY_IDLE, LAUNDRY_RED, LAUNDRY_MUSIC, LAUNDRY_RESOLVED]:
+		laundry_state = LAUNDRY_IDLE
+	laundry_discovered = bool(state.get("laundry_discovered", false))
 	_laundry_seconds = float(state.get("laundry_seconds", 0.0))
 	child_state = String(state.get("child_state", CHILD_IDLE))
 	_child_seconds = float(state.get("child_seconds", 0.0))
 	_laundry_neglect_seconds = float(state.get("laundry_neglect_seconds", laundry_neglect_duration))
-	_laundry_fatal_pending = bool(state.get("laundry_fatal_pending", false))
+	_laundry_eye_close_grace_seconds = float(state.get(
+		"laundry_eye_close_grace_seconds",
+		laundry_eye_close_grace_duration,
+	))
+	_laundry_eyes_closed_once = bool(state.get("laundry_eyes_closed_once", false))
+	_laundry_death_requested = false
 	_phone_fatal_pending = bool(state.get("phone_fatal_pending", false))
 	_phone_death_seconds = float(state.get("phone_death_seconds", 0.0))
 	_phone_forbidden_seconds = float(state.get("phone_forbidden_seconds", phone_forbidden_duration if room_108_forbidden else 0.0))
@@ -540,11 +594,14 @@ func import_state(state: Dictionary) -> void:
 		if _planned_event_id == CHILD_EVENT_ID:
 			_planned_event_started = true
 			_planned_event_completed = true
+	if laundry_state == LAUNDRY_RESOLVED and _planned_event_id == LAUNDRY_EVENT_ID:
+		_planned_event_started = true
+		_planned_event_completed = true
 	if state.has("rng_state"):
 		_rng.state = int(state["rng_state"])
 	if laundry_state == LAUNDRY_MUSIC and _audio_playback_allowed() and _completion_music_player != null:
 		_completion_music_player.play()
-	if laundry_state in [LAUNDRY_WASHING, LAUNDRY_RED] and _audio_playback_allowed() and _washer_spin_player != null:
+	if laundry_state == LAUNDRY_RED and _audio_playback_allowed() and _washer_spin_player != null:
 		_washer_spin_player.play()
 	phone_bell_changed.emit(phone_bell_count if phone_ringing else 0, PHONE_MAX_BELLS)
 	state_changed.emit()
@@ -604,60 +661,54 @@ func _answer_phone() -> bool:
 
 func _advance_laundry(delta: float) -> void:
 	match laundry_state:
-		LAUNDRY_WASHING:
-			_laundry_seconds = maxf(_laundry_seconds - delta, 0.0)
-			if _laundry_seconds <= 0.0:
-				laundry_state = LAUNDRY_RED
-				_laundry_neglect_seconds = laundry_neglect_duration
-				_laundry_fatal_pending = false
-				state_changed.emit()
 		LAUNDRY_RED:
+			if not laundry_discovered or _laundry_death_requested:
+				return
 			_laundry_neglect_seconds = maxf(_laundry_neglect_seconds - delta, 0.0)
 			if _laundry_neglect_seconds <= 0.0:
-				_start_laundry_music(true)
+				if not _request_laundry_death():
+					_laundry_neglect_seconds = laundry_neglect_duration
 		LAUNDRY_MUSIC:
+			if _laundry_death_requested:
+				return
+			var eyes_closed: bool = eye_close_controller != null and eye_close_controller.is_closed()
+			if eyes_closed:
+				_laundry_eyes_closed_once = true
+				_laundry_eye_close_grace_seconds = 0.0
+			elif _laundry_eyes_closed_once:
+				_request_laundry_death()
+				return
+			else:
+				_laundry_eye_close_grace_seconds = maxf(_laundry_eye_close_grace_seconds - delta, 0.0)
+				if _laundry_eye_close_grace_seconds <= 0.0:
+					_request_laundry_death()
+					return
 			_laundry_seconds = maxf(_laundry_seconds - delta, 0.0)
-			if _laundry_seconds > 0.0:
-				return
-			if _laundry_fatal_pending:
-				_laundry_fatal_pending = false
-				if lethal_outcomes_enabled:
-					death_requested.emit(LAUNDRY_EVENT_ID)
-				return
-			_finish_laundry_music()
+			if _laundry_seconds <= 0.0:
+				_finish_laundry_music()
 
 
-func _handle_washer() -> bool:
-	match laundry_state:
-		LAUNDRY_WASHING:
-			return true
-		LAUNDRY_RED:
-			_start_laundry_music(false)
-			return true
-		LAUNDRY_MUSIC:
-			if lethal_outcomes_enabled:
-				death_requested.emit(LAUNDRY_EVENT_ID)
-			return true
-		LAUNDRY_READY:
-			if lethal_outcomes_enabled and (eye_close_controller == null or not eye_close_controller.is_closed()):
-				death_requested.emit(LAUNDRY_EVENT_ID)
-				return true
-			laundry_state = LAUNDRY_DISCARDED
-			_laundry_seconds = 0.0
-			_laundry_neglect_seconds = 0.0
-			_laundry_fatal_pending = false
-			_complete_planned_event(LAUNDRY_EVENT_ID)
-			state_changed.emit()
-			return true
-	return false
+func _begin_red_laundry() -> void:
+	release_laundry_stop_hold()
+	laundry_state = LAUNDRY_RED
+	laundry_discovered = false
+	_laundry_seconds = 0.0
+	_laundry_neglect_seconds = laundry_neglect_duration
+	_laundry_eye_close_grace_seconds = 0.0
+	_laundry_eyes_closed_once = false
+	_laundry_death_requested = false
+	if _audio_playback_allowed() and _washer_spin_player != null and not _washer_spin_player.playing:
+		_washer_spin_player.play()
 
 
-func _start_laundry_music(fatal_pending: bool) -> void:
+func _start_laundry_music() -> void:
+	release_laundry_stop_hold()
 	laundry_state = LAUNDRY_MUSIC
-	_laundry_fatal_pending = fatal_pending
 	_laundry_seconds = laundry_music_duration
-	if fatal_pending:
-		_laundry_seconds += laundry_post_music_death_delay
+	_laundry_neglect_seconds = 0.0
+	_laundry_eye_close_grace_seconds = laundry_eye_close_grace_duration
+	_laundry_eyes_closed_once = eye_close_controller != null and eye_close_controller.is_closed()
+	_laundry_death_requested = false
 	if _washer_spin_player != null:
 		_washer_spin_player.stop()
 	if _audio_playback_allowed() and _completion_music_player != null:
@@ -666,13 +717,54 @@ func _start_laundry_music(fatal_pending: bool) -> void:
 
 
 func _finish_laundry_music() -> void:
-	if laundry_state != LAUNDRY_MUSIC:
+	if laundry_state != LAUNDRY_MUSIC or _laundry_death_requested:
 		return
-	if _laundry_fatal_pending:
-		return
-	laundry_state = LAUNDRY_READY
+	laundry_state = LAUNDRY_RESOLVED
 	_laundry_seconds = 0.0
+	_laundry_eye_close_grace_seconds = 0.0
+	_laundry_eyes_closed_once = false
+	if _completion_music_player != null and _completion_music_player.playing:
+		_completion_music_player.stop()
+	_complete_planned_event(LAUNDRY_EVENT_ID)
 	state_changed.emit()
+
+
+func _request_laundry_death() -> bool:
+	if not lethal_outcomes_enabled:
+		return false
+	if _laundry_death_requested:
+		return true
+	_laundry_death_requested = true
+	release_laundry_stop_hold()
+	death_requested.emit(LAUNDRY_EVENT_ID)
+	return true
+
+
+func _on_laundry_hold_started(hold_id: String, _duration_seconds: float) -> void:
+	if hold_id != LAUNDRY_STOP_HOLD_ID:
+		return
+	hold_started.emit("circular", _laundry_hold_focus_position)
+
+
+func _on_laundry_hold_progress_changed(hold_id: String, progress: float) -> void:
+	if hold_id == LAUNDRY_STOP_HOLD_ID:
+		hold_progress_changed.emit(progress)
+
+
+func _on_laundry_hold_cancelled(hold_id: String) -> void:
+	if hold_id != LAUNDRY_STOP_HOLD_ID:
+		return
+	hold_progress_changed.emit(0.0)
+	hold_ended.emit()
+
+
+func _on_laundry_hold_completed(hold_id: String) -> void:
+	if hold_id != LAUNDRY_STOP_HOLD_ID:
+		return
+	hold_progress_changed.emit(1.0)
+	hold_ended.emit()
+	if laundry_state == LAUNDRY_RED:
+		_start_laundry_music()
 
 
 func _on_completion_music_finished() -> void:
@@ -702,6 +794,12 @@ func _advance_child(delta: float) -> void:
 
 
 func _on_eye_closed_changed(closed: bool) -> void:
+	if laundry_state == LAUNDRY_MUSIC:
+		if closed:
+			_laundry_eyes_closed_once = true
+			_laundry_eye_close_grace_seconds = 0.0
+		elif _laundry_eyes_closed_once:
+			_request_laundry_death()
 	if closed and child_state == CHILD_CRYING:
 		dialogue_requested.emit("night.child.hold_f_to_sing")
 	if not closed and _child_song_held:

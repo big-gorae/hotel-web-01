@@ -316,27 +316,48 @@ func _run() -> void:
 	_finish_story(main)
 	main._hide_menu()
 	main.show_scene("laundry_room", false)
-	if main._is_laundry_second_washer_open():
-		_fail("running red-laundry washer did not use the closed-door photo")
+	if main.night_anomaly_director.laundry_state != main.night_anomaly_director.LAUNDRY_RED:
+		_fail("red washer was not red immediately on entering the laundry room")
 		return
-	main.night_anomaly_director.force_red_laundry()
+	if main._is_laundry_second_washer_open():
+		_fail("red-laundry washer did not use the closed-door photo")
+		return
 	if not main.anomaly_presentation_layer.is_rendering_artifact():
 		_fail("red washer MVP image was not rendered")
 		return
-	main._on_hotspot_pressed(_find_dynamic_or_editor_hotspot(main, "laundry_second_washer"))
-	if main.night_anomaly_director.laundry_state != main.night_anomaly_director.LAUNDRY_MUSIC:
-		_fail("red washer did not enter completion-music lock")
+	main.night_anomaly_director.advance(main.night_anomaly_director.laundry_neglect_duration + 1.0)
+	if main.horror_event_manager.is_jumpscare_active():
+		_fail("unseen red washer incorrectly started its neglect timer")
 		return
-	main.night_anomaly_director.advance(main.night_anomaly_director.laundry_music_duration)
-	main.eye_close_controller.close_eyes()
+	main._on_laundry_washer_discovered()
+	main._on_laundry_washer_button_down()
+	if not main.hold_progress_overlay.is_showing_hold():
+		_fail("red washer hold did not show circular progress")
+		return
+	main.night_anomaly_director.advance(main.night_anomaly_director.laundry_stop_hold_duration)
+	if main.night_anomaly_director.laundry_state != main.night_anomaly_director.LAUNDRY_MUSIC:
+		_fail("red washer hold did not enter the completion-music phase")
+		return
+	if main.hold_progress_overlay.is_showing_hold():
+		_fail("red washer hold progress remained visible after completion")
+		return
 	main._on_hotspot_pressed(_find_dynamic_or_editor_hotspot(main, "laundry_second_washer"))
-	if main.night_anomaly_director.laundry_state != main.night_anomaly_director.LAUNDRY_DISCARDED:
-		_fail("red laundry could not be discarded with eyes closed")
+	if main.horror_event_manager.is_jumpscare_active():
+		_fail("clicking the red washer again during music was incorrectly fatal")
+		return
+	main.eye_close_controller.close_eyes()
+	main.night_anomaly_director.advance(main.night_anomaly_director.laundry_music_duration)
+	if main.night_anomaly_director.laundry_state != main.night_anomaly_director.LAUNDRY_RESOLVED:
+		_fail("red laundry did not resolve automatically when the music ended")
 		return
 	if not main._is_laundry_second_washer_open():
-		_fail("discarded red laundry did not restore the open-door photo")
+		_fail("resolved red laundry did not restore the open-door photo")
 		return
 	main.eye_close_controller.open_eyes()
+	main.show_scene("front_desk", false)
+	if main.current_scene_id != "front_desk":
+		_fail("movement remained locked after the red washer music ended")
+		return
 
 	main._start_day(6, false, false)
 	await process_frame

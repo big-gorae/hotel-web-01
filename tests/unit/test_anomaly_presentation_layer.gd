@@ -47,14 +47,14 @@ func test_shower_event_selects_the_manifest_for_its_saved_room() -> void:
 	assert_int(layer.get_child_count()).is_equal(1)
 
 
-func test_red_washer_artifact_persists_until_the_laundry_is_discarded() -> void:
+func test_red_washer_artifact_persists_until_the_music_resolves() -> void:
 	var layer = auto_free(PresentationLayer.new())
 	add_child(layer)
 	layer.reload_manifests()
 	layer.set_scene("laundry_room")
 	layer.set_photo_rect(Rect2(0.0, 0.0, 1448.0, 1086.0))
 
-	for state_id in ["red", "music", "ready"]:
+	for state_id in ["red", "music"]:
 		assert_bool(layer.apply_presentation_state({
 			"event_id": "laundry_red_washer",
 			"state": state_id,
@@ -64,6 +64,6 @@ func test_red_washer_artifact_persists_until_the_laundry_is_discarded() -> void:
 
 	assert_bool(layer.apply_presentation_state({
 		"event_id": "laundry_red_washer",
-		"state": "discarded",
+		"state": "resolved",
 		"scene_id": "laundry_room",
 	})).is_false()

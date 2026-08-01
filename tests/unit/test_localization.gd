@@ -17,6 +17,19 @@ func test_default_language_is_korean() -> void:
 	assert_str(localization.get_language_code()).is_equal("ko")
 
 
+func test_red_washer_rule_matches_the_current_ritual_in_korean_and_english() -> void:
+	var localization := Localization.new()
+
+	assert_str(String(localization.translations[Localization.Language.KOREAN]["ui.rule_book.rule.8"])).is_equal(
+		"세탁기 안에 이상한 것이 보이면 세탁을 종료하시오. 세탁 종료 노래가 나오는 동안 눈을 감고, 세탁실에 숨어 있으시오"
+	)
+	assert_str(String(localization.translations[Localization.Language.ENGLISH]["ui.rule_book.rule.8"])).is_equal(
+		"If you see something strange inside a washer, stop the wash. While the completion song plays, close your eyes and hide in the laundry room."
+	)
+	assert_bool(localization.translations[Localization.Language.KOREAN].has("ui.rule_book.rule.9")).is_false()
+	assert_bool(localization.translations[Localization.Language.ENGLISH].has("ui.rule_book.rule.10")).is_false()
+
+
 func test_english_and_korean_have_identical_key_coverage() -> void:
 	var localization := Localization.new()
 	var english_keys: Array = localization.translations[Localization.Language.ENGLISH].keys()

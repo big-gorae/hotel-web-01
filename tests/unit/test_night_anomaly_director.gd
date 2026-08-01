@@ -229,44 +229,70 @@ func test_clicking_blanket_child_only_plays_laughter() -> void:
 	assert_str(director.blanket_state).is_equal(NightAnomalyDirector.BLANKET_VISIBLE)
 
 
-func test_red_washer_neglect_finishes_music_then_requests_death() -> void:
+func test_red_washer_neglect_timer_starts_only_after_discovery_and_kills_at_thirty_seconds() -> void:
 	var director = auto_free(NightAnomalyDirector.new())
 	var deaths: Array[String] = []
 	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
 	director.start_day(5)
-	director.force_red_laundry()
+	director.enter_scene("laundry_room")
 
-	director.advance(director.laundry_neglect_duration)
-	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_MUSIC)
+	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_RED)
+	assert_bool(director.laundry_discovered).is_false()
+	director.advance(director.laundry_neglect_duration + 10.0)
 	assert_array(deaths).is_empty()
-	director.advance(director.laundry_music_duration + director.laundry_post_music_death_delay)
+	assert_bool(director.discover_red_laundry()).is_true()
+	director.advance(director.laundry_neglect_duration - 0.1)
+	assert_array(deaths).is_empty()
+	director.advance(0.2)
 
 	assert_array(deaths).contains_exactly([NightAnomalyDirector.LAUNDRY_EVENT_ID])
 
 
-func test_red_washer_closes_during_the_ritual_and_completes_by_timer() -> void:
+func test_red_washer_uses_circular_hold_and_resolves_when_closed_eye_music_ends() -> void:
 	var eyes = auto_free(EyeCloseController.new())
 	var director = auto_free(NightAnomalyDirector.new())
+	var deaths: Array[String] = []
+	var hold_modes: Array[String] = []
+	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
+	director.hold_started.connect(func(mode: String, _position: Vector2): hold_modes.append(mode))
 	director.setup(eyes)
 	director.start_day(5)
 	director.enter_scene("laundry_room")
 
-	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_WASHING)
-	assert_bool(director.is_laundry_washer_locked_closed()).is_true()
-	director.advance(director.laundry_red_delay)
 	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_RED)
-	director.handle_hotspot("laundry_second_washer")
+	assert_bool(director.begin_laundry_stop_hold(Vector2(320.0, 180.0))).is_true()
+	assert_array(hold_modes).contains_exactly(["circular"])
+	director.advance(director.laundry_stop_hold_duration)
 	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_MUSIC)
+	assert_bool(director.handle_hotspot("laundry_second_washer")).is_true()
+	assert_array(deaths).is_empty()
 
-	director.advance(director.laundry_music_duration)
-	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_READY)
-	assert_bool(director.is_laundry_washer_locked_closed()).is_true()
 	eyes.close_eyes()
-	director.handle_hotspot("laundry_second_washer")
-
-	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_DISCARDED)
+	director.advance(director.laundry_music_duration)
+	assert_str(director.laundry_state).is_equal(NightAnomalyDirector.LAUNDRY_RESOLVED)
 	assert_bool(director.is_laundry_washer_locked_closed()).is_false()
 	assert_bool(director.is_daily_schedule_complete()).is_true()
+	eyes.open_eyes()
+	assert_bool(director.can_change_scene("front_desk")).is_true()
+	assert_array(deaths).is_empty()
+
+
+func test_red_washer_music_requires_closed_eyes_but_reclicking_is_safe() -> void:
+	var eyes = auto_free(EyeCloseController.new())
+	var director = auto_free(NightAnomalyDirector.new())
+	var deaths: Array[String] = []
+	director.death_requested.connect(func(event_id: String): deaths.append(event_id))
+	director.setup(eyes)
+	director.start_day(5)
+	director.enter_scene("laundry_room")
+	director.begin_laundry_stop_hold(Vector2.ZERO)
+	director.advance(director.laundry_stop_hold_duration)
+
+	director.handle_hotspot("laundry_second_washer")
+	assert_array(deaths).is_empty()
+	director.advance(director.laundry_eye_close_grace_duration)
+
+	assert_array(deaths).contains_exactly([NightAnomalyDirector.LAUNDRY_EVENT_ID])
 
 
 func test_day_seven_room_109_passage_forbids_turning_until_footsteps_end() -> void:

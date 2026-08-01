@@ -162,7 +162,7 @@ The production anomaly runtime allows only one active encounter at a time. Story
 - The Room 105 wardrobe stays closed for a random 90–180 seconds, then runs exactly two visual phases: a 30-second narrow opening and a 40-second wide opening before the fatal jumpscare. While active, global pig squeals use a 30-second base interval with ±10 seconds of jitter; holding the wardrobe for five seconds pushes the man back and closes it.
 - Calls originate from Room 108. The front desk phone must be answered before its thirteenth bell, and an answered light-repair request makes Room 108 unsafe to enter.
 - The unresolved Day 3 Room 109 encounter remains debug-only. On Day 7, first entry into the corridor starts the completed wait-and-footsteps passage; touching the door or leaving early is fatal.
-- A red washer must be stopped; its door and the laundry-room exit remain dangerous until the completion music finishes. The resulting load is discarded while the player's eyes are closed.
+- The Day 5 washer is red as soon as it is encountered. Once its hotspot is discovered, a 30-second neglect timer starts; holding the washer fills a circular progress ring and stops it. The player must close their eyes and remain in the laundry room only until the completion music ends, after which normal vision and movement return automatically.
 - In the Room 106 child encounter, closing the player's eyes shows a prompt to hold F and sing. Completing the song opens their eyes and resolves the encounter immediately; fatal branches remain connected to the game-over presentation.
 
 ## Gameplay Systems Plan

@@ -1096,7 +1096,13 @@ func _build_hotspots(hotspots: Array) -> void:
 		button.set_meta("hotspot", hotspot)
 		button.add_theme_font_size_override("font_size", 15)
 		button.pressed.connect(_on_hotspot_pressed.bind(hotspot))
-		if _is_content_anomaly_hotspot_id(String(hotspot.get("id", ""))):
+		var hotspot_id := String(hotspot.get("id", ""))
+		if hotspot_id == "laundry_second_washer":
+			button.mouse_entered.connect(_on_laundry_washer_discovered)
+			button.button_down.connect(_on_laundry_washer_button_down)
+			button.button_up.connect(_on_laundry_washer_button_up)
+			button.mouse_exited.connect(_on_laundry_washer_button_up)
+		elif _is_content_anomaly_hotspot_id(hotspot_id):
 			button.button_down.connect(_on_anomaly_hotspot_button_down.bind(hotspot))
 			button.button_up.connect(_on_anomaly_hotspot_button_up)
 			button.mouse_exited.connect(_on_anomaly_hotspot_button_up)
@@ -1272,6 +1278,24 @@ func _on_anomaly_hotspot_button_up() -> void:
 		anomaly_content_runtime.release_hold()
 	if closet_pig_man_system != null:
 		closet_pig_man_system.release_hold()
+
+
+func _on_laundry_washer_discovered() -> void:
+	if night_anomaly_director != null and night_anomaly_director.discover_red_laundry():
+		_save_current_day()
+
+
+func _on_laundry_washer_button_down() -> void:
+	if night_anomaly_director == null:
+		return
+	var was_discovered: bool = night_anomaly_director.laundry_discovered
+	if night_anomaly_director.begin_laundry_stop_hold(get_viewport().get_mouse_position()) and not was_discovered:
+		_save_current_day()
+
+
+func _on_laundry_washer_button_up() -> void:
+	if night_anomaly_director != null:
+		night_anomaly_director.release_laundry_stop_hold()
 
 
 func _is_content_anomaly_hotspot_id(hotspot_id: String) -> bool:
@@ -1605,7 +1629,7 @@ func _sync_laundry_washer_photo_to_event() -> void:
 	if night_anomaly_director == null or flag_store == null:
 		return
 	var should_open: bool = (
-		night_anomaly_director.laundry_state == night_anomaly_director.LAUNDRY_DISCARDED
+		night_anomaly_director.laundry_state == night_anomaly_director.LAUNDRY_RESOLVED
 	)
 	if not should_open and not night_anomaly_director.is_laundry_washer_locked_closed():
 		return

@@ -14,8 +14,6 @@ static func build_definitions() -> Array:
 		_make_rule("do_not_look_into_room_109", 6, 3, ["room_109", "door", "anomaly"]),
 		_make_rule("answer_before_thirteenth_ring", 7, 4, ["front_desk", "phone", "anomaly"]),
 		_make_rule("stop_red_washer", 8, 5, ["laundry", "anomaly"]),
-		_make_rule("wait_for_washer_music", 9, 5, ["laundry", "anomaly"]),
-		_make_rule("stay_during_washer_music", 10, 5, ["laundry", "anomaly"]),
 		_make_rule("sing_until_child_stops", 12, 6, ["room_106", "child", "anomaly"]),
 		_make_rule("leave_room_109_open", 14, 7, ["room_109", "anomaly"]),
 		_make_rule("let_room_109_guest_pass", 15, 7, ["room_109", "anomaly"]),

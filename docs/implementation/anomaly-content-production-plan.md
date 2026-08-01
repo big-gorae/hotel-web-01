@@ -376,18 +376,19 @@ SceneLock export와 full-canvas overlay는 아래의 **현재 실제 픽셀 크�
 
 - ID: `laundry_red_washer`
 - Scene: `laundry_room`
-- Logic: `washing -> red -> music -> ready -> discarded`
+- Logic: `idle -> red -> music -> resolved`
 - Visual:
   - 시뻘건 유리와 내부
   - 세탁기 속도 변화 없음
   - 열린·닫힌 기본 문 상태와 사건 상태를 독립 관리
 - Input:
-  - 붉을 때 세탁기 정지
-  - 음악 중 조작·이탈 금지
-  - 음악 종료 뒤 눈 감고 폐기
+  - 세탁기 핫스팟 발견 뒤에만 30초 방치 타이머 시작
+  - 붉을 때 1.5초 원형 홀드로 세탁기 정지
+  - 음악 중 눈을 감고 세탁실 안에 머물기
+  - 음악 중 재클릭은 무시하고, 음악 종료 시 자동 해결
 - Audio: 평소 회전음, 완료 음악, 사망 점프스케어
 - SceneLock: 두 번째 세탁기 유리 selection의 `tone_light` 및 내부 red variant
-- QA: 작은 비명·가속 없음, 음악과 다른 이상현상 음향이 겹치지 않음
+- QA: 입장 즉시 붉음, 발견 전 타이머 정지, 발견 후 30초 사망, 작은 비명·가속 없음, 음악 종료 후 눈 뜨기·이동 허용
 
 ### 등록되지 않은 아이
 

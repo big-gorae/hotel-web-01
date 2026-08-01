@@ -38,7 +38,7 @@ func test_rule_book_manager_tracks_read_rules() -> void:
 	assert_that(manager.export_state().get("read_rule_ids", []).has("do_not_look_into_room_109")).is_true()
 
 	manager.set_current_day(7)
-	assert_that(manager.get_visible_rules().size()).is_equal(16)
+	assert_that(manager.get_visible_rules().size()).is_equal(14)
 
 
 func test_rule_book_pages_only_contain_rules_added_that_day() -> void:
@@ -46,7 +46,7 @@ func test_rule_book_pages_only_contain_rules_added_that_day() -> void:
 	manager.setup_default_catalog()
 	manager.set_current_day(7)
 
-	var expected_counts := [3, 1, 4, 1, 3, 1, 3]
+	var expected_counts := [3, 1, 4, 1, 1, 1, 3]
 	for day in range(1, 8):
 		assert_that(manager.get_rules_for_day(day).size()).is_equal(expected_counts[day - 1])
 		for definition in manager.get_rules_for_day(day):
