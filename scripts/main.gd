@@ -133,6 +133,7 @@ var mold_removal_in_progress := false
 var debug_curtain_preview_mode := DEBUG_CURTAIN_GAMEPLAY
 var debug_last_closed_curtain_preview := DEBUG_CURTAIN_CLOSED_EDIT
 var debug_anomaly_preview_event_id := ""
+var debug_mold_preview_previous_state: Dictionary = {}
 
 var gameplay_layer: Control
 var photo: TextureRect
@@ -1470,6 +1471,8 @@ func _on_debug_anomaly_selected(index: int) -> void:
 	if debug_anomaly_selector == null or anomaly_content_runtime == null or index <= 0:
 		return
 	var event_id := String(debug_anomaly_selector.get_item_metadata(index))
+	_stop_active_debug_anomaly_preview()
+	debug_anomaly_preview_event_id = event_id
 	var target_scene_id := ""
 	if event_id == MOLD_PIG_MASK_EVENT_ID:
 		_start_mold_pig_mask_preview()
@@ -1491,8 +1494,8 @@ func _on_debug_anomaly_selected(index: int) -> void:
 	else:
 		night_anomaly_director.start_day(day_save_manager.current_day)
 		if not anomaly_content_runtime.force_event(event_id):
+			debug_anomaly_preview_event_id = ""
 			return
-		debug_anomaly_preview_event_id = event_id
 		var definition: Dictionary = anomaly_content_runtime.definitions.get(event_id, {})
 		target_scene_id = String(definition.get("scene_id", ""))
 		if event_id == "bathroom_shower_legs":
@@ -1506,6 +1509,38 @@ func _on_debug_anomaly_selected(index: int) -> void:
 	debug_anomaly_selector.select(0)
 
 
+func _stop_active_debug_anomaly_preview() -> void:
+	if debug_anomaly_preview_event_id.is_empty():
+		return
+	var previous_event_id := debug_anomaly_preview_event_id
+	debug_anomaly_preview_event_id = ""
+
+	if mold_closet_timer != null:
+		mold_closet_timer.stop()
+	if previous_event_id == MOLD_PIG_MASK_EVENT_ID and not debug_mold_preview_previous_state.is_empty():
+		mold_growth_system.import_state(debug_mold_preview_previous_state)
+		debug_mold_preview_previous_state.clear()
+		_sync_mold_display()
+
+	if choice_dialogue_overlay != null:
+		choice_dialogue_overlay.close()
+	if hold_progress_overlay != null:
+		hold_progress_overlay.hide_hold()
+	if eye_close_controller != null:
+		eye_close_controller.stop_song(false)
+		eye_close_controller.open_eyes()
+	if night_anomaly_director != null:
+		night_anomaly_director.release_hand_action()
+		night_anomaly_director.start_day(day_save_manager.current_day)
+	if anomaly_content_runtime != null:
+		anomaly_content_runtime.release_hold()
+		anomaly_content_runtime.start_day(day_save_manager.current_day)
+
+	_sync_shadow_distress_audio()
+	_sync_eye_close_anomaly_context()
+	_sync_anomaly_visual_overlay()
+
+
 func _start_mold_pig_mask_preview() -> bool:
 	if (
 		mold_growth_system == null
@@ -1517,6 +1552,7 @@ func _start_mold_pig_mask_preview() -> bool:
 	anomaly_content_runtime.start_day(day_save_manager.current_day)
 	night_anomaly_director.start_day(day_save_manager.current_day)
 	debug_anomaly_preview_event_id = MOLD_PIG_MASK_EVENT_ID
+	debug_mold_preview_previous_state = mold_growth_system.export_state()
 	if not mold_closet_timer.is_stopped():
 		mold_closet_timer.stop()
 	show_scene("room_105_bathroom_entry", false)

@@ -144,6 +144,22 @@ func _run() -> void:
 	):
 		_fail("sixth mold stack did not reveal the authored open-closet phase")
 		return
+	main.mold_closet_timer.start(0.05)
+	main._on_debug_anomaly_selected(glass_preview_index)
+	await create_timer(0.08).timeout
+	if not main.mold_closet_timer.is_stopped():
+		_fail("selecting a second debug anomaly did not stop the previous mold threat timer")
+		return
+	if main.horror_event_manager.is_jumpscare_active():
+		_fail("the previous debug anomaly timer fired after another anomaly was selected")
+		return
+	if main.anomaly_content_runtime.current_event_id != "front_glass_face":
+		_fail("stopping the previous debug timer also stopped the newly selected anomaly")
+		return
+	if main.mold_growth_system.get_mold_stack("room_105") != 0:
+		_fail("leaving the mold debug preview did not restore the previous mold state")
+		return
+	main._on_debug_anomaly_selected(mold_preview_index)
 	main.mold_closet_timer.start(4.9)
 	main._sync_anomaly_visual_overlay()
 	if (
