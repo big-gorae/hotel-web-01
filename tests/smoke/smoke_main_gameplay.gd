@@ -48,6 +48,20 @@ func _run() -> void:
 	if main.debug_tab_container == null or main.debug_tab_container.get_tab_count() != 5:
 		_fail("debug tests were not split into five tabs")
 		return
+	if main.debug_console_toggle == null or not main.debug_panel.visible or not main.debug_console_toggle.visible:
+		_fail("debug console toggle was not initialized")
+		return
+	main._toggle_debug_console()
+	if main.debug_panel.visible or not main.debug_console_toggle.visible or main.debug_console_toggle.text != "DEBUG":
+		_fail("debug console did not collapse while keeping its restore button visible")
+		return
+	if main.debug_console_toggle.tooltip_text != "디버그 콘솔 표시":
+		_fail("collapsed debug console did not expose the Korean restore tooltip")
+		return
+	main._toggle_debug_console()
+	if not main.debug_panel.visible or main.debug_console_toggle.text != "−":
+		_fail("debug console did not expand again")
+		return
 	var expected_debug_tabs := ["기본", "장면", "기현상", "시야", "연출"]
 	for tab_index in expected_debug_tabs.size():
 		if main.debug_tab_container.get_tab_title(tab_index) != expected_debug_tabs[tab_index]:

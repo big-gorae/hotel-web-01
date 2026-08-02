@@ -110,6 +110,7 @@ var current_scene_id := START_SCENE_ID
 var current_texture: Texture2D
 var hotspot_buttons: Array[Button] = []
 var debug_ui_enabled := false
+var debug_console_visible := true
 var show_hotspots := false
 var show_persistent_dialogue := false
 var show_navigation := false
@@ -144,6 +145,7 @@ var day_badge_panel: PanelContainer
 var day_badge_label: Label
 var end_shift_button: Button
 var debug_panel: PanelContainer
+var debug_console_toggle: Button
 var debug_tab_container: TabContainer
 var debug_test_tabs: Dictionary = {}
 var persistent_dialogue_panel: PanelContainer
@@ -467,6 +469,19 @@ func _build_ui() -> void:
 	debug_panel.visible = debug_ui_enabled
 	debug_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.78), Color(1.0, 1.0, 1.0, 0.10), 8))
 	gameplay_layer.add_child(debug_panel)
+
+	debug_console_toggle = Button.new()
+	debug_console_toggle.anchor_left = 1.0
+	debug_console_toggle.anchor_right = 1.0
+	debug_console_toggle.anchor_top = 0.0
+	debug_console_toggle.anchor_bottom = 0.0
+	debug_console_toggle.offset_left = -76.0
+	debug_console_toggle.offset_top = 18.0
+	debug_console_toggle.offset_right = -18.0
+	debug_console_toggle.offset_bottom = 50.0
+	debug_console_toggle.focus_mode = Control.FOCUS_NONE
+	debug_console_toggle.pressed.connect(_toggle_debug_console)
+	gameplay_layer.add_child(debug_console_toggle)
 
 	debug_tab_container = TabContainer.new()
 	debug_tab_container.custom_minimum_size = Vector2(1000.0, 90.0)
@@ -2397,7 +2412,16 @@ func _apply_navigation_display() -> void:
 
 func _sync_debug_toggles() -> void:
 	if debug_panel != null:
-		debug_panel.visible = debug_ui_enabled and not intro_dialogue_active
+		debug_panel.visible = debug_ui_enabled and debug_console_visible and not intro_dialogue_active
+	if debug_console_toggle != null:
+		debug_console_toggle.visible = debug_ui_enabled and not intro_dialogue_active
+		debug_console_toggle.text = "−" if debug_console_visible else "DEBUG"
+		debug_console_toggle.tooltip_text = (
+			_ui_text("debug.console.hide", "Hide debug console")
+			if debug_console_visible
+			else _ui_text("debug.console.show", "Show debug console")
+		)
+		_style_debug_button(debug_console_toggle, debug_console_visible)
 
 	if hotspot_toggle == null:
 		return
@@ -2614,6 +2638,11 @@ func _refresh_debug_day_buttons() -> void:
 			var day := int(child.text)
 			child.button_pressed = day == day_save_manager.current_day
 			_style_debug_button(child, day == day_save_manager.current_day)
+
+
+func _toggle_debug_console() -> void:
+	debug_console_visible = not debug_console_visible
+	_sync_debug_toggles()
 
 
 func _make_debug_button(icon: String, tooltip: String, callback: Callable) -> Button:
