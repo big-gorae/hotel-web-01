@@ -122,6 +122,24 @@ func test_glass_face_requires_two_fast_triples() -> void:
 	assert_int(cues.count("glass_face_cassowary_call")).is_equal(1)
 
 
+func test_glass_face_calls_when_player_enters_front_desk() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	var cues: Array[String] = []
+	runtime.sound_requested.connect(func(cue_id: String): cues.append(cue_id))
+	add_child(runtime)
+	runtime.force_event("front_glass_face")
+
+	runtime.enter_scene("corridor")
+	assert_int(cues.count("glass_face_cassowary_call")).is_equal(0)
+	runtime.enter_scene("front_desk")
+	assert_int(cues.count("glass_face_cassowary_call")).is_equal(1)
+	runtime.enter_scene("front_desk")
+	assert_int(cues.count("glass_face_cassowary_call")).is_equal(1)
+	runtime.enter_scene("corridor")
+	runtime.enter_scene("front_desk")
+	assert_int(cues.count("glass_face_cassowary_call")).is_equal(2)
+
+
 func test_phenomenon_remains_visible_until_resolution_transition_reaches_black() -> void:
 	var runtime = auto_free(ContentRuntime.new())
 	var transition_requests: Array[String] = []

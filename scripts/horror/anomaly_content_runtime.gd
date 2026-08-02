@@ -155,6 +155,8 @@ func enter_scene(scene_id: String) -> void:
 	var previous_scene_id := current_scene_id
 	if previous_scene_id != scene_id:
 		_track_shadow_room_transition(previous_scene_id, scene_id)
+		if current_event_id == "front_glass_face" and scene_id == "front_desk":
+			sound_requested.emit("glass_face_cassowary_call")
 	current_scene_id = scene_id
 	_refresh_scheduler_conflicts()
 	if current_event_id == "room_109_open_door" and scene_id == "corridor":
