@@ -12,15 +12,15 @@ signal hold_progress_changed(progress: float)
 signal hold_ended
 signal sound_requested(cue_id: String)
 
+const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
 const PHONE_EVENT_ID := "room_108_light_repair_call"
 const ROOM_109_EVENT_ID := "room_109_open_door"
 const LAUNDRY_EVENT_ID := "laundry_red_washer"
 const CHILD_EVENT_ID := "room_106_abandoned_child"
 const BLANKET_CHILD_EVENT_ID := "vacant_room_blanket_child"
 const ROOM_109_PASSAGE_EVENT_ID := "room_109_day7_passage"
-const HELL_MIRROR_ITEM_ID := "hell_mirror"
+const HELL_MIRROR_ITEM_ID := AnomalyRegistry.HELL_MIRROR_ITEM_ID
 const CLOSET_PIG_EVENT_ID := "room_105_closet_pig_man"
-const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
 const GameMode := preload("res://scripts/systems/game_mode.gd")
 const HoldController := preload("res://scripts/interactions/hold_interaction_controller.gd")
 

@@ -6,6 +6,7 @@ extends RefCounted
 
 const TYPE_ENTITY := "entity"
 const TYPE_PHENOMENON := "phenomenon"
+const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
 
 static var ENTRIES := {
 	"room_105_closet_pig_man": _entry(TYPE_ENTITY,
@@ -78,7 +79,12 @@ static func has_entry(event_id: String) -> bool:
 
 
 static func get_kind(event_id: String, fallback := TYPE_PHENOMENON) -> String:
-	return String(ENTRIES.get(event_id, {}).get("kind", fallback))
+	return String(
+		AnomalyRegistry.get_definition(event_id).get("presentation", {}).get(
+			"collection_kind",
+			ENTRIES.get(event_id, {}).get("kind", fallback),
+		)
+	)
 
 
 static func get_copy(event_id: String, locale_code := "en") -> Dictionary:

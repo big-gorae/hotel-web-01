@@ -32,6 +32,15 @@ const VISIBILITY_DERIVED := "derived"
 
 const ACTIVATION_SLOT_PRIMARY := "anomaly_primary"
 const SELECTED_SCENE_TOKEN := "$selected"
+const HANGING_GIRL_DOLL_ITEM_ID := "cute_doll"
+const SMALL_MIRROR_ITEM_ID := "small_mirror"
+const HELL_MIRROR_ITEM_ID := "hell_mirror"
+const RESOLUTION_ITEM_REFERENCE_KEYS: Array[String] = [
+	"required_item_id",
+	"replacement_item_id",
+	"pickup_item_id",
+	"consumed_item_id",
+]
 
 # These arrays preserve the authored seeded-random order while keeping schedule
 # ownership in this single registry.
@@ -161,7 +170,10 @@ static func _definitions() -> Dictionary:
 		),
 		_content_event("room_107_empty_hanging_rope", KIND_PHENOMENON, 3, [], ["room_107_bed_nightstand"], "hold", 3.4, Rect2(0.355, 0.045, 0.215, 0.620)),
 		_content_event("room_105_bloody_handprint_mirror", KIND_PHENOMENON, 3, [], ["room_105_bathroom"], "item_hold", 3.0, Rect2(0.000, 0.000, 0.245, 0.500), "cleaning_cloth"),
-		_content_event("room_106_horrific_mirror", KIND_PHENOMENON, 2, [6], ["room_106_bathroom"], "mirror_transfer", 3.7, Rect2(0.000, 0.000, 0.245, 0.500), "small_mirror"),
+		_with_resolution(
+			_content_event("room_106_horrific_mirror", KIND_PHENOMENON, 2, [6], ["room_106_bathroom"], "mirror_transfer", 3.7, Rect2(0.000, 0.000, 0.245, 0.500), SMALL_MIRROR_ITEM_ID),
+			{"replacement_item_id": HELL_MIRROR_ITEM_ID},
+		),
 		_content_event("room_108_entrails_bathtub", KIND_PHENOMENON, 3, [5], ["room_108_bathroom"], "hold", 4.2, Rect2(0.405, 0.455, 0.410, 0.390)),
 
 		# Production entities.
@@ -201,26 +213,32 @@ static func _definitions() -> Dictionary:
 			VISIBILITY_GLOBAL_INVISIBLE,
 			["hotel:global", "audio:footsteps", "prop:front_bell"],
 		),
-		_content_event(
-			"room_107_hanging_girl",
-			KIND_ENTITY,
-			3,
-			[3],
-			["room_107_bed_nightstand"],
-			"hanging_girl_choice",
-			0.0,
-			Rect2(),
-			"hanging_girl_doll",
-			48.0,
-			{},
-			SELECTION_FIXED,
-			true,
-			false,
-			VISIBILITY_OFFSCREEN_ONLY,
-			["scene:room_107_bed_nightstand", "prop:laundry_table"],
-			["room_107_bed_nightstand", "laundry_room"],
-			["room_107_bed_nightstand", "laundry_room"],
-			"unresolved",
+		_with_resolution(
+			_content_event(
+				"room_107_hanging_girl",
+				KIND_ENTITY,
+				3,
+				[3],
+				["room_107_bed_nightstand"],
+				"hanging_girl_choice",
+				0.0,
+				Rect2(),
+				HANGING_GIRL_DOLL_ITEM_ID,
+				48.0,
+				{},
+				SELECTION_FIXED,
+				true,
+				false,
+				VISIBILITY_OFFSCREEN_ONLY,
+				["scene:room_107_bed_nightstand", "prop:laundry_table"],
+				["room_107_bed_nightstand", "laundry_room"],
+				["room_107_bed_nightstand", "laundry_room"],
+				"unresolved",
+			),
+			{
+				"pickup_item_id": HANGING_GIRL_DOLL_ITEM_ID,
+				"consumed_item_id": HANGING_GIRL_DOLL_ITEM_ID,
+			},
 		),
 
 		# Primary night entities.
@@ -455,7 +473,7 @@ static func conflict_tags(event_id: String, selected_scene_id := "") -> Array[St
 	return tags
 
 
-static func validate_all(known_scene_ids: Array = []) -> Array[String]:
+static func validate_all(known_scene_ids: Array = [], known_item_ids: Array = []) -> Array[String]:
 	var errors: Array[String] = []
 	var definitions := _definitions()
 	if definitions.size() != 25:
@@ -488,6 +506,14 @@ static func validate_all(known_scene_ids: Array = []) -> Array[String]:
 				errors.append("%s: story slot %s is already owned by %s" % [canonical_id, story_key, story_owners[story_key]])
 			else:
 				story_owners[story_key] = canonical_id
+		var resolution: Dictionary = definition.get("resolution", {})
+		for item_key in RESOLUTION_ITEM_REFERENCE_KEYS:
+			var item_id := String(resolution.get(item_key, ""))
+			if not item_id.is_empty() and not known_item_ids.is_empty() and not known_item_ids.has(item_id):
+				errors.append("%s: %s references unknown item %s" % [canonical_id, item_key, item_id])
+		var source_event_id := String(resolution.get("source_event_id", ""))
+		if not source_event_id.is_empty() and not definitions.has(source_event_id):
+			errors.append("%s: source event %s is not registered" % [canonical_id, source_event_id])
 	_validate_infinity_order(PRODUCTION_INFINITY_ORDER, CHANNEL_PRODUCTION, definitions, errors)
 	_validate_infinity_order(PRIMARY_INFINITY_ORDER, CHANNEL_PRIMARY_ENTITY, definitions, errors)
 	return errors
@@ -560,6 +586,9 @@ static func _validate_definition(event_id: String, definition: Dictionary, known
 	for required_section in ["occupancy", "lifecycle", "resolution", "persistence", "presentation", "debug"]:
 		if not definition.has(required_section) or not definition[required_section] is Dictionary:
 			errors.append("%s: missing %s metadata" % [event_id, required_section])
+	var collection_kind := String(definition.get("presentation", {}).get("collection_kind", ""))
+	if collection_kind not in [KIND_ENTITY, KIND_PHENOMENON]:
+		errors.append("%s: invalid collection kind" % event_id)
 
 
 static func _validate_infinity_order(
@@ -711,7 +740,7 @@ static func _primary_event(
 
 static func _derived_hazard() -> Dictionary:
 	return _definition(
-		"hell_mirror",
+		HELL_MIRROR_ITEM_ID,
 		KIND_DERIVED_HAZARD,
 		OWNER_ITEM_HAZARD,
 		CHANNEL_DERIVED,
@@ -728,7 +757,7 @@ static func _derived_hazard() -> Dictionary:
 		{
 			"treatment": "destroy_in_idle_laundry_washer",
 			"source_event_id": "room_106_horrific_mirror",
-			"required_item_id": "hell_mirror",
+			"required_item_id": HELL_MIRROR_ITEM_ID,
 		},
 		{},
 	)
@@ -793,6 +822,7 @@ static func _definition(
 		},
 		"presentation": {
 			"hotspot_rect": extra.get("hotspot_rect", Rect2()),
+			"collection_kind": KIND_PHENOMENON if kind == KIND_DERIVED_HAZARD else kind,
 			"collection_title_key": "anomaly_collection.event.%s.title" % event_id,
 			"collection_body_key": "anomaly_collection.event.%s.body" % event_id,
 			"game_over_event_id": event_id,
@@ -800,6 +830,12 @@ static func _definition(
 		"debug": debug.duplicate(true),
 	}
 	return result
+
+
+static func _with_resolution(definition: Dictionary, extra: Dictionary) -> Dictionary:
+	var resolution: Dictionary = definition.get("resolution", {})
+	resolution.merge(extra, true)
+	return definition
 
 
 static func _selected_scene_or_default(event_id: String, selected_scene_id: String) -> String:

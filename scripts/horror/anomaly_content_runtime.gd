@@ -34,7 +34,7 @@ const ACTIVATION_SLOT_CONFLICT_TAG := AnomalyRegistry.ACTIVATION_SLOT_PRIMARY
 const SCENE_CONFLICT_TAG_PREFIX := "scene:"
 const SHADOW_EVENT_ID := "hotel_following_shadow"
 const HANGING_GIRL_EVENT_ID := "room_107_hanging_girl"
-const HANGING_GIRL_DOLL_ITEM_ID := "cute_doll"
+const HANGING_GIRL_DOLL_ITEM_ID := AnomalyRegistry.HANGING_GIRL_DOLL_ITEM_ID
 
 var definitions: Dictionary = {}
 var scheduler = null

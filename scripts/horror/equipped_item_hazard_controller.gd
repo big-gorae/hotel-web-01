@@ -8,7 +8,7 @@ signal hazard_progress_changed(item_id: String, progress: float)
 signal hazard_stopped(item_id: String)
 signal death_requested(item_id: String)
 
-const HELL_MIRROR_ID := "hell_mirror"
+const HELL_MIRROR_ID := AnomalyRegistry.HELL_MIRROR_ITEM_ID
 
 var fatal_hold_seconds := float(
 	AnomalyRegistry.get_definition(HELL_MIRROR_ID).get("lifecycle", {}).get("fatal_seconds", 12.0)
