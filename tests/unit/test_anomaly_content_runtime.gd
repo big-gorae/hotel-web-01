@@ -2,6 +2,7 @@ extends GdUnitTestSuite
 
 const ContentRuntime := preload("res://scripts/horror/anomaly_content_runtime.gd")
 const ContentCatalog := preload("res://scripts/horror/anomaly_content_catalog.gd")
+const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
 const InventoryModel := preload("res://scripts/items/inventory_model.gd")
 const ItemCatalog := preload("res://scripts/items/item_catalog.gd")
 const GameMode := preload("res://scripts/systems/game_mode.gd")
@@ -197,7 +198,7 @@ func test_shower_room_is_randomized_once_and_persists_through_save() -> void:
 		runtime.start_day(4)
 		runtime.force_event("bathroom_shower_legs")
 		var scene_id: String = runtime.get_active_scene_id()
-		assert_array(ContentRuntime.SHOWER_BATHROOM_SCENE_IDS).contains([scene_id])
+		assert_array(AnomalyRegistry.get_candidate_scene_ids("bathroom_shower_legs")).contains([scene_id])
 		selected_rooms[scene_id] = true
 
 		var restored = auto_free(ContentRuntime.new())

@@ -1,6 +1,8 @@
 class_name HotelEquippedItemHazardController
 extends RefCounted
 
+const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
+
 signal hazard_started(item_id: String)
 signal hazard_progress_changed(item_id: String, progress: float)
 signal hazard_stopped(item_id: String)
@@ -8,7 +10,9 @@ signal death_requested(item_id: String)
 
 const HELL_MIRROR_ID := "hell_mirror"
 
-var fatal_hold_seconds := 12.0
+var fatal_hold_seconds := float(
+	AnomalyRegistry.get_definition(HELL_MIRROR_ID).get("lifecycle", {}).get("fatal_seconds", 12.0)
+)
 var lethal_outcomes_enabled := true
 var _equipped_item_id := ""
 var _hazard_elapsed := 0.0

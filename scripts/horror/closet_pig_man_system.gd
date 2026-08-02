@@ -11,6 +11,7 @@ signal hold_progress_changed(progress: float)
 signal hold_ended
 
 const HoldController := preload("res://scripts/interactions/hold_interaction_controller.gd")
+const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
 
 const EVENT_ID := "room_105_closet_pig_man"
 const SCENE_ID := "room_105_bathroom_entry"
@@ -24,13 +25,13 @@ const STATE_RESOLVED := "resolved"
 
 # The closed wardrobe is only a randomized lead-in, not a visual phase.
 # Once it opens, the encounter has exactly two fixed readable phases.
-const INITIAL_WAIT_MIN_SECONDS := 90.0
-const INITIAL_WAIT_MAX_SECONDS := 180.0
-const DOOR_OPEN_WAIT_SECONDS := 30.0
-const EMERGING_WAIT_SECONDS := 40.0
-const HOLD_SECONDS := 5.0
-const SQUEAL_INTERVAL_BASE_SECONDS := 30.0
-const SQUEAL_INTERVAL_JITTER_SECONDS := 10.0
+var INITIAL_WAIT_MIN_SECONDS := _tuning_value("initial_wait_min_seconds", 90.0)
+var INITIAL_WAIT_MAX_SECONDS := _tuning_value("initial_wait_max_seconds", 180.0)
+var DOOR_OPEN_WAIT_SECONDS := _tuning_value("door_open_seconds", 30.0)
+var EMERGING_WAIT_SECONDS := _tuning_value("emerging_seconds", 40.0)
+var HOLD_SECONDS := _tuning_value("hold_seconds", 5.0)
+var SQUEAL_INTERVAL_BASE_SECONDS := _tuning_value("squeal_interval_seconds", 30.0)
+var SQUEAL_INTERVAL_JITTER_SECONDS := _tuning_value("squeal_jitter_seconds", 10.0)
 
 var current_day := 1
 var current_scene_id := ""
@@ -44,6 +45,13 @@ var hold_controller = null
 
 var _hold_focus_position := Vector2.ZERO
 var _rng := RandomNumberGenerator.new()
+
+
+static func _tuning_value(key: String, fallback: float) -> float:
+	var definition := AnomalyRegistry.get_definition(EVENT_ID)
+	var resolution: Dictionary = definition.get("resolution", {})
+	var tuning: Dictionary = resolution.get("tuning", {})
+	return float(tuning.get(key, fallback))
 
 
 func _ready() -> void:
@@ -95,7 +103,7 @@ func advance(delta: float) -> void:
 	stage_seconds_remaining = maxf(stage_seconds_remaining - delta, 0.0)
 	if stage_seconds_remaining > 0.0:
 		return
-	if current_state == STATE_WAITING and current_scene_id == SCENE_ID:
+	if current_state == STATE_WAITING and current_scene_id == _target_scene_id():
 		return
 	match current_state:
 		STATE_WAITING:
@@ -118,13 +126,13 @@ func get_presentation_state() -> Dictionary:
 		return {}
 	return {
 		"event_id": EVENT_ID,
-		"scene_id": SCENE_ID,
+		"scene_id": _target_scene_id(),
 		"state": "face" if current_state == STATE_EMERGING else STATE_DOOR_OPEN,
 	}
 
 
 func get_dynamic_hotspots(scene_id: String) -> Array:
-	if scene_id != SCENE_ID or not is_active():
+	if scene_id != _target_scene_id() or not is_active():
 		return []
 	return [{
 		"id": HOLD_HOTSPOT_ID,
@@ -211,6 +219,10 @@ func _next_squeal_interval() -> float:
 
 func _next_initial_wait_seconds() -> float:
 	return _rng.randf_range(INITIAL_WAIT_MIN_SECONDS, INITIAL_WAIT_MAX_SECONDS)
+
+
+func _target_scene_id() -> String:
+	return AnomalyRegistry.get_default_scene_id(EVENT_ID)
 
 
 func _default_seconds_for_state(state: String) -> float:

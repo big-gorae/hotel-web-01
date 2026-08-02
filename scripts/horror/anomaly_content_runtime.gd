@@ -16,6 +16,7 @@ signal choice_closed
 signal fatal_narrative_requested(lines: Array)
 
 const ContentCatalog := preload("res://scripts/horror/anomaly_content_catalog.gd")
+const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
 const GameMode := preload("res://scripts/systems/game_mode.gd")
 const Scheduler := preload("res://scripts/horror/anomaly_scheduler.gd")
 const HoldController := preload("res://scripts/interactions/hold_interaction_controller.gd")
@@ -29,17 +30,11 @@ const SHADOW_BELL_SEQUENCE_WINDOW_SECONDS := 1.05
 const SHADOW_ROOM_TRANSITION_TARGET := 4
 const SHADOW_ROOM_TRANSITION_WINDOW_SECONDS := 2.20
 const MAX_PRODUCTION_EVENTS_PER_DAY := 1
-const ACTIVATION_SLOT_CONFLICT_TAG := "activation_slot"
+const ACTIVATION_SLOT_CONFLICT_TAG := AnomalyRegistry.ACTIVATION_SLOT_PRIMARY
 const SCENE_CONFLICT_TAG_PREFIX := "scene:"
 const SHADOW_EVENT_ID := "hotel_following_shadow"
 const HANGING_GIRL_EVENT_ID := "room_107_hanging_girl"
 const HANGING_GIRL_DOLL_ITEM_ID := "cute_doll"
-const SHOWER_BATHROOM_SCENE_IDS: Array[String] = [
-	"room_105_bathroom",
-	"room_106_bathroom",
-	"room_107_bathroom",
-	"room_108_bathroom",
-]
 
 var definitions: Dictionary = {}
 var scheduler = null
@@ -618,19 +613,19 @@ func _enqueue_day_event() -> void:
 
 
 func _prepare_scheduled_scene(event_id: String) -> void:
-	if event_id != "bathroom_shower_legs" or not _current_scene_override.is_empty():
+	if (
+		AnomalyRegistry.get_selection_policy(event_id) != AnomalyRegistry.SELECTION_RANDOM_ONCE_AT_ARM
+		or not _current_scene_override.is_empty()
+	):
 		return
-	_current_scene_override = SHOWER_BATHROOM_SCENE_IDS[
-		_rng.randi_range(0, SHOWER_BATHROOM_SCENE_IDS.size() - 1)
-	]
+	var candidate_scene_ids := AnomalyRegistry.get_candidate_scene_ids(event_id)
+	if candidate_scene_ids.is_empty():
+		return
+	_current_scene_override = candidate_scene_ids[_rng.randi_range(0, candidate_scene_ids.size() - 1)]
 
 
 func _event_conflict_tags(event_id: String) -> Array[String]:
-	var tags: Array[String] = [ACTIVATION_SLOT_CONFLICT_TAG]
-	var target_scene_id := _event_scene_id(event_id)
-	if not target_scene_id.is_empty():
-		tags.append(_scene_conflict_tag(target_scene_id))
-	return tags
+	return AnomalyRegistry.conflict_tags(event_id, _event_scene_id(event_id))
 
 
 func _event_scene_id(event_id: String) -> String:

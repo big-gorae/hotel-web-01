@@ -4,6 +4,7 @@ extends RefCounted
 const HorrorEventDefinition := preload("res://scripts/horror/horror_event_definition.gd")
 const ContentCatalog := preload("res://scripts/horror/anomaly_content_catalog.gd")
 const CollectionContent := preload("res://scripts/horror/anomaly_collection_content.gd")
+const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
 const IMAGE_JUMPSCARE_SCENE := "res://scenes/horror/image_jumpscare_presentation.tscn"
 const PIG_MASK_REFERENCE := "res://resource/images/references/entities/room_105_closet_pig_mask_man/reference_pig_mask_01.png"
 const FAKE_MOTHER_REFERENCE := "res://resource/images/references/entities/room_106_fake_mother/reference_face_01.png"
@@ -66,36 +67,24 @@ const JUMPSCARE_TUNING_BY_EVENT := {
 
 
 static func build_definitions() -> Array:
-	var definitions := [
-		_make_game_over_event("room_105_closet_pig_man", "room_105", ["room_105_door_window", "room_105_bathroom_entry"], "Closet Pig-Mask Man", "A man in a pale pig mask forces his way out through the open wardrobe."),
-		_make_game_over_event("room_106_abandoned_child", "room_106", ["room_106_bathroom"], "Abandoned Child", "The crying stops directly behind you."),
-		_make_game_over_event("room_108_light_repair_call", "room_108", ["front_desk", "room_108_bed_window"], "Thirteenth Ring", "Room 108 calls once more. This time the voice is beside you."),
-		_make_game_over_event("room_109_open_door", "room_109", ["corridor"], "Room 109", "Something inside notices you looking."),
-		_make_game_over_event("laundry_red_washer", "laundry_room", ["laundry_room"], "Red Laundry", "The wet bundle moves as you look inside."),
-		_make_game_over_event("vacant_room_blanket_child", "hotel", ["room_105_door_window", "room_106_bed_bathroom_entry", "room_107_bed_nightstand", "room_108_bed_window"], "Child Under the Blanket", "A voice whispers that it found you."),
-		_make_game_over_event(
-			"room_109_day7_passage",
-			"corridor",
-			["corridor"],
-			"Room 109 Passage",
-			"You turned before the footsteps behind you had stopped."
-		),
-	]
-	for content_id in ContentCatalog.debug_event_ids():
-		if content_id == "room_109_open_door":
-			continue
-		var content_definition: Dictionary = ContentCatalog.build_definitions().get(content_id, {})
-		if String(content_definition.get("type", "")) == ContentCatalog.TYPE_ENTITY:
-			definitions.append(_make_game_over_event(
-				content_id,
-				_room_id_from_scene(String(content_definition.get("scene_id", ""))),
-				_scene_ids(String(content_definition.get("scene_id", ""))),
-				content_id.replace("_", " ").capitalize(),
-				"This presence was left unattended for too long."
+	var definitions := []
+	var content_definitions := ContentCatalog.build_definitions()
+	for event_id in AnomalyRegistry.all_event_ids():
+		var metadata := AnomalyRegistry.get_definition(event_id)
+		var presentation: Dictionary = metadata.get("presentation", {})
+		if String(metadata.get("kind", "")) == AnomalyRegistry.KIND_PHENOMENON:
+			definitions.append(_make_collection_event(
+				content_definitions.get(event_id, {}),
+				metadata,
 			))
 		else:
-			definitions.append(_make_collection_event(content_definition))
-	definitions.append(_make_game_over_event("hell_mirror", "hotel", _scene_ids(""), "Mirror of Hell", "The screaming inside the mirror reaches the other side."))
+			definitions.append(_make_game_over_event(
+				event_id,
+				String(presentation.get("room_id", "hotel")),
+				_string_array(presentation.get("game_over_scene_ids", [])),
+				event_id.replace("_", " ").capitalize(),
+				"This presence was left unattended for too long.",
+			))
 	for definition in definitions:
 		CollectionContent.apply_to_definition(definition)
 	return definitions
@@ -142,12 +131,16 @@ static func _make_game_over_event(event_id: String, room_id: String, scene_ids: 
 	return definition
 
 
-static func _make_collection_event(content_definition: Dictionary):
+static func _make_collection_event(content_definition: Dictionary, metadata: Dictionary):
 	var definition := HorrorEventDefinition.new()
 	definition.id = String(content_definition.get("id", ""))
 	definition.event_type = HorrorEventDefinition.TYPE_ANOMALY
-	definition.room_id = _room_id_from_scene(String(content_definition.get("scene_id", "")))
-	definition.scene_ids = _scene_ids(String(content_definition.get("scene_id", "")))
+	var presentation: Dictionary = metadata.get("presentation", {})
+	definition.room_id = String(presentation.get("room_id", "hotel"))
+	definition.scene_ids = AnomalyRegistry.materialization_scene_ids(
+		definition.id,
+		AnomalyRegistry.get_default_scene_id(definition.id),
+	)
 	definition.discovery_kind = "visual_anomaly"
 	definition.enabled = false
 	definition.spawn_chance = 0.0
@@ -156,22 +149,8 @@ static func _make_collection_event(content_definition: Dictionary):
 	return definition
 
 
-static func _room_id_from_scene(scene_id: String) -> String:
-	if scene_id.begins_with("room_"):
-		return scene_id.get_slice("_", 0) + "_" + scene_id.get_slice("_", 1)
-	if scene_id == "laundry_room":
-		return "laundry_room"
-	if scene_id == "front_desk":
-		return "front_desk"
-	if scene_id == "corridor":
-		return "corridor"
-	if scene_id == "exterior_stairs":
-		return "exterior_stairs"
-	return "hotel"
-
-
-static func _scene_ids(scene_id: String) -> Array[String]:
-	var scene_ids: Array[String] = []
-	if not scene_id.is_empty():
-		scene_ids.append(scene_id)
-	return scene_ids
+static func _string_array(raw_values) -> Array[String]:
+	var values: Array[String] = []
+	for raw_value in raw_values:
+		values.append(String(raw_value))
+	return values

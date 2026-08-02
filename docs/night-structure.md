@@ -50,14 +50,14 @@
 | 6 | 106호의 등록되지 않은 아이 | 끔찍한 화장실이 비치는 거울 |
 | 7 | 109호 통과 | 없음 |
 
-메인 표는 `scripts/horror/night_anomaly_director.gd`의 `STORY_PRIMARY_EVENT_BY_DAY`에서, production 표는 `scripts/horror/anomaly_content_catalog.gd`의 `STORY_EVENT_BY_DAY`에서 수정한다. 빈 문자열 또는 표에 없는 Day는 사건 없음으로 처리한다. Day 7은 109호 결말의 집중도를 위해 production 사건을 배치하지 않는다.
+메인·production Day 배치는 모두 `scripts/horror/anomaly_registry.gd`의 각 이벤트 `schedule.story_days`에서 수정한다. 해당 Day를 가진 이벤트가 없으면 사건 없음으로 처리한다. Day 7은 109호 결말의 집중도를 위해 production 사건을 배치하지 않는다.
 
 ## Infinity 무작위 투입 방식
 
 - Day 상한이 없으며 Day 7 이후에도 다음 근무로 진행한다.
 - 메인 풀은 돼지 가면 남자, 전화, 붉은 세탁기, 등록되지 않은 아이, 이불 속 아이로 구성한다.
 - 스토리 결말 전용인 109호 통과는 Infinity 풀에서 제외한다.
-- Production 풀은 `anomaly_content_catalog.gd`의 `production_event_ids()` 전체를 첫 근무부터 사용한다.
+- 메인·Production 풀의 순서와 포함 여부는 `anomaly_registry.gd`의 통합 메타데이터를 사용하며 첫 근무부터 활성화된다.
 - 각 근무 시작 시 메인 1개와 production 1개를 미리 추첨하고 세이브에 계획 ID와 RNG 상태를 저장한다. 불러오기 때문에 그날 사건이 바뀌지 않는다.
 - 이미 경험한 사건은 다음 근무에서 다시 추첨될 수 있다.
 
@@ -68,6 +68,7 @@
 - 스토리 모드는 위 Day 표만 사용한다.
 - Infinity는 최소 Day 조건과 관계없이 production 풀 전체를 사용한다.
 - 고정 메인과 production 기현상 중 먼저 조건을 만족한 사건이 활성화되고, 다른 쪽은 해결될 때까지 진행을 멈춘다.
+- 직접 발생하는 모든 사건은 `anomaly_primary` 활성화 슬롯을 공유하고, 실제 출현 장면과 관찰 가드 장면을 메타데이터로 선언한다. 보이는 사건은 해당 장면을 보고 있는 동안 큐에 머문다.
 - 미해결 기현상이 있는 동안 메인 엔티티와 다른 기현상은 모두 대기열에서 기다린다.
 - 현재 production 사건 수는 고정표에 지정된 스토리 Day와 Infinity 모든 근무에서 최대 1개다. `MAX_PRODUCTION_EVENTS_PER_DAY = 1`을 문서와 코드의 기준값으로 사용한다.
 - [매달린 여자아이](anomaly-bible/entities/hanging-girl.md)는 스토리 Day 3에 고정되며 Infinity production 풀에도 들어간다.

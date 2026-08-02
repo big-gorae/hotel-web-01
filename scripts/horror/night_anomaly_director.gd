@@ -12,7 +12,6 @@ signal hold_progress_changed(progress: float)
 signal hold_ended
 signal sound_requested(cue_id: String)
 
-const PHONE_MAX_BELLS := 13
 const PHONE_EVENT_ID := "room_108_light_repair_call"
 const ROOM_109_EVENT_ID := "room_109_open_door"
 const LAUNDRY_EVENT_ID := "laundry_red_washer"
@@ -21,18 +20,9 @@ const BLANKET_CHILD_EVENT_ID := "vacant_room_blanket_child"
 const ROOM_109_PASSAGE_EVENT_ID := "room_109_day7_passage"
 const HELL_MIRROR_ITEM_ID := "hell_mirror"
 const CLOSET_PIG_EVENT_ID := "room_105_closet_pig_man"
+const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
 const GameMode := preload("res://scripts/systems/game_mode.gd")
 const HoldController := preload("res://scripts/interactions/hold_interaction_controller.gd")
-
-# Keep the Story route editable as one plain Day table. An omitted Day has no
-# primary event. Infinity uses the separate random pool in _eligible_daily_events().
-const STORY_PRIMARY_EVENT_BY_DAY := {
-	2: CLOSET_PIG_EVENT_ID,
-	4: PHONE_EVENT_ID,
-	5: LAUNDRY_EVENT_ID,
-	6: CHILD_EVENT_ID,
-	7: ROOM_109_PASSAGE_EVENT_ID,
-}
 
 const LAUNDRY_IDLE := "idle"
 const LAUNDRY_RED := "red"
@@ -56,23 +46,24 @@ const ROOM_109_PASSAGE_WAITING := "waiting"
 const ROOM_109_PASSAGE_FOOTSTEPS := "footsteps"
 const ROOM_109_PASSAGE_DONE := "done"
 
-var phone_initial_delay := 24.0
-var phone_repeat_delay := 58.0
-var phone_bell_interval := 1.15
-var laundry_music_duration := 7.0
-var laundry_stop_hold_duration := 1.5
-var laundry_eye_close_grace_duration := 1.5
-var child_appearance_delay := 7.0
-var child_response_seconds := 6.0
-var child_song_duration := 6.5
-var laundry_neglect_duration := 30.0
-var phone_death_delay := 2.4
-var phone_forbidden_duration := 18.0
-var blanket_response_seconds := 18.0
-var blanket_eye_close_duration := 6.0
-var blanket_death_delay := 1.4
-var room_109_passage_wait_seconds := 3.0
-var room_109_passage_footstep_seconds := 6.0
+var phone_initial_delay := _tuning_value(PHONE_EVENT_ID, "initial_delay_seconds", 24.0)
+var phone_repeat_delay := _tuning_value(PHONE_EVENT_ID, "repeat_delay_seconds", 58.0)
+var phone_bell_interval := _tuning_value(PHONE_EVENT_ID, "bell_interval_seconds", 1.15)
+var phone_max_bells := int(_tuning_value(PHONE_EVENT_ID, "maximum_bells", 13.0))
+var laundry_music_duration := _tuning_value(LAUNDRY_EVENT_ID, "music_seconds", 7.0)
+var laundry_stop_hold_duration := _tuning_value(LAUNDRY_EVENT_ID, "hold_seconds", 1.5)
+var laundry_eye_close_grace_duration := _tuning_value(LAUNDRY_EVENT_ID, "eye_close_grace_seconds", 1.5)
+var child_appearance_delay := _tuning_value(CHILD_EVENT_ID, "appearance_delay_seconds", 7.0)
+var child_response_seconds := _tuning_value(CHILD_EVENT_ID, "response_seconds", 6.0)
+var child_song_duration := _tuning_value(CHILD_EVENT_ID, "song_seconds", 6.5)
+var laundry_neglect_duration := _tuning_value(LAUNDRY_EVENT_ID, "neglect_seconds", 30.0)
+var phone_death_delay := _tuning_value(PHONE_EVENT_ID, "death_delay_seconds", 2.4)
+var phone_forbidden_duration := _tuning_value(PHONE_EVENT_ID, "forbidden_seconds", 18.0)
+var blanket_response_seconds := _tuning_value(BLANKET_CHILD_EVENT_ID, "response_seconds", 18.0)
+var blanket_eye_close_duration := _tuning_value(BLANKET_CHILD_EVENT_ID, "eye_close_seconds", 6.0)
+var blanket_death_delay := _tuning_value(BLANKET_CHILD_EVENT_ID, "death_delay_seconds", 1.4)
+var room_109_passage_wait_seconds := _tuning_value(ROOM_109_PASSAGE_EVENT_ID, "wait_seconds", 3.0)
+var room_109_passage_footstep_seconds := _tuning_value(ROOM_109_PASSAGE_EVENT_ID, "footstep_seconds", 6.0)
 
 var current_day := 1
 var game_mode := GameMode.STORY
@@ -119,6 +110,13 @@ var _rng := RandomNumberGenerator.new()
 var _random_seed_override := -1
 var _laundry_hold_controller = null
 var _laundry_hold_focus_position := Vector2.ZERO
+
+
+static func _tuning_value(event_id: String, key: String, fallback: float) -> float:
+	var definition := AnomalyRegistry.get_definition(event_id)
+	var resolution: Dictionary = definition.get("resolution", {})
+	var tuning: Dictionary = resolution.get("tuning", {})
+	return float(tuning.get(key, fallback))
 
 
 func _init() -> void:
@@ -230,7 +228,7 @@ func start_day(day: int) -> void:
 		_completion_music_player.stop()
 	if _washer_spin_player != null:
 		_washer_spin_player.stop()
-	phone_bell_changed.emit(0, PHONE_MAX_BELLS)
+	phone_bell_changed.emit(0, phone_max_bells)
 	state_changed.emit()
 
 
@@ -242,7 +240,7 @@ func enter_scene(scene_id: String) -> void:
 		return
 	if (
 		_can_start_planned_event(ROOM_109_PASSAGE_EVENT_ID)
-		and scene_id == "corridor"
+		and scene_id == AnomalyRegistry.get_default_scene_id(ROOM_109_PASSAGE_EVENT_ID)
 		and room_109_passage_state == ROOM_109_PASSAGE_IDLE
 	):
 		room_109_passage_state = ROOM_109_PASSAGE_WAITING
@@ -394,7 +392,7 @@ func force_phone_ring() -> void:
 	_phone_seconds = 0.0
 	_prepare_forced_event(PHONE_EVENT_ID)
 	_mark_planned_event_started(PHONE_EVENT_ID)
-	phone_bell_changed.emit(0, PHONE_MAX_BELLS)
+	phone_bell_changed.emit(0, phone_max_bells)
 	state_changed.emit()
 
 
@@ -547,7 +545,7 @@ func import_state(state: Dictionary) -> void:
 	game_mode = GameMode.normalize(String(state.get("game_mode", game_mode)))
 	current_day = maxi(int(state.get("current_day", current_day)), 1)
 	phone_ringing = bool(state.get("phone_ringing", false))
-	phone_bell_count = clampi(int(state.get("phone_bell_count", 0)), 0, PHONE_MAX_BELLS)
+	phone_bell_count = clampi(int(state.get("phone_bell_count", 0)), 0, phone_max_bells)
 	_phone_seconds = float(state.get("phone_seconds", phone_initial_delay))
 	room_108_forbidden = bool(state.get("room_108_forbidden", false))
 	release_laundry_stop_hold()
@@ -600,7 +598,7 @@ func import_state(state: Dictionary) -> void:
 		_completion_music_player.play()
 	if laundry_state == LAUNDRY_RED and _audio_playback_allowed() and _washer_spin_player != null:
 		_washer_spin_player.play()
-	phone_bell_changed.emit(phone_bell_count if phone_ringing else 0, PHONE_MAX_BELLS)
+	phone_bell_changed.emit(phone_bell_count if phone_ringing else 0, phone_max_bells)
 	state_changed.emit()
 
 
@@ -618,7 +616,7 @@ func _advance_phone(delta: float) -> void:
 	if _phone_seconds > 0.0:
 		return
 	if not phone_ringing:
-		if current_scene_id == "front_desk":
+		if _is_observation_guarded(PHONE_EVENT_ID):
 			_phone_seconds = 0.0
 			return
 		phone_ringing = true
@@ -626,10 +624,10 @@ func _advance_phone(delta: float) -> void:
 		_mark_planned_event_started(PHONE_EVENT_ID)
 	else:
 		phone_bell_count += 1
-	phone_bell_changed.emit(phone_bell_count, PHONE_MAX_BELLS)
+	phone_bell_changed.emit(phone_bell_count, phone_max_bells)
 	if _audio_playback_allowed() and _phone_bell_player != null:
 		_phone_bell_player.play()
-	if phone_bell_count >= PHONE_MAX_BELLS:
+	if phone_bell_count >= phone_max_bells:
 		phone_ringing = false
 		if lethal_outcomes_enabled:
 			_phone_fatal_pending = true
@@ -638,7 +636,7 @@ func _advance_phone(delta: float) -> void:
 		else:
 			phone_bell_count = 0
 			_phone_seconds = phone_repeat_delay
-			phone_bell_changed.emit(0, PHONE_MAX_BELLS)
+			phone_bell_changed.emit(0, phone_max_bells)
 			state_changed.emit()
 		return
 	_phone_seconds = phone_bell_interval
@@ -653,7 +651,7 @@ func _answer_phone() -> bool:
 	room_108_forbidden = true
 	_phone_forbidden_seconds = phone_forbidden_duration
 	_phone_fatal_pending = false
-	phone_bell_changed.emit(0, PHONE_MAX_BELLS)
+	phone_bell_changed.emit(0, phone_max_bells)
 	dialogue_requested.emit("night.phone.room_108_repair_call")
 	state_changed.emit()
 	return true
@@ -778,7 +776,7 @@ func _audio_playback_allowed() -> bool:
 func _advance_child(delta: float) -> void:
 	if child_state == CHILD_WAITING:
 		_child_seconds = maxf(_child_seconds - delta, 0.0)
-		if _child_seconds <= 0.0 and current_scene_id != "room_106_bathroom":
+		if _child_seconds <= 0.0 and not _is_observation_guarded(CHILD_EVENT_ID):
 			force_child_encounter()
 	elif child_state == CHILD_CRYING:
 		if eye_close_controller != null and eye_close_controller.is_song_active():
@@ -900,14 +898,11 @@ func set_random_seed(seed: int) -> void:
 
 func _eligible_daily_events() -> Array[String]:
 	if game_mode == GameMode.INFINITY:
-		return [
-			CLOSET_PIG_EVENT_ID,
-			PHONE_EVENT_ID,
-			LAUNDRY_EVENT_ID,
-			CHILD_EVENT_ID,
-			BLANKET_CHILD_EVENT_ID,
-		]
-	var story_event_id := String(STORY_PRIMARY_EVENT_BY_DAY.get(current_day, ""))
+		return AnomalyRegistry.primary_infinity_event_ids()
+	var story_event_id := AnomalyRegistry.story_event_for_day(
+		AnomalyRegistry.CHANNEL_PRIMARY_ENTITY,
+		current_day,
+	)
 	var eligible: Array[String] = []
 	if not story_event_id.is_empty():
 		eligible.append(story_event_id)
@@ -933,7 +928,7 @@ func _can_start_planned_event(event_id: String) -> bool:
 func _try_start_planned_event_offscreen() -> void:
 	if (
 		_can_start_planned_event(LAUNDRY_EVENT_ID)
-		and current_scene_id != "laundry_room"
+		and not _is_observation_guarded(LAUNDRY_EVENT_ID)
 		and laundry_state == LAUNDRY_IDLE
 	):
 		_begin_red_laundry()
@@ -942,7 +937,7 @@ func _try_start_planned_event_offscreen() -> void:
 		return
 	if (
 		_can_start_planned_event(CHILD_EVENT_ID)
-		and current_scene_id != "room_106_bathroom"
+		and not _is_observation_guarded(CHILD_EVENT_ID)
 		and child_state == CHILD_IDLE
 	):
 		child_state = CHILD_WAITING
@@ -951,10 +946,17 @@ func _try_start_planned_event_offscreen() -> void:
 		return
 	if (
 		_can_start_planned_event(BLANKET_CHILD_EVENT_ID)
-		and current_scene_id != "room_108_bed_window"
+		and not _is_observation_guarded(BLANKET_CHILD_EVENT_ID)
 		and blanket_state == BLANKET_IDLE
 	):
-		force_blanket_child("room_108_bed_window")
+		force_blanket_child(AnomalyRegistry.get_default_scene_id(BLANKET_CHILD_EVENT_ID))
+
+
+func _is_observation_guarded(event_id: String, selected_scene_id := "") -> bool:
+	return AnomalyRegistry.observation_guard_scene_ids(
+		event_id,
+		selected_scene_id,
+	).has(current_scene_id)
 
 
 func notify_external_planned_event_started(event_id: String) -> bool:
