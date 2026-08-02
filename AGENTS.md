@@ -34,6 +34,8 @@
 - Avoid “짜치는” presentation: unnecessary UI interruptions, redundant narration, forced transitions, celebratory confirmations, or synthetic effects that weaken the intended atmosphere.
 - Prefer restrained in-world, audio, animation, and persistent-state feedback. Add a modal or explanatory message only when the user explicitly requests it or the interaction would otherwise be genuinely unreadable.
 - Preserve authored diegetic dialogue, meaningful choices, and explicitly designed horror or death sequences; these are not routine action explanations.
+- Do not intensify horror concepts, image prompts, sound cues, or sequences beyond the user's explicit request in an attempt to make them scarier. Treat the requested intensity, visibility, scale, framing, and amount of detail as hard constraints.
+- Favor plain, restrained execution in horror work. Subtlety and limited visibility are often more frightening; do not add exaggerated anatomy, oversized gestures, gore, dramatic effects, or extra reveals unless the user explicitly requests them.
 
 ## Korean And English Localization
 
