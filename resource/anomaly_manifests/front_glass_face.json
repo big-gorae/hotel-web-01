@@ -12,7 +12,7 @@
     "visible": {
       "full_scene_variant": {
         "path": "res://resource/images/anomalies/front_glass_face/front_desk/visible.png",
-        "sha256": "6c312d1ac8bfd9437e174f5ac72771d3d51c46c69e8e855d04b5f2c1d3b0697c",
+        "sha256": "5423d8135984338baecd5291bc6b76ae2e46769688ea6e9acb4a26fec31c0a1a",
         "width": 1535,
         "height": 1024
       }
@@ -20,7 +20,7 @@
     "hostile": {
       "full_scene_variant": {
         "path": "res://resource/images/anomalies/front_glass_face/front_desk/hostile.png",
-        "sha256": "4790b5e7a5c97b463f70e1714a143f33a1107b3a1b6e36e9ff535554809f1c39",
+        "sha256": "94762b5c37753b345e0eb99312ad451bec5522e6513dc8687689d66b7950e606",
         "width": 1535,
         "height": 1024
       }
