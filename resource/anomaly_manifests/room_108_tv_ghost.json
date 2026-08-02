@@ -12,7 +12,7 @@
     "visible": {
       "full_scene_variant": {
         "path": "res://resource/images/anomalies/room_108_tv_ghost/room_105_bathroom_entry/visible.webp",
-        "sha256": "613a57d2e58fe9c6c88e8c1e9d92de9e4b2db7a298b005060ccd555bfe1b640f",
+        "sha256": "16350dd787a2c104b30aef1f55d0a383a0f67051db2d210f5c9ed0e3974a05b1",
         "width": 3070,
         "height": 2048
       }
@@ -20,7 +20,7 @@
     "flicker": {
       "full_scene_variant": {
         "path": "res://resource/images/anomalies/room_108_tv_ghost/room_105_bathroom_entry/visible.webp",
-        "sha256": "613a57d2e58fe9c6c88e8c1e9d92de9e4b2db7a298b005060ccd555bfe1b640f",
+        "sha256": "16350dd787a2c104b30aef1f55d0a383a0f67051db2d210f5c9ed0e3974a05b1",
         "width": 3070,
         "height": 2048
       }
@@ -28,7 +28,7 @@
     "hostile": {
       "full_scene_variant": {
         "path": "res://resource/images/anomalies/room_108_tv_ghost/room_105_bathroom_entry/hostile.webp",
-        "sha256": "a13490c538a8ac84b4976c6612b245d9c9cd2753e9565e2c43a72df286706be6",
+        "sha256": "984289b7bce022acf45b36bca3a7620c484628320fd429d25eca2b808845a94b",
         "width": 3070,
         "height": 2048
       }

@@ -12,7 +12,7 @@
     "red": {
       "full_scene_variant": {
         "path": "res://resource/images/anomalies/laundry_red_washer/laundry_room/red.webp",
-        "sha256": "e4d1f343862c6a50755d41ecc3403037269db3197a5de10c2ef432cb4bafb926",
+        "sha256": "c07972ac649a8dc5cb5fbeed004f5ab4612e54c87a15a2024426390342780dbc",
         "width": 2896,
         "height": 2172
       }
@@ -20,7 +20,7 @@
     "music": {
       "full_scene_variant": {
         "path": "res://resource/images/anomalies/laundry_red_washer/laundry_room/red.webp",
-        "sha256": "e4d1f343862c6a50755d41ecc3403037269db3197a5de10c2ef432cb4bafb926",
+        "sha256": "c07972ac649a8dc5cb5fbeed004f5ab4612e54c87a15a2024426390342780dbc",
         "width": 2896,
         "height": 2172
       }

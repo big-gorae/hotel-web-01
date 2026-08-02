@@ -12,7 +12,7 @@
     "door_open": {
       "full_scene_variant": {
         "path": "res://resource/images/anomalies/room_105_closet_pig_man/room_105_bathroom_entry/stage_1.webp",
-        "sha256": "6a3fd008f80b00166ce7179a601eab3a1baa003f72a0ad2ac5d2cccadf554367",
+        "sha256": "670ce79eec24bfa352de4c8d7a6b890b50dbabd6994798e196d136dd4a9b805f",
         "width": 3070,
         "height": 2048
       }
@@ -20,7 +20,7 @@
     "face": {
       "full_scene_variant": {
         "path": "res://resource/images/anomalies/room_105_closet_pig_man/room_105_bathroom_entry/stage_2.webp",
-        "sha256": "52fec337c51f217ac983ba30295c0e63e84be294d6103367803aebf61e75a356",
+        "sha256": "c5e0389c435df39083a971138d3f914e8c513991749869eb082b41a8de53aa47",
         "width": 3070,
         "height": 2048
       }
