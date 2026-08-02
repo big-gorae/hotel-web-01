@@ -11,18 +11,18 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/front_glass_face/front_desk/visible.png",
-        "sha256": "c30996c3d2cdf8f1cffa3212acb82df872d7c8536638506010de2dace4f78528",
-        "width": 1535,
-        "height": 1024
+        "path": "res://resource/images/anomalies/front_glass_face/front_desk/visible.webp",
+        "sha256": "ec5f58347c0d62bf81c0787150e4a36ec961942e00eb8d4f77748a2b6445e6ce",
+        "width": 3070,
+        "height": 2048
       }
     },
     "hostile": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/front_glass_face/front_desk/hostile.png",
-        "sha256": "c303ef13ed0df921d35932badaf23f0e8cdd93237d99acc35753f0dfdb65b379",
-        "width": 1535,
-        "height": 1024
+        "path": "res://resource/images/anomalies/front_glass_face/front_desk/hostile.webp",
+        "sha256": "1d4dc35f8d4a56f2374754abe036db7abdd396e8c40122fd725f9b3498b6cb87",
+        "width": 3070,
+        "height": 2048
       }
     },
     "resolved": {

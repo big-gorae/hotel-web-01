@@ -11,6 +11,36 @@ func test_valid_full_canvas_layer_manifest() -> void:
 	assert_that(Manifest.validate_dict(manifest)).is_empty()
 
 
+func test_accepts_uniform_integer_upscale_for_full_scene_variant() -> void:
+	var manifest := _valid_manifest()
+	manifest["states"]["active"] = {
+		"full_scene_variant": {
+			"path": "res://resource/images/anomalies/front_monitor_ghost/front_desk/visible.webp",
+			"sha256": VALID_SHA,
+			"width": 3070,
+			"height": 2048,
+		},
+	}
+
+	assert_that(Manifest.validate_dict(manifest)).is_empty()
+
+
+func test_rejects_nonuniform_upscale_for_full_scene_variant() -> void:
+	var manifest := _valid_manifest()
+	manifest["states"]["active"] = {
+		"full_scene_variant": {
+			"path": "res://resource/images/anomalies/front_monitor_ghost/front_desk/visible.webp",
+			"sha256": VALID_SHA,
+			"width": 3070,
+			"height": 1024,
+		},
+	}
+
+	assert_that(Manifest.validate_dict(manifest)).contains(
+		"state 'active' full_scene_variant dimensions must match the source canvas or use a uniform integer upscale.",
+	)
+
+
 func test_rejects_scene_source_mismatch_and_invalid_hash() -> void:
 	var manifest := _valid_manifest()
 	manifest["source_path"] = "res://resource/images/corridor.png"

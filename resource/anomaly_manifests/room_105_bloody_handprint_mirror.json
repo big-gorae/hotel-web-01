@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_105_bloody_handprint_mirror/room_105_bathroom/visible.png",
-        "sha256": "d6ab849c76135faae62c2900ad87954c54916056b491974446a63bd73b242326",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/room_105_bloody_handprint_mirror/room_105_bathroom/visible.webp",
+        "sha256": "006b1fbbd4237d7e1b184f606a1cab95b820f2e9f29bb71196f8f7d419e8e60c",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

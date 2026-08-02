@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_108_entrails_bathtub/room_108_bathroom/visible.png",
-        "sha256": "bc4c864a7b622af96ec1ad751f94a9895973fe33f8e8fbb2d26a1346af029179",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/room_108_entrails_bathtub/room_108_bathroom/visible.webp",
+        "sha256": "df4836b25ffa1aabe9b2081165ca968241af021951bc47344d49353e06cf037a",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

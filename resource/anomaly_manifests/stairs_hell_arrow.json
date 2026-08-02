@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/stairs_hell_arrow/exterior_stairs/visible.png",
-        "sha256": "dc300aa1aef83888d1eda0219ddca69e9b7eb581d924dbe15251f6d5ba3ba597",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/stairs_hell_arrow/exterior_stairs/visible.webp",
+        "sha256": "88f5c27c7c6d68217694e8d94ea5b0db3f81b47dfc45f6e67008d79ad56563b5",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

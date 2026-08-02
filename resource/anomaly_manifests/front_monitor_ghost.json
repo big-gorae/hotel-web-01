@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/front_monitor_ghost/front_desk/visible.png",
-        "sha256": "b0af34877ae6b0f870d37031bfbdb88050acaa7dc76ef46f2bf327f592344d94",
-        "width": 1535,
-        "height": 1024
+        "path": "res://resource/images/anomalies/front_monitor_ghost/front_desk/visible.webp",
+        "sha256": "11b5a408940ad3ab89e22b9b2c3664794d3e96a889ead5308219bb437603f422",
+        "width": 3070,
+        "height": 2048
       }
     },
     "resolved": {

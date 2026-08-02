@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_106_horrific_mirror/room_106_bathroom/visible.png",
-        "sha256": "b44467ad1be5a1691ef3c84c5b2733e70133375037c67766fcfff0bcec0168dc",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/room_106_horrific_mirror/room_106_bathroom/visible.webp",
+        "sha256": "b58b4a55efaaf4cbefb71de836466bdf5ba93e686bac22eb83f8936bc8ae11a6",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

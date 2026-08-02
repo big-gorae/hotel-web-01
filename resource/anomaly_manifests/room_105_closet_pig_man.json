@@ -11,18 +11,18 @@
   "states": {
     "door_open": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_105_closet_pig_man/room_105_bathroom_entry/stage_1.png",
-        "sha256": "379b8a4766ebd7c630aa1f4408d07505f7edebea7ce18fad1d5fea702039383d",
-        "width": 1535,
-        "height": 1024
+        "path": "res://resource/images/anomalies/room_105_closet_pig_man/room_105_bathroom_entry/stage_1.webp",
+        "sha256": "6a3fd008f80b00166ce7179a601eab3a1baa003f72a0ad2ac5d2cccadf554367",
+        "width": 3070,
+        "height": 2048
       }
     },
     "face": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_105_closet_pig_man/room_105_bathroom_entry/stage_2.png",
-        "sha256": "a66486fddfe5fe4b29b8ff5c90fdee872ebaa6fecc2b95015b09cfc710483d09",
-        "width": 1535,
-        "height": 1024
+        "path": "res://resource/images/anomalies/room_105_closet_pig_man/room_105_bathroom_entry/stage_2.webp",
+        "sha256": "52fec337c51f217ac983ba30295c0e63e84be294d6103367803aebf61e75a356",
+        "width": 3070,
+        "height": 2048
       }
     }
   }

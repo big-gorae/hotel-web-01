@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/corridor_blood_puddle/corridor/visible.png",
-        "sha256": "c200d2883ca458089e15405206666ad65682b76a521516cb820e2a04ffffd7b8",
-        "width": 1536,
-        "height": 1024
+        "path": "res://resource/images/anomalies/corridor_blood_puddle/corridor/visible.webp",
+        "sha256": "779c33a0eb10d25770511e665f0029d6e980d491fa728666c8f60577dd994855",
+        "width": 3072,
+        "height": 2048
       }
     },
     "resolved": {

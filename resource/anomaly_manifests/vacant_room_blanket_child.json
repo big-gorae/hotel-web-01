@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/vacant_room_blanket_child/room_108_bed_window/visible.png",
-        "sha256": "b8d9ed86899c7c97d8576baa3027cde633f1a239432d8a5f146b2ca80756e522",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/vacant_room_blanket_child/room_108_bed_window/visible.webp",
+        "sha256": "9a1a9787eb6f8f0b471ac15b2f9befd30d5ac0017a74513176cf861290ea35a7",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

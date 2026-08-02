@@ -11,18 +11,18 @@
   "states": {
     "red": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/laundry_red_washer/laundry_room/red.png",
-        "sha256": "b961e840edc7219081760e6088ef9d05a3e23d691f207ebbca44b8e7033e921f",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/laundry_red_washer/laundry_room/red.webp",
+        "sha256": "e4d1f343862c6a50755d41ecc3403037269db3197a5de10c2ef432cb4bafb926",
+        "width": 2896,
+        "height": 2172
       }
     },
     "music": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/laundry_red_washer/laundry_room/red.png",
-        "sha256": "b961e840edc7219081760e6088ef9d05a3e23d691f207ebbca44b8e7033e921f",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/laundry_red_washer/laundry_room/red.webp",
+        "sha256": "e4d1f343862c6a50755d41ecc3403037269db3197a5de10c2ef432cb4bafb926",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

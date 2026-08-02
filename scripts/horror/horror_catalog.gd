@@ -8,7 +8,7 @@ const AnomalyRegistry := preload("res://scripts/horror/anomaly_registry.gd")
 const IMAGE_JUMPSCARE_SCENE := "res://scenes/horror/image_jumpscare_presentation.tscn"
 const PIG_MASK_REFERENCE := "res://resource/images/references/entities/room_105_closet_pig_mask_man/reference_pig_mask_01.png"
 const FAKE_MOTHER_REFERENCE := "res://resource/images/references/entities/room_106_fake_mother/reference_face_01.png"
-const HANGING_GIRL_REFERENCE := "res://resource/images/anomalies/room_107_hanging_girl/room_107_bed_nightstand/visible.png"
+const HANGING_GIRL_REFERENCE := "res://resource/images/anomalies/room_107_hanging_girl/room_107_bed_nightstand/visible.webp"
 
 const JUMPSCARE_IMAGE_BY_EVENT := {
 	"room_105_closet_pig_man": PIG_MASK_REFERENCE,

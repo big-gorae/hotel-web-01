@@ -110,7 +110,7 @@ receipts/
 - 매니페스트에는 예정 경로나 가짜 hash를 넣지 않는다.
 - `source_path`는 현재 장면 catalog의 기본 사진과 일치해야 한다.
 - source hash가 바뀌면 기존 합성물은 자동 호환으로 간주하지 않는다. 새 source에서 다시 검증한다.
-- full-scene variant와 full-canvas layer는 모두 `canvas` 크기와 일치해야 한다.
+- full-scene variant는 `canvas`와 같은 종횡비의 정수 배율 업스케일을 허용한다. full-canvas layer는 좌표 정합을 위해 `canvas` 크기와 정확히 일치해야 한다.
 - 한 state 안의 layer `slot`은 중복되지 않는다.
 - `base_only` state는 artifact와 함께 사용할 수 없다.
 - 런타임 shader, VHS, 깜빡임과 wipe 수치는 JSON 이미지 상태가 아니라 이벤트 presentation policy에서 관리한다.

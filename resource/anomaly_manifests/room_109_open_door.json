@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_109_open_door/corridor/visible.png",
-        "sha256": "96ce0ec218a09d33870ea650e16bdcd250591473b85282c74f3ae4868297c685",
-        "width": 1536,
-        "height": 1024
+        "path": "res://resource/images/anomalies/room_109_open_door/corridor/visible.webp",
+        "sha256": "269c97dc3395086c77cf9e999b3e007ba9fe910355120fd4d743c9bb2692783a",
+        "width": 3072,
+        "height": 2048
       }
     },
     "resolved": {

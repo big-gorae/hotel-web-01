@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/corridor_red_room_light/corridor/visible.png",
-        "sha256": "987f11a0653a2b0d7e71c2bd81893fc80d6dfae757b1cbf164bf2b6b603311d9",
-        "width": 1536,
-        "height": 1024
+        "path": "res://resource/images/anomalies/corridor_red_room_light/corridor/visible.webp",
+        "sha256": "571d758aadc2ddb533868323471cbff029241c317eacb3c778dfd8cc000b0ebd",
+        "width": 3072,
+        "height": 2048
       }
     },
     "resolved": {

@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/laundry_baby_face_surfaces/laundry_room/visible.png",
-        "sha256": "87556d597f458849ae7514655fa923ca9a93c1a050266c893cb9f1c3be956bac",
-        "width": 1195,
-        "height": 896
+        "path": "res://resource/images/anomalies/laundry_baby_face_surfaces/laundry_room/visible.webp",
+        "sha256": "3c0802449c5e16e4756a7953640cdead370fdb9d960139fc8dc46974a5202f7f",
+        "width": 2390,
+        "height": 1792
       }
     },
     "resolved": {

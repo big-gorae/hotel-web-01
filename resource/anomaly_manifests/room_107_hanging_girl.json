@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_107_hanging_girl/room_107_bed_nightstand/visible.png",
-        "sha256": "fda247a095ac1e758d4966e009bed7892e35716f5071e3786716b0be3be88661",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/room_107_hanging_girl/room_107_bed_nightstand/visible.webp",
+        "sha256": "5c692f2c7ea49ddfa2f12fd313ea114b78d96051fe23b2c371ad52ff35381784",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

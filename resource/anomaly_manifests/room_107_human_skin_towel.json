@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_107_human_skin_towel/room_107_bathroom/visible.png",
-        "sha256": "e6c0968bc62b0442a6927d93c296725f0d9b3494852ee6bd64c396c71968c452",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/room_107_human_skin_towel/room_107_bathroom/visible.webp",
+        "sha256": "6f3599c7a30d425c9530b3e555651e09d8fcbd3a1c33b9ce6fc2a9bb4dc5d362",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

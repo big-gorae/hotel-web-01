@@ -116,6 +116,7 @@ static func _validate_state(
 			state.get("full_scene_variant"),
 			canvas_width,
 			canvas_height,
+			true,
 			verify_files,
 			errors,
 		)
@@ -143,7 +144,7 @@ static func _validate_state(
 		if not layer.has("z_index") or not layer["z_index"] is int:
 			errors.append("%s z_index must be an integer." % label)
 
-		_validate_artifact(label, layer, canvas_width, canvas_height, verify_files, errors)
+		_validate_artifact(label, layer, canvas_width, canvas_height, false, verify_files, errors)
 
 
 static func _validate_artifact(
@@ -151,6 +152,7 @@ static func _validate_artifact(
 	artifact,
 	canvas_width: int,
 	canvas_height: int,
+	allow_uniform_upscale: bool,
 	verify_files: bool,
 	errors: PackedStringArray,
 ) -> void:
@@ -169,11 +171,33 @@ static func _validate_artifact(
 		errors.append("%s sha256 must be a lowercase 64-character SHA-256." % label)
 	if width <= 0 or height <= 0:
 		errors.append("%s width and height must be positive integers." % label)
-	elif width != canvas_width or height != canvas_height:
+	elif allow_uniform_upscale and not _is_uniform_integer_scale(
+		width,
+		height,
+		canvas_width,
+		canvas_height,
+	):
+		errors.append(
+			"%s dimensions must match the source canvas or use a uniform integer upscale." % label,
+		)
+	elif not allow_uniform_upscale and (width != canvas_width or height != canvas_height):
 		errors.append("%s dimensions must match the source canvas." % label)
 
 	if verify_files:
 		_validate_file(path, sha, width, height, label, errors)
+
+
+static func _is_uniform_integer_scale(
+	width: int,
+	height: int,
+	canvas_width: int,
+	canvas_height: int,
+) -> bool:
+	if canvas_width <= 0 or canvas_height <= 0:
+		return false
+	if width % canvas_width != 0 or height % canvas_height != 0:
+		return false
+	return width / canvas_width == height / canvas_height
 
 
 static func _validate_file(

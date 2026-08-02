@@ -35,6 +35,16 @@ func test_recorded_anomaly_cues_replace_procedural_preview_tones() -> void:
 		assert_bool(stream is AudioStreamOggVorbis).is_true()
 
 
+func test_glass_face_cassowary_asset_contains_three_consecutive_calls() -> void:
+	var controller = auto_free(AnomalyAudioController.new())
+	add_child(controller)
+	var stream := controller._stream_for_cue("glass_face_cassowary_call") as AudioStreamOggVorbis
+
+	assert_object(stream).is_not_null()
+	assert_float(stream.get_length()).is_greater_equal(2.2)
+	assert_float(stream.get_length()).is_less_equal(2.4)
+
+
 func test_shadow_bell_echo_scream_and_heartbeat_are_available() -> void:
 	var controller = auto_free(AnomalyAudioController.new())
 	add_child(controller)

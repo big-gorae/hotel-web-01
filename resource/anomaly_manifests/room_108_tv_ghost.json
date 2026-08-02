@@ -11,26 +11,26 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_108_tv_ghost/room_105_bathroom_entry/visible.png",
-        "sha256": "e5d376a6aae417a5732152e899608ca41ba8e2a8c92654092324597c6b55f81a",
-        "width": 1535,
-        "height": 1024
+        "path": "res://resource/images/anomalies/room_108_tv_ghost/room_105_bathroom_entry/visible.webp",
+        "sha256": "613a57d2e58fe9c6c88e8c1e9d92de9e4b2db7a298b005060ccd555bfe1b640f",
+        "width": 3070,
+        "height": 2048
       }
     },
     "flicker": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_108_tv_ghost/room_105_bathroom_entry/visible.png",
-        "sha256": "e5d376a6aae417a5732152e899608ca41ba8e2a8c92654092324597c6b55f81a",
-        "width": 1535,
-        "height": 1024
+        "path": "res://resource/images/anomalies/room_108_tv_ghost/room_105_bathroom_entry/visible.webp",
+        "sha256": "613a57d2e58fe9c6c88e8c1e9d92de9e4b2db7a298b005060ccd555bfe1b640f",
+        "width": 3070,
+        "height": 2048
       }
     },
     "hostile": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_108_tv_ghost/room_105_bathroom_entry/hostile.png",
-        "sha256": "db111756d1180e71029c4b32f1120c5ff761712b3a25823fb1559ed0b32205be",
-        "width": 1535,
-        "height": 1024
+        "path": "res://resource/images/anomalies/room_108_tv_ghost/room_105_bathroom_entry/hostile.webp",
+        "sha256": "a13490c538a8ac84b4976c6612b245d9c9cd2753e9565e2c43a72df286706be6",
+        "width": 3070,
+        "height": 2048
       }
     },
     "resolved": {

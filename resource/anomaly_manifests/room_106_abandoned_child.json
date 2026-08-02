@@ -11,10 +11,10 @@
   "states": {
     "crying": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_106_abandoned_child/room_106_bathroom/crying.png",
-        "sha256": "0078b38f9594dc3a957bc25a20be251d1bfd33c53f8727e451c849a842017094",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/room_106_abandoned_child/room_106_bathroom/crying.webp",
+        "sha256": "b0976f1cd6ef8385c507dc2ddc0542acf0b56d3137c359ccbccf53aba1d10644",
+        "width": 2896,
+        "height": 2172
       }
     }
   }

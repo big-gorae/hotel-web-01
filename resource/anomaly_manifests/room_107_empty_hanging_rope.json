@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_107_empty_hanging_rope/room_107_bed_nightstand/visible.png",
-        "sha256": "243e832f34f0eda2479a38c13aaf8b145667f062f90198b8241570ad9a778c61",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/room_107_empty_hanging_rope/room_107_bed_nightstand/visible.webp",
+        "sha256": "0f210d15d0ef394ba23d9c160d54a8025981d3c74e5cd2ae522e324459f18207",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

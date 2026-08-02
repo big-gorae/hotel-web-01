@@ -14,10 +14,10 @@
     },
     "legs": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/bathroom_shower_legs/room_105_bathroom/visible.png",
-        "sha256": "92580fca9f952774977c1addbd66ffb1bcbfc72fa54879652b22a06e76699ce9",
-        "width": 1448,
-        "height": 1086
+        "path": "res://resource/images/anomalies/bathroom_shower_legs/room_105_bathroom/visible.webp",
+        "sha256": "dc5edb355e293ab984e7f91f9671d66f7e8faca60dd1fa301273f1eda1a11513",
+        "width": 2896,
+        "height": 2172
       }
     },
     "resolved": {

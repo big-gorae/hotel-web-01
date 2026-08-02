@@ -11,10 +11,10 @@
   "states": {
     "visible": {
       "full_scene_variant": {
-        "path": "res://resource/images/anomalies/room_105_grotesque_portrait/room_105_bathroom_entry/visible.png",
-        "sha256": "b13bdda6d3c3d483722bdc6063cb65653c5bf04074ffc903bc159287e4172509",
-        "width": 1535,
-        "height": 1024
+        "path": "res://resource/images/anomalies/room_105_grotesque_portrait/room_105_bathroom_entry/visible.webp",
+        "sha256": "dedc611fd5452979ec254ec0b33a49f455e8e2fc9a8f074dd0499ffcfd196126",
+        "width": 3070,
+        "height": 2048
       }
     },
     "resolved": {
