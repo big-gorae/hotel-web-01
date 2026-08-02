@@ -9,6 +9,7 @@
 - `shower_curtain_move.ogg`: 샤워 커튼을 열거나 닫을 때 재생하는 실제 천 마찰음.
 - `curtain_legs_reveal.ogg`: 커튼 안의 다리를 최초로 발견할 때 한 번만 재생하는 낮은 마찰·충격 합성음.
 - `shadow_footstep_sequence.ogg`: 플레이어의 세 걸음 이동음을 동일한 리듬으로 다시 재생하는 그림자 복제음.
+- `front_glass_face_cassowary_call.ogg`: 유리문 얼굴이 첫 벨 3연타 뒤 공격 상태로 바뀔 때 한 번 재생하는 실제 화식조의 짧은 울음.
 
 외부 녹음을 사용한 파일은 `resource/sounds/licenses/`에 원본 URL,
 라이선스와 가공 내역을 기록한다. 모두 상업 이용과 재배포가 허용된 CC0

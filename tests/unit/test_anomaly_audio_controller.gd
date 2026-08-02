@@ -22,6 +22,7 @@ func test_recorded_anomaly_cues_replace_procedural_preview_tones() -> void:
 		"blanket_laugh_soft": AnomalyAudioController.BLANKET_LAUGH_SOFT_PATH,
 		"blanket_laugh_distorted": AnomalyAudioController.BLANKET_LAUGH_DISTORTED_PATH,
 		"footstep_echo": AnomalyAudioController.SHADOW_FOOTSTEP_SEQUENCE_PATH,
+		"glass_face_cassowary_call": AnomalyAudioController.FRONT_GLASS_FACE_CASSOWARY_PATH,
 	}
 	var controller = auto_free(AnomalyAudioController.new())
 	add_child(controller)

@@ -104,6 +104,8 @@ func test_item_hold_silently_rejects_wrong_item_and_accepts_required_item() -> v
 
 func test_glass_face_requires_two_fast_triples() -> void:
 	var runtime = auto_free(ContentRuntime.new())
+	var cues: Array[String] = []
+	runtime.sound_requested.connect(func(cue_id: String): cues.append(cue_id))
 	add_child(runtime)
 	runtime.force_event("front_glass_face")
 	assert_array(runtime.get_dynamic_hotspots("front_desk")).is_empty()
@@ -111,11 +113,13 @@ func test_glass_face_requires_two_fast_triples() -> void:
 	for _index in 3:
 		assert_bool(runtime.handle_world_hotspot("desk_bell", "front_desk")).is_true()
 	assert_str(runtime.current_state).is_equal("hostile")
+	assert_int(cues.count("glass_face_cassowary_call")).is_equal(1)
 	for _index in 3:
 		runtime.handle_world_hotspot("desk_bell", "front_desk")
 
 	assert_str(runtime.current_event_id).is_empty()
 	assert_bool(runtime.handle_world_hotspot("desk_bell", "front_desk")).is_false()
+	assert_int(cues.count("glass_face_cassowary_call")).is_equal(1)
 
 
 func test_phenomenon_remains_visible_until_resolution_transition_reaches_black() -> void:
