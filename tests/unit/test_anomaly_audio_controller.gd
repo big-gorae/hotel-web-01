@@ -22,7 +22,7 @@ func test_recorded_anomaly_cues_replace_procedural_preview_tones() -> void:
 		"blanket_laugh_soft": AnomalyAudioController.BLANKET_LAUGH_SOFT_PATH,
 		"blanket_laugh_distorted": AnomalyAudioController.BLANKET_LAUGH_DISTORTED_PATH,
 		"footstep_echo": AnomalyAudioController.SHADOW_FOOTSTEP_SEQUENCE_PATH,
-		"glass_face_cassowary_call": AnomalyAudioController.FRONT_GLASS_FACE_CASSOWARY_PATH,
+		"glass_face_barn_owl_call": AnomalyAudioController.FRONT_GLASS_FACE_BARN_OWL_PATH,
 	}
 	var controller = auto_free(AnomalyAudioController.new())
 	add_child(controller)
@@ -35,14 +35,15 @@ func test_recorded_anomaly_cues_replace_procedural_preview_tones() -> void:
 		assert_bool(stream is AudioStreamOggVorbis).is_true()
 
 
-func test_glass_face_cassowary_asset_contains_three_consecutive_calls() -> void:
+func test_glass_face_barn_owl_asset_contains_three_consecutive_calls() -> void:
 	var controller = auto_free(AnomalyAudioController.new())
 	add_child(controller)
-	var stream := controller._stream_for_cue("glass_face_cassowary_call") as AudioStreamOggVorbis
+	var stream := controller._stream_for_cue("glass_face_barn_owl_call") as AudioStreamOggVorbis
 
 	assert_object(stream).is_not_null()
-	assert_float(stream.get_length()).is_greater_equal(2.13)
-	assert_float(stream.get_length()).is_less_equal(2.145)
+	assert_float(stream.get_length()).is_greater_equal(3.71)
+	assert_float(stream.get_length()).is_less_equal(3.74)
+	assert_float(controller._volume_for_cue("glass_face_barn_owl_call")).is_equal(0.0)
 
 
 func test_shadow_bell_echo_scream_and_heartbeat_are_available() -> void:

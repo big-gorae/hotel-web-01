@@ -113,13 +113,13 @@ func test_glass_face_requires_two_fast_triples() -> void:
 	for _index in 3:
 		assert_bool(runtime.handle_world_hotspot("desk_bell", "front_desk")).is_true()
 	assert_str(runtime.current_state).is_equal("hostile")
-	assert_int(cues.count("glass_face_cassowary_call")).is_equal(1)
+	assert_int(cues.count("glass_face_barn_owl_call")).is_equal(1)
 	for _index in 3:
 		runtime.handle_world_hotspot("desk_bell", "front_desk")
 
 	assert_str(runtime.current_event_id).is_empty()
 	assert_bool(runtime.handle_world_hotspot("desk_bell", "front_desk")).is_false()
-	assert_int(cues.count("glass_face_cassowary_call")).is_equal(1)
+	assert_int(cues.count("glass_face_barn_owl_call")).is_equal(1)
 
 
 func test_glass_face_calls_when_player_enters_front_desk() -> void:
@@ -130,14 +130,14 @@ func test_glass_face_calls_when_player_enters_front_desk() -> void:
 	runtime.force_event("front_glass_face")
 
 	runtime.enter_scene("corridor")
-	assert_int(cues.count("glass_face_cassowary_call")).is_equal(0)
+	assert_int(cues.count("glass_face_barn_owl_call")).is_equal(0)
 	runtime.enter_scene("front_desk")
-	assert_int(cues.count("glass_face_cassowary_call")).is_equal(1)
+	assert_int(cues.count("glass_face_barn_owl_call")).is_equal(1)
 	runtime.enter_scene("front_desk")
-	assert_int(cues.count("glass_face_cassowary_call")).is_equal(1)
+	assert_int(cues.count("glass_face_barn_owl_call")).is_equal(1)
 	runtime.enter_scene("corridor")
 	runtime.enter_scene("front_desk")
-	assert_int(cues.count("glass_face_cassowary_call")).is_equal(2)
+	assert_int(cues.count("glass_face_barn_owl_call")).is_equal(2)
 
 
 func test_phenomenon_remains_visible_until_resolution_transition_reaches_black() -> void:

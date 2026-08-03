@@ -10,7 +10,7 @@ const BLANKET_LAUGH_DISTORTED_PATH := "res://resource/sounds/anomalies/blanket_c
 const SHOWER_CURTAIN_MOVE_PATH := "res://resource/sounds/anomalies/shower_curtain_move.ogg"
 const CURTAIN_LEGS_REVEAL_PATH := "res://resource/sounds/anomalies/curtain_legs_reveal.ogg"
 const SHADOW_FOOTSTEP_SEQUENCE_PATH := "res://resource/sounds/anomalies/shadow_footstep_sequence.ogg"
-const FRONT_GLASS_FACE_CASSOWARY_PATH := "res://resource/sounds/anomalies/front_glass_face_cassowary_call.ogg"
+const FRONT_GLASS_FACE_BARN_OWL_PATH := "res://resource/sounds/anomalies/front_glass_face_barn_owl_call.ogg"
 
 var _players: Array[AudioStreamPlayer] = []
 var _loop_player: AudioStreamPlayer
@@ -154,8 +154,8 @@ func _stream_for_cue(cue_id: String) -> AudioStream:
 			stream = _load_optional_stream(SHADOW_FOOTSTEP_SEQUENCE_PATH)
 			if stream == null:
 				stream = _make_thump_stream()
-		"glass_face_cassowary_call":
-			stream = _load_optional_stream(FRONT_GLASS_FACE_CASSOWARY_PATH)
+		"glass_face_barn_owl_call":
+			stream = _load_optional_stream(FRONT_GLASS_FACE_BARN_OWL_PATH)
 			if stream == null:
 				stream = _make_sting_stream()
 		"door_echo":
@@ -202,8 +202,8 @@ func _volume_for_cue(cue_id: String) -> float:
 			return -10.0
 		"pig_squeal":
 			return -6.0
-		"glass_face_cassowary_call":
-			return -5.0
+		"glass_face_barn_owl_call":
+			return 0.0
 		"closet_door_close":
 			return -7.0
 		"bathtub_drain":
