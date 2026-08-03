@@ -77,6 +77,20 @@ func _run() -> void:
 	):
 		_fail("debug controls were not assigned to their intended tabs")
 		return
+	for item_index in range(1, main.debug_anomaly_selector.item_count):
+		var event_id := String(main.debug_anomaly_selector.get_item_metadata(item_index))
+		var definition = main.horror_event_manager.get_definition(event_id)
+		if definition == null:
+			_fail("debug anomaly selector references an unknown event: %s" % event_id)
+			return
+		var title_key := String(definition.title_key)
+		if title_key.is_empty():
+			title_key = String(definition.collection_title_key)
+		var korean_title: String = main.localization.translate(title_key, String(definition.fallback_title))
+		var expected_item_text := "%s · %s" % [korean_title, event_id]
+		if main.debug_anomaly_selector.get_item_text(item_index) != expected_item_text:
+			_fail("debug anomaly selector title was not localized in Korean: %s" % event_id)
+			return
 	main.debug_tab_container.current_tab = 2
 	await process_frame
 	if not main.debug_test_tabs["anomaly"].visible or main.debug_test_tabs["general"].visible:

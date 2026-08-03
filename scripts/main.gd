@@ -2360,7 +2360,10 @@ func _debug_event_label(event_id: String) -> String:
 		var definition = horror_event_manager.get_definition(event_id)
 		if definition != null:
 			fallback = String(definition.fallback_title)
-			return localization.translate(String(definition.title_key), fallback)
+			var title_key := String(definition.title_key)
+			if title_key.is_empty():
+				title_key = String(definition.collection_title_key)
+			return localization.translate(title_key, fallback)
 	return localization.translate("horror_event.%s.title" % event_id, fallback)
 
 
