@@ -1,6 +1,8 @@
 class_name HotelAnomalyVisualOverlay
 extends Control
 
+const UI_FONT := preload("res://resource/fonts/NanumGothic-Regular.ttf")
+
 var _presentation_state: Dictionary = {}
 var _current_scene_id := ""
 var _photo_rect := Rect2()
@@ -211,9 +213,8 @@ func _draw_oval(center: Vector2, radii: Vector2, color: Color) -> void:
 func _draw_die_sign() -> void:
 	var rect := _map_rect(Rect2(0.255, 0.185, 0.195, 0.155))
 	draw_rect(rect, Color(0.82, 0.78, 0.64, 0.92), true)
-	var font := ThemeDB.fallback_font
 	var font_size := maxi(22, int(rect.size.y * 0.55))
-	draw_string(font, Vector2(rect.position.x + rect.size.x * 0.18, rect.position.y + rect.size.y * 0.72), "죽어", HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, Color(0.55, 0.0, 0.0, 0.98))
+	draw_string(UI_FONT, Vector2(rect.position.x + rect.size.x * 0.18, rect.position.y + rect.size.y * 0.72), "죽어", HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, Color(0.55, 0.0, 0.0, 0.98))
 
 
 func _draw_red_light() -> void:

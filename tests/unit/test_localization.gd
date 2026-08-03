@@ -8,6 +8,7 @@ const InventoryModel := preload("res://scripts/items/inventory_model.gd")
 const TaskCatalog := preload("res://scripts/tasks/task_catalog.gd")
 const RuleBookCatalog := preload("res://scripts/rules/rule_book_catalog.gd")
 const StoryDeliveryManager := preload("res://scripts/story/story_delivery_manager.gd")
+const UI_FONT_PATH := "res://resource/fonts/NanumGothic-Regular.ttf"
 
 
 func test_default_language_is_korean() -> void:
@@ -15,6 +16,17 @@ func test_default_language_is_korean() -> void:
 
 	assert_int(localization.get_language()).is_equal(Localization.Language.KOREAN)
 	assert_str(localization.get_language_code()).is_equal("ko")
+
+
+func test_default_ui_font_is_bundled_and_contains_korean_glyphs() -> void:
+	assert_str(String(ProjectSettings.get_setting("gui/theme/custom_font", ""))).is_equal(UI_FONT_PATH)
+	var ui_font: Font = load(UI_FONT_PATH)
+
+	assert_object(ui_font).is_not_null()
+	for character in ["한", "글", "죽", "어"]:
+		assert_bool(ui_font.has_char(character.unicode_at(0))).override_failure_message(
+			"Bundled UI font is missing Korean glyph: %s" % character
+		).is_true()
 
 
 func test_red_washer_rule_matches_the_current_ritual_in_korean_and_english() -> void:

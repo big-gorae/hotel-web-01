@@ -1,6 +1,8 @@
 class_name HotelRoom109Overlay
 extends Control
 
+const UI_FONT := preload("res://resource/fonts/NanumGothic-Regular.ttf")
+
 var photo_rect := Rect2()
 
 
@@ -29,6 +31,5 @@ func _draw() -> void:
 	])
 	draw_polygon(opening, PackedColorArray([Color(0.0, 0.0, 0.0, 0.93)]))
 	draw_polyline(PackedVector2Array([opening[0], opening[1], opening[2], opening[3]]), Color(0.20, 0.13, 0.08, 0.92), maxf(door.size.x * 0.08, 2.0))
-	var font := ThemeDB.fallback_font
 	var font_size := maxi(int(door.size.x * 0.24), 10)
-	draw_string(font, door.position + Vector2(door.size.x * 0.27, door.size.y * 0.20), "109", HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, Color(0.56, 0.47, 0.34, 0.82))
+	draw_string(UI_FONT, door.position + Vector2(door.size.x * 0.27, door.size.y * 0.20), "109", HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, Color(0.56, 0.47, 0.34, 0.82))
