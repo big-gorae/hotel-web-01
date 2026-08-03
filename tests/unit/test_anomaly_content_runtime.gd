@@ -143,6 +143,21 @@ func test_glass_face_calls_when_player_enters_front_desk() -> void:
 	assert_int(cues.count("glass_face_barn_owl_call_distorted")).is_equal(0)
 
 
+func test_glass_face_calls_once_when_it_appears_at_the_current_front_desk() -> void:
+	var runtime = auto_free(ContentRuntime.new())
+	var cues: Array[String] = []
+	runtime.sound_requested.connect(func(cue_id: String): cues.append(cue_id))
+	add_child(runtime)
+	runtime.enter_scene("front_desk")
+
+	assert_bool(runtime.force_event("front_glass_face")).is_true()
+	assert_int(cues.count("glass_face_barn_owl_call")).is_equal(1)
+	assert_int(cues.count("glass_face_barn_owl_call_distorted")).is_equal(0)
+
+	runtime.enter_scene("front_desk")
+	assert_int(cues.count("glass_face_barn_owl_call")).is_equal(1)
+
+
 func test_phenomenon_remains_visible_until_resolution_transition_reaches_black() -> void:
 	var runtime = auto_free(ContentRuntime.new())
 	var transition_requests: Array[String] = []

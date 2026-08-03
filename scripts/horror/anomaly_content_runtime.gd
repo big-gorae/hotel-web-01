@@ -685,6 +685,8 @@ func _on_scheduled_event_started(event_id: String) -> void:
 			inventory_model != null
 			and inventory_model.has_item_id(HANGING_GIRL_DOLL_ITEM_ID)
 		)
+	if event_id == "front_glass_face" and current_scene_id == "front_desk":
+		sound_requested.emit("glass_face_barn_owl_call")
 	_debug_force_pending = false
 	event_started.emit(event_id)
 	state_changed.emit()
