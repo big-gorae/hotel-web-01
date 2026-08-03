@@ -11,4 +11,4 @@
 - Commercial use: Allowed
 - Modification allowed: Allowed
 - Redistribution allowed: Allowed
-- Modifications: Downmixed the 0.711-second recording to mono, added 15 ms fade-in and 30 ms fade-out, and converted it to 48 kHz Ogg Vorbis. The same call is arranged three times with 10 ms of silence between calls. Pitch and playback speed are unchanged.
+- Modifications: Downmixed the 0.711-second recording to mono, added 15 ms fade-in and 30 ms fade-out, and converted it to 48 kHz Ogg Vorbis. The same call is arranged three times with 5 ms of silence between calls. Pitch and playback speed are unchanged.
