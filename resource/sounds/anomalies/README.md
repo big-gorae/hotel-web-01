@@ -10,7 +10,7 @@
 - `curtain_legs_reveal.ogg`: 커튼 안의 다리를 최초로 발견할 때 한 번만 재생하는 낮은 마찰·충격 합성음.
 - `shadow_footstep_sequence.ogg`: 플레이어의 세 걸음 이동음을 동일한 리듬으로 다시 재생하는 그림자 복제음.
 - `front_glass_face_barn_owl_call.ogg`: 유리문 얼굴이 나타난 프런트에 진입할 때 한 번만 재생하는 실제 가면올빼미 울음.
-- `front_glass_face_barn_owl_call_distorted.ogg`: 첫 벨 3연타 뒤 공격 상태로 바뀔 때 한 번만 재생하는 저음 불협 변형본.
+- `front_glass_face_barn_owl_call_distorted.ogg`: 첫 벨 3연타 뒤 공격 상태로 바뀔 때 한 번만 재생하는 강한 저음·떨림·역재생 변형본.
 
 이전에 사용한 화식조 3회 울음은
 `deprecated/2026-08-04-glass-face-cassowary/`에 보관하며 런타임과 내보내기

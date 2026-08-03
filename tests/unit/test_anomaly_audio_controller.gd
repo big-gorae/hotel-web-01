@@ -46,8 +46,8 @@ func test_glass_face_barn_owl_assets_use_one_clean_call_and_a_distorted_bell_var
 	assert_float(clean_stream.get_length()).is_greater_equal(1.22)
 	assert_float(clean_stream.get_length()).is_less_equal(1.26)
 	assert_object(distorted_stream).is_not_null()
-	assert_float(distorted_stream.get_length()).is_greater_equal(1.39)
-	assert_float(distorted_stream.get_length()).is_less_equal(1.42)
+	assert_float(distorted_stream.get_length()).is_greater_equal(1.50)
+	assert_float(distorted_stream.get_length()).is_less_equal(1.55)
 	assert_float(controller._volume_for_cue("glass_face_barn_owl_call")).is_equal(0.0)
 	assert_float(controller._volume_for_cue("glass_face_barn_owl_call_distorted")).is_equal(0.0)
 

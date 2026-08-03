@@ -15,4 +15,4 @@
 - Modification allowed: Allowed with attribution and change notice
 - Redistribution allowed: Allowed with attribution
 - Clean modifications: Extracted the first scream from 0.58 to 1.82 seconds, resampled it to 48 kHz mono, added 15 ms fade-in and 30 ms fade-out, and converted it to Ogg Vorbis. It plays once with pitch and playback speed unchanged.
-- Distorted modifications: Mixed the clean scream at 78% level with a duplicate at 42% level whose sample rate is reduced by 10%, delayed the lower and slower duplicate by 28 ms, limited the combined peak, and converted it to Ogg Vorbis. It plays once after the first three bell presses.
+- Distorted modifications: Shifted the main scream to 55% pitch at 82% tempo, applied strong 14 Hz tremolo and phasing, then mixed in a reversed duplicate at 72% pitch and 96% tempo after a 70 ms delay. Raised and limited the combined output before converting it to Ogg Vorbis. It plays once after the first three bell presses.
