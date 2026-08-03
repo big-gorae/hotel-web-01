@@ -9,6 +9,8 @@ resources without exposing them to the live Godot project or exported builds.
   `resource/images/prev/`.
 - `2026-08-01-closet-woman-presentation/` preserves the unused procedural
   closet-woman presentation that the pig-mask-man flow replaced.
+- `2026-08-04-glass-face-cassowary/` preserves the retired three-call
+  cassowary audio sequence that the barn owl recording replaced.
 
 Add future retired material in a new date-prefixed directory. Do not reuse
 archived paths from active runtime code.

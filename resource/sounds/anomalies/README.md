@@ -11,6 +11,10 @@
 - `shadow_footstep_sequence.ogg`: 플레이어의 세 걸음 이동음을 동일한 리듬으로 다시 재생하는 그림자 복제음.
 - `front_glass_face_barn_owl_call.ogg`: 유리문 얼굴이 나타난 프런트 진입 시와 첫 벨 3연타 뒤 공격 상태로 바뀔 때, 같은 실제 가면올빼미 울음을 5ms 간격으로 세 번 연속 재생하는 시퀀스.
 
+이전에 사용한 화식조 3회 울음은
+`deprecated/2026-08-04-glass-face-cassowary/`에 보관하며 런타임과 내보내기
+빌드에서는 사용하지 않는다.
+
 외부 녹음을 사용한 파일은 `resource/sounds/licenses/`에 원본 URL,
 라이선스와 가공 내역을 기록한다. 상업 이용과 재배포가 허용된 CC0 또는
 CC BY 4.0 원본만 사용한다.
