@@ -740,7 +740,7 @@ func _press_bell() -> void:
 	if _bell_press_count == 3:
 		current_state = "hostile"
 		_bell_sequence_seconds = BELL_SEQUENCE_WINDOW_SECONDS
-		sound_requested.emit("glass_face_barn_owl_call")
+		sound_requested.emit("glass_face_barn_owl_call_distorted")
 		state_changed.emit()
 	elif _bell_press_count >= 6:
 		_resolve_current()

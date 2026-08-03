@@ -1,6 +1,7 @@
 # Wikimedia Commons - Barn Owl (Tyto alba)
 
-- Asset: `resource/sounds/anomalies/front_glass_face_barn_owl_call.ogg`
+- Clean asset: `resource/sounds/anomalies/front_glass_face_barn_owl_call.ogg`
+- Distorted bell asset: `resource/sounds/anomalies/front_glass_face_barn_owl_call_distorted.ogg`
 - Original title: Barn Owl (Tyto alba) (W TYTO ALBA R1 C16)
 - Description: Barn Owl screams recorded in Cardiganshire, Wales
 - Recordist: Victor C. Lewis
@@ -13,4 +14,5 @@
 - Commercial use: Allowed with attribution
 - Modification allowed: Allowed with attribution and change notice
 - Redistribution allowed: Allowed with attribution
-- Modifications: Extracted the first scream from 0.58 to 1.82 seconds, resampled it to 48 kHz mono, added 15 ms fade-in and 30 ms fade-out, and converted it to Ogg Vorbis. The same call is arranged three times with 5 ms of silence between calls. Pitch and playback speed are unchanged.
+- Clean modifications: Extracted the first scream from 0.58 to 1.82 seconds, resampled it to 48 kHz mono, added 15 ms fade-in and 30 ms fade-out, and converted it to Ogg Vorbis. It plays once with pitch and playback speed unchanged.
+- Distorted modifications: Mixed the clean scream at 78% level with a duplicate at 42% level whose sample rate is reduced by 10%, delayed the lower and slower duplicate by 28 ms, limited the combined peak, and converted it to Ogg Vorbis. It plays once after the first three bell presses.
