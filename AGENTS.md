@@ -2,9 +2,9 @@
 
 ## Chrome Profile Safety
 
-- For every Chrome browser task, use only the Chrome profile named `big.gorea.king`.
+- For every Chrome browser task, use only the Chrome profile named `big.gorae.king@gmail.com`.
 - Never inspect, claim, navigate, create, close, or otherwise interact with tabs or windows belonging to any other Chrome profile.
-- Before the first Chrome action in a task, verify that the connected profile is `big.gorea.king`. If the profile cannot be verified exactly, stop without browser interaction and ask the user to connect the correct profile.
+- Before the first Chrome action in a task, verify that the connected profile is `big.gorae.king@gmail.com`. If the profile cannot be verified exactly, stop without browser interaction and ask the user to connect the correct profile.
 
 ## Meaning of “Apply”
 
