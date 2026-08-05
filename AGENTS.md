@@ -1,5 +1,11 @@
 # Repository Agent Instructions
 
+## Chrome Profile Safety
+
+- For every Chrome browser task, use only the Chrome profile named `big.gorea.king`.
+- Never inspect, claim, navigate, create, close, or otherwise interact with tabs or windows belonging to any other Chrome profile.
+- Before the first Chrome action in a task, verify that the connected profile is `big.gorea.king`. If the profile cannot be verified exactly, stop without browser interaction and ask the user to connect the correct profile.
+
 ## Meaning of “Apply”
 
 - When the user asks to “apply,” “reflect,” or “반영” a change, completion includes implementing it locally, running relevant validation, committing it, and pushing the commit to the configured remote repository.
