@@ -29,6 +29,16 @@ Language-specific files take priority over shared files:
 
 Keep important handwriting away from the outer edge of the image. The UI preserves the original aspect ratio and fits the whole image inside the page area without cropping.
 
+## Day 3 story requirements
+
+The photographed/scanned Day 3 page must preserve this exact order and authorship contrast:
+
+1. Rule 6, printed by management: `109호가 열려 있다면 방에 들어오십시오.` / `If Room 109 is open, come inside.`
+2. Rule 9, handwritten by the older sister: `■■번 항목은 거짓말이야.` / `Rule ■■ is a lie.` The hidden number must be covered by blood rather than clean censor blocks in the finished page art.
+3. Rule 10, printed by management: `9번 지침은 무시하시오.` / `Ignore instruction 9.`
+
+Keep `들어오십시오` / `come inside` intact. The point of the wording is that it reads as an invitation from inside Room 109, not a neutral instruction to enter it.
+
 ## Draft backgrounds
 
 `drafts/` contains text-free visual directions for review. They are not loaded as finished Day pages.

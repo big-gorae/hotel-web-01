@@ -4,45 +4,45 @@ extends RefCounted
 const DAY_BEATS := {
 	1: [
 		{
-			"id": "story.unpaid_wages_call",
+			"id": "story.call_uses_sister_name",
 			"content_key": "story.day.1.line.1",
-			"fallback_content": "At 12:47 a.m., an unfamiliar number called.\n‘Unclaimed wages remain under your name. Come collect them in person.’",
+			"fallback_content": "At 12:47 a.m., an unfamiliar number called and addressed me by my missing older sister’s name.\n‘You have missed shifts to make up. Your unpaid wages and severance exceed fifty million won.’",
 		},
 		{
-			"id": "story.debt_forces_acceptance",
+			"id": "story.player_claims_sister_identity",
 			"content_key": "story.day.1.line.2",
-			"fallback_content": "I had never worked at this hotel. But after months spent hiding from gambling debt and illegal work, money left under my name was difficult to ignore.",
+			"fallback_content": "My sister would not answer, and our parents did not know where she was. I told the caller that I was her. It was the first trace she had left in months.",
 		},
 	],
 	2: [{
-		"id": "story.previous_shift_under_player_name",
+		"id": "story.sister_employment_record",
 		"content_key": "story.day.2.line.1",
-		"fallback_content": "A previous employee record was filed under my name. Two contact numbers had been written beneath it.",
+		"fallback_content": "The employment record was in my sister’s name. The pay was abnormally high, but every attempt to contact the owner ended at the same unanswered number.",
 	}],
 	3: [{
-		"id": "story.second_contact_matches_player",
+		"id": "story.sister_undercover_investigation",
 		"content_key": "story.day.3.line.1",
-		"fallback_content": "The second contact number was mine. It was the number I had changed after going into hiding.",
+		"fallback_content": "My sister was a detective. She had taken this job undercover to investigate the excessive wages, the unreachable owner, and employees who disappeared after resigning.",
 	}],
 	4: [{
-		"id": "story.previous_worker_was_sister",
+		"id": "story.blood_obscured_false_rule_warning",
 		"content_key": "story.day.4.line.1",
-		"fallback_content": "The photograph attached to the record was my missing older sister. She had worked here under my name.",
+		"fallback_content": "In my sister’s handwriting: ‘Rule ■■ is a lie.’ Blood covered the number. Directly below it, a neat printed line read: ‘Ignore instruction 9.’",
 	}],
 	5: [{
-		"id": "story.sister_investigated_disappearance",
+		"id": "story.sister_traced_missing_workers",
 		"content_key": "story.day.5.line.1",
-		"fallback_content": "Dates and room numbers filled the margins of her record. She had been tracing rumors of people disappearing from this hotel.",
+		"fallback_content": "Her notes matched large payments to workers who vanished. Each file ended with a voluntary resignation, but none of them had been reached afterward.",
 	}],
 	6: [{
-		"id": "story.do_not_say_looking_for_sibling",
+		"id": "story.sister_last_room_109_recording",
 		"content_key": "story.day.6.line.1",
-		"fallback_content": "One sentence remained on the back, in my sister’s handwriting.\n‘Do not say you came looking for your younger sister.’",
+		"fallback_content": "Her last recording ended with one sentence.\n‘Room 109 is open. I’m going in, as the rule says.’",
 	}],
 	7: [{
-		"id": "story.younger_sister_recognition",
+		"id": "story.room_109_invitation_wording",
 		"content_key": "story.day.7.line.1",
-		"fallback_content": "She came here looking for her younger sister.\nI am that sister.",
+		"fallback_content": "The last page of my sister’s notes copied Rule 6 word for word.\n‘If Room 109 is open, come inside.’",
 	}],
 }
 

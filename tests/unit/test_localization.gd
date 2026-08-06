@@ -38,8 +38,29 @@ func test_red_washer_rule_matches_the_current_ritual_in_korean_and_english() -> 
 	assert_str(String(localization.translations[Localization.Language.ENGLISH]["ui.rule_book.rule.8"])).is_equal(
 		"If you see something strange inside a washer, stop the wash. While the completion song plays, close your eyes and hide in the laundry room."
 	)
-	assert_bool(localization.translations[Localization.Language.KOREAN].has("ui.rule_book.rule.9")).is_false()
-	assert_bool(localization.translations[Localization.Language.ENGLISH].has("ui.rule_book.rule.10")).is_false()
+
+
+func test_room_109_false_rule_and_rebuttal_match_in_korean_and_english() -> void:
+	var localization := Localization.new()
+
+	assert_str(String(localization.translations[Localization.Language.KOREAN]["ui.rule_book.rule.6"])).is_equal(
+		"109호가 열려 있다면 방에 들어오십시오."
+	)
+	assert_str(String(localization.translations[Localization.Language.ENGLISH]["ui.rule_book.rule.6"])).is_equal(
+		"If Room 109 is open, come inside."
+	)
+	assert_str(String(localization.translations[Localization.Language.KOREAN]["ui.rule_book.rule.9"])).is_equal(
+		"■■번 항목은 거짓말이야."
+	)
+	assert_str(String(localization.translations[Localization.Language.ENGLISH]["ui.rule_book.rule.9"])).is_equal(
+		"Rule ■■ is a lie."
+	)
+	assert_str(String(localization.translations[Localization.Language.KOREAN]["ui.rule_book.rule.10"])).is_equal(
+		"9번 지침은 무시하시오."
+	)
+	assert_str(String(localization.translations[Localization.Language.ENGLISH]["ui.rule_book.rule.10"])).is_equal(
+		"Ignore instruction 9."
+	)
 
 
 func test_english_and_korean_have_identical_key_coverage() -> void:

@@ -286,8 +286,8 @@ func _run() -> void:
 	if main.get_intro_dialogue_step() != 2 or not main.typewriter_dialogue_controller.is_typing():
 		_fail("second dialogue click did not start the next line")
 		return
-	if not "동생" in main.localization.translations[main.localization.Language.KOREAN]["story.day.7.line.1"]:
-		_fail("day seven story is missing the younger-sister reveal")
+	if not "들어오십시오" in main.localization.translations[main.localization.Language.KOREAN]["story.day.7.line.1"]:
+		_fail("day seven story is missing the Room 109 invitation wording")
 		return
 	main._advance_intro_dialogue()
 	main._advance_intro_dialogue()

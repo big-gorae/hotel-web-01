@@ -35,4 +35,4 @@ func test_sequence_resumes_from_saved_step_boundary() -> void:
 
 	assert_bool(restored.has_active_sequence()).is_true()
 	assert_int(restored.get_current_step()).is_equal(2)
-	assert_str(String(restored.get_current_beat().get("id", ""))).is_equal("story.debt_forces_acceptance")
+	assert_str(String(restored.get_current_beat().get("id", ""))).is_equal("story.player_claims_sister_identity")
