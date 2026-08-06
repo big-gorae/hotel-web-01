@@ -165,6 +165,8 @@ func _stream_for_cue(cue_id: String) -> AudioStream:
 				stream = _make_sting_stream()
 		"door_echo":
 			stream = _make_door_stream()
+		"locked_door_handle":
+			stream = _make_locked_door_handle_stream()
 		"room_109_passing_footstep":
 			stream = _make_thump_stream()
 		"bathtub_drain":
@@ -213,6 +215,8 @@ func _volume_for_cue(cue_id: String) -> float:
 			return 0.0
 		"closet_door_close":
 			return -7.0
+		"locked_door_handle":
+			return -8.0
 		"bathtub_drain":
 			return -5.0
 		"hell_mirror_washer_destroy":
@@ -405,6 +409,41 @@ func _make_thump_stream() -> AudioStreamWAV:
 
 func _make_door_stream() -> AudioStreamWAV:
 	return _make_tone_stream(0.62, [74.0, 121.0, 181.0], 0.45, 3.6)
+
+
+func _make_locked_door_handle_stream() -> AudioStreamWAV:
+	var mix_rate := 22050
+	var duration := 0.72
+	var samples := int(mix_rate * duration)
+	var data := PackedByteArray()
+	data.resize(samples * 2)
+	var noise_state := 0x109D00
+	for index in samples:
+		var time := float(index) / mix_rate
+		var turn_progress := clampf(time / 0.34, 0.0, 1.0)
+		var turn_envelope := sin(PI * turn_progress) if time <= 0.34 else 0.0
+		var handle_frequency := lerpf(185.0, 112.0, turn_progress)
+		var handle := sin(TAU * handle_frequency * time) * turn_envelope * 0.16
+
+		var metal_clicks := 0.0
+		for click_time in [0.055, 0.315, 0.475]:
+			var click_age: float = time - click_time
+			if click_age >= 0.0:
+				metal_clicks += (
+					sin(TAU * 860.0 * click_age) * 0.42
+					+ sin(TAU * 1370.0 * click_age) * 0.22
+				) * exp(-click_age * 48.0)
+
+		noise_state = int((noise_state * 1664525 + 1013904223) & 0x7fffffff)
+		var noise := (float(noise_state) / 1073741824.0) - 1.0
+		var rattle_age := time - 0.40
+		var rattle_envelope := 0.0
+		if rattle_age >= 0.0:
+			rattle_envelope = sin(PI * clampf(rattle_age / 0.24, 0.0, 1.0))
+		var rattle := noise * rattle_envelope * 0.12
+		var value := (handle + metal_clicks + rattle) * (1.0 - smoothstep(0.62, duration, time))
+		data.encode_s16(index * 2, clampi(int(value * 26000.0), -32768, 32767))
+	return _make_wav(data, mix_rate, false)
 
 
 func _make_found_voice_proxy_stream() -> AudioStreamWAV:

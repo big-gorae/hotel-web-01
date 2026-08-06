@@ -75,7 +75,7 @@ const HOTSPOT_LABELS := {
 	"corridor": {
 		"corridor_left_edge": "Front Desk", "corridor_bottom_edge": "Stairs",
 		"room_105": "Room 105", "room_106": "Room 106", "room_107": "Room 107", "room_108": "Room 108",
-		"walkway_lights": "Lights", "room_109_open_door": "Room 109",
+		"walkway_lights": "Lights", "room_109_locked_door": "Room 109", "room_109_open_door": "Room 109",
 	},
 	"exterior_stairs": {"stairs_right_edge": "Corridor", "metal_stairs": "Stairs"},
 	"front_desk": {
@@ -175,6 +175,8 @@ static func append_translations(localization_tables: Dictionary, english_languag
 	korean["hotspot.common.shower_curtain.label"] = "샤워 커튼"
 	korean["hotspot.common.shower_curtain.open"] = "샤워 커튼을 연다."
 	korean["hotspot.common.shower_curtain.close"] = "샤워 커튼을 닫는다."
+	english["hotspot.corridor.room_109_locked_door.notice"] = "A 'Do not disturb' sign is hanging from the handle."
+	korean["hotspot.corridor.room_109_locked_door.notice"] = "'Do not disturb'가 걸려 있다"
 	for scene_id in SceneCatalog.SCENES:
 		var scene: Dictionary = SceneCatalog.SCENES[scene_id]
 		var korean_scene: Dictionary = SCENE_KO.get(scene_id, {})

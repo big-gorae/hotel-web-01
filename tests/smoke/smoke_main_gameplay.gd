@@ -343,6 +343,27 @@ func _run() -> void:
 		_fail("scene transition fader did not hide after transition")
 		return
 	_stop_transition_audio(main)
+	var locked_room_109 := _find_hotspot(main, "corridor", main.ROOM_109_LOCKED_HOTSPOT_ID)
+	if locked_room_109.is_empty() or locked_room_109.has("target"):
+		_fail("closed Room 109 did not expose a non-navigating locked-door hotspot")
+		return
+	main._on_hotspot_pressed(locked_room_109)
+	if main.current_scene_id != "corridor":
+		_fail("locked Room 109 opened before its event")
+		return
+	if (
+		not main.interaction_toast_panel.visible
+		or main.interaction_toast_label.text != "'Do not disturb'가 걸려 있다"
+		or main.interaction_toast_panel.position.y < main.get_viewport_rect().size.y * 0.70
+	):
+		_fail("locked Room 109 did not show the small bottom-center notice")
+		return
+	main.night_anomaly_director.room_109_passage_state = main.night_anomaly_director.ROOM_109_PASSAGE_WAITING
+	if not _find_hotspot(main, "corridor", main.ROOM_109_LOCKED_HOTSPOT_ID).is_empty():
+		_fail("locked Room 109 hotspot remained after the door opened")
+		return
+	main.night_anomaly_director.room_109_passage_state = main.night_anomaly_director.ROOM_109_PASSAGE_IDLE
+	main._hide_interaction_toast()
 
 	main.show_scene("room_105_door_window", false)
 	await process_frame

@@ -56,6 +56,8 @@ const FOOTSTEP_COUNT := 3
 const FOOTSTEP_INTERVAL_SECONDS := 0.22
 const FOOTSTEP_VOLUME_DB := -9.0
 const FOOTSTEP_PITCHES := [0.94, 1.03, 0.98, 1.06]
+const ROOM_109_LOCKED_HOTSPOT_ID := "room_109_locked_door"
+const ROOM_109_DOOR_RECT := Rect2(0.735, 0.285, 0.055, 0.325)
 const LOBBY_BACKGROUND_PHOTO := "res://resource/images/front_desk.png"
 const LETHAL_GIMMICKS_ENABLED := true
 const CLOSET_PIG_MAN_EVENT_ID := "room_105_closet_pig_man"
@@ -121,6 +123,7 @@ var current_persistent_dialogue_text := ""
 var mouse_position := Vector2.ZERO
 var title_tween: Tween
 var transient_dialogue_tween: Tween
+var interaction_toast_tween: Tween
 var footstep_stream: AudioStream
 var footstep_players: Array[AudioStreamPlayer] = []
 var footstep_timer: Timer
@@ -156,6 +159,8 @@ var dialogue_gradient: ColorRect
 var typewriter_dialogue_controller
 var transient_dialogue_panel: PanelContainer
 var transient_dialogue_label: Label
+var interaction_toast_panel: PanelContainer
+var interaction_toast_label: Label
 var navigation_panel: PanelContainer
 var nav_bar: HBoxContainer
 var debug_day_bar: HBoxContainer
@@ -677,6 +682,18 @@ func _build_ui() -> void:
 	transient_dialogue_label.add_theme_font_size_override("font_size", 18)
 	transient_dialogue_label.add_theme_color_override("font_color", Color(0.96, 0.93, 0.86))
 	transient_dialogue_panel.add_child(transient_dialogue_label)
+
+	interaction_toast_panel = PanelContainer.new()
+	interaction_toast_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	interaction_toast_panel.visible = false
+	interaction_toast_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.025, 0.028, 0.03, 0.90), Color(0.78, 0.72, 0.60, 0.32), 8))
+	gameplay_layer.add_child(interaction_toast_panel)
+
+	interaction_toast_label = Label.new()
+	interaction_toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	interaction_toast_label.add_theme_font_size_override("font_size", 16)
+	interaction_toast_label.add_theme_color_override("font_color", Color(0.94, 0.91, 0.84))
+	interaction_toast_panel.add_child(interaction_toast_label)
 
 	navigation_panel = PanelContainer.new()
 	navigation_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.03, 0.035, 0.04, 0.82), Color(1.0, 1.0, 1.0, 0.10), 8))
@@ -1216,6 +1233,14 @@ func _on_hotspot_pressed(hotspot: Dictionary) -> void:
 	if hotspot_id == "desk_bell" and current_scene_id == "front_desk":
 		if anomaly_audio_controller != null:
 			anomaly_audio_controller.play_cue("desk_bell")
+		return
+	if hotspot_id == ROOM_109_LOCKED_HOTSPOT_ID and current_scene_id == "corridor":
+		if anomaly_audio_controller != null:
+			anomaly_audio_controller.play_cue("locked_door_handle")
+		_show_interaction_toast(localization.translate(
+			"hotspot.corridor.room_109_locked_door.notice",
+			"A 'Do not disturb' sign is hanging from the handle.",
+		))
 		return
 	if shower_curtain_state != null and hotspot_id == HotelShowerCurtainStateScript.HOTSPOT_ID:
 		_toggle_shower_curtain()
@@ -2229,6 +2254,39 @@ func _hide_transient_dialogue() -> void:
 	transient_dialogue_tween = null
 
 
+func _show_interaction_toast(message: String) -> void:
+	if interaction_toast_panel == null or interaction_toast_label == null:
+		return
+	interaction_toast_label.text = message
+	interaction_toast_panel.move_to_front()
+	interaction_toast_panel.visible = true
+	interaction_toast_panel.modulate.a = 1.0
+	_position_interaction_toast()
+	if interaction_toast_tween != null:
+		interaction_toast_tween.kill()
+	interaction_toast_tween = create_tween()
+	interaction_toast_tween.tween_interval(1.8)
+	interaction_toast_tween.tween_property(interaction_toast_panel, "modulate:a", 0.0, 0.4)
+	interaction_toast_tween.finished.connect(_hide_interaction_toast)
+
+
+func _hide_interaction_toast() -> void:
+	if interaction_toast_panel != null:
+		interaction_toast_panel.visible = false
+	interaction_toast_tween = null
+
+
+func _position_interaction_toast() -> void:
+	if interaction_toast_panel == null:
+		return
+	var viewport_size := get_viewport_rect().size
+	interaction_toast_panel.size = interaction_toast_panel.get_combined_minimum_size()
+	interaction_toast_panel.position = Vector2(
+		(viewport_size.x - interaction_toast_panel.size.x) * 0.5,
+		viewport_size.y - interaction_toast_panel.size.y - 36.0,
+	)
+
+
 func _position_transient_dialogue() -> void:
 	if transient_dialogue_panel == null or transient_dialogue_label == null:
 		return
@@ -2262,6 +2320,12 @@ func _scene_photo(scene_id: String, scene_data: Dictionary) -> String:
 func _scene_hotspots(scene_id: String, scene_data: Dictionary) -> Array:
 	var editor_hotspots := _editor_hotspots_for_scene(scene_id)
 	var hotspots := editor_hotspots.duplicate(true)
+	if scene_id == "corridor" and not _is_room_109_open():
+		hotspots.append({
+			"id": ROOM_109_LOCKED_HOTSPOT_ID,
+			"label": "Room 109",
+			"rect": ROOM_109_DOOR_RECT,
+		})
 	for task_hotspot in task_manager.get_hotspots_for_scene(scene_id):
 		hotspots.append(task_hotspot)
 	for horror_hotspot in horror_event_manager.get_revealed_hotspots(scene_id):
@@ -2288,6 +2352,18 @@ func _scene_hotspots(scene_id: String, scene_data: Dictionary) -> Array:
 		hotspots.append(shower_curtain_state.make_hotspot_for_state(_is_effective_shower_curtain_closed(scene_id, scene_data)))
 
 	return hotspots
+
+
+func _is_room_109_open() -> bool:
+	if anomaly_content_runtime != null and anomaly_content_runtime.current_event_id == "room_109_open_door":
+		return true
+	return (
+		night_anomaly_director != null
+		and night_anomaly_director.room_109_passage_state in [
+			night_anomaly_director.ROOM_109_PASSAGE_WAITING,
+			night_anomaly_director.ROOM_109_PASSAGE_FOOTSTEPS,
+		]
+	)
 
 
 func _validate_scene_authoring() -> void:
@@ -2518,6 +2594,7 @@ func _update_layout() -> void:
 		hold_progress_overlay.set_focus_position(get_viewport().get_mouse_position())
 	_position_title_panel()
 	_position_transient_dialogue()
+	_position_interaction_toast()
 	_update_hotspot_layout()
 	_update_day_display()
 	_position_runtime_status()

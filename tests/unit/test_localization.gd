@@ -106,6 +106,8 @@ func test_runtime_only_hotspots_have_explicit_korean_and_english_copy() -> void:
 	var english: Dictionary = localization.translations[Localization.Language.ENGLISH]
 	var korean: Dictionary = localization.translations[Localization.Language.KOREAN]
 	for key in [
+		"hotspot.corridor.room_109_locked_door.label",
+		"hotspot.corridor.room_109_locked_door.notice",
 		"hotspot.corridor.room_109_open_door.label",
 		"hotspot.corridor.room_109_open_door.text",
 		"hotspot.laundry_room.anomaly_pickup:hanging_girl_doll.label",
@@ -117,6 +119,9 @@ func test_runtime_only_hotspots_have_explicit_korean_and_english_copy() -> void:
 		"hotspot.common.shower_curtain.close",
 	]:
 		_assert_copy(english, korean, key, String(english.get(key, "")))
+	assert_str(String(korean["hotspot.corridor.room_109_locked_door.notice"])).is_equal(
+		"'Do not disturb'가 걸려 있다"
+	)
 
 
 func test_every_catalog_player_copy_has_explicit_korean_and_english_text() -> void:

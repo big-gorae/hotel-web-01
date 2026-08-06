@@ -81,3 +81,15 @@ func test_bathtub_drain_and_mirror_washer_cues_are_substantial_one_shots() -> vo
 	assert_int(washer.data.size()).is_greater(150000)
 	assert_int(drain.loop_mode).is_equal(AudioStreamWAV.LOOP_DISABLED)
 	assert_int(washer.loop_mode).is_equal(AudioStreamWAV.LOOP_DISABLED)
+
+
+func test_locked_door_handle_has_a_short_metallic_one_shot() -> void:
+	var controller = auto_free(AnomalyAudioController.new())
+	add_child(controller)
+	var handle := controller._stream_for_cue("locked_door_handle") as AudioStreamWAV
+
+	assert_object(handle).is_not_null()
+	assert_int(handle.data.size()).is_greater(30000)
+	assert_int(handle.data.size()).is_less(33000)
+	assert_int(handle.loop_mode).is_equal(AudioStreamWAV.LOOP_DISABLED)
+	assert_float(controller._volume_for_cue("locked_door_handle")).is_equal(-8.0)
