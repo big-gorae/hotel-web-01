@@ -7,6 +7,9 @@ const TaskDefinition := preload("res://scripts/tasks/task_definition.gd")
 static func build_definitions() -> Array:
 	return [
 		_make_room_105_fold_bedding(),
+		_make_room_105_collect_trash("cup", Rect2(0.312, 0.792, 0.062, 0.083)),
+		_make_room_105_collect_trash("receipt", Rect2(0.269, 0.851, 0.066, 0.076)),
+		_make_room_105_collect_trash("wrapper", Rect2(0.336, 0.855, 0.074, 0.097)),
 		_make_room_105_clean_sink(),
 		_make_room_107_collect_papers(),
 	]
@@ -19,14 +22,34 @@ static func _make_room_105_fold_bedding():
 	task.scene_ids = ["room_105_door_window"]
 	task.hotspot_id = "task_room_105_fold_bedding"
 	task.task_type = "fold_bedding"
+	task.hold_seconds = 1.4
 	task.completion_flag_id = "task.room_105.bedding.folded"
-	task.rect = Rect2(0.050, 0.515, 0.420, 0.330)
+	task.rect = Rect2(0.286, 0.459, 0.714, 0.540)
 	task.label_key = "task.room_105_fold_bedding.label"
 	task.text_key = "task.room_105_fold_bedding.text"
 	task.done_text_key = "task.room_105_fold_bedding.done"
 	task.fallback_label = "Bedding"
 	task.fallback_text = "The bed is not quite ready for a guest."
 	task.fallback_done_text = "You fold the bedding into a neat, stiff square."
+	return task
+
+
+static func _make_room_105_collect_trash(object_id: String, hotspot_rect: Rect2):
+	var task := TaskDefinition.new()
+	task.id = "room_105_collect_trash_%s" % object_id
+	task.room_id = "room_105"
+	task.scene_ids = ["room_105_door_window"]
+	task.hotspot_id = "task_room_105_collect_trash_%s" % object_id
+	task.task_type = "collect_trash"
+	task.hold_seconds = 0.75
+	task.rect = hotspot_rect
+	task.completion_flag_id = "task.room_105.trash.%s.collected" % object_id
+	task.label_key = "task.room_105_collect_trash.label"
+	task.text_key = "task.room_105_collect_trash.text"
+	task.done_text_key = "task.room_105_collect_trash.done"
+	task.fallback_label = "Trash"
+	task.fallback_text = "A guest left this behind."
+	task.fallback_done_text = "You pick it up."
 	return task
 
 

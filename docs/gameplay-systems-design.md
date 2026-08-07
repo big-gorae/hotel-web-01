@@ -2,6 +2,8 @@
 
 This document defines the next architecture step for hotel duties, item use, rule-book-driven anomaly resolution, and future room expansion.
 
+The player-facing daily room roster, fixed chore loop, room-entry gating, and anomaly conflict rules are defined in [일일 객실 정리 명부와 고정 일감 설계](daily-room-cleaning-work-order.md).
+
 The target is not to remove Godot editor authoring. The target is to make editor-authored hotspots call a small, stable set of data-driven gameplay systems instead of adding more one-off branches to `scripts/main.gd`.
 
 ## 한국어 요약

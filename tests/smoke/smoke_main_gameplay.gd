@@ -372,7 +372,8 @@ func _run() -> void:
 	if fold_hotspot.is_empty():
 		_fail("fold bedding task hotspot missing")
 		return
-	main._on_hotspot_pressed(fold_hotspot)
+	main._on_task_hotspot_button_down(fold_hotspot)
+	main.task_hold_controller.advance(float(fold_hotspot.get("task_hold_seconds", 0.0)))
 	if main.task_manager.get_task_state("room_105_fold_bedding") != "done":
 		_fail("fold bedding task did not complete")
 		return

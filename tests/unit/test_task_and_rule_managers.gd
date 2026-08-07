@@ -19,6 +19,25 @@ func test_task_manager_exports_and_imports_completed_tasks() -> void:
 	assert_that(restored.get_task_state("room_105_fold_bedding")).is_equal("done")
 
 
+func test_room_105_visual_tasks_expose_hold_durations_and_independent_trash_hotspots() -> void:
+	var manager := TaskManager.new()
+	manager.setup_default_catalog()
+	var hotspots := manager.get_hotspots_for_scene("room_105_door_window")
+	var task_ids: Array = hotspots.map(func(hotspot) -> String: return String(hotspot.get("task_id", "")))
+
+	assert_array(task_ids).contains_exactly([
+		"room_105_fold_bedding",
+		"room_105_collect_trash_cup",
+		"room_105_collect_trash_receipt",
+		"room_105_collect_trash_wrapper",
+	])
+	for hotspot in hotspots:
+		assert_float(float(hotspot.get("task_hold_seconds", 0.0))).is_greater(0.0)
+
+	assert_that(manager.complete_task("room_105_collect_trash_cup")).is_true()
+	assert_int(manager.get_hotspots_for_scene("room_105_door_window").size()).is_equal(3)
+
+
 func test_rule_book_manager_tracks_read_rules() -> void:
 	var manager := RuleBookManager.new()
 	manager.setup_default_catalog()

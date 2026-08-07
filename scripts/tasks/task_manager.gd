@@ -2,6 +2,7 @@ class_name HotelTaskManager
 extends RefCounted
 
 signal task_completed(definition)
+signal tasks_changed
 
 const TaskDefinition := preload("res://scripts/tasks/task_definition.gd")
 const TaskCatalog := preload("res://scripts/tasks/task_catalog.gd")
@@ -16,10 +17,12 @@ func setup_default_catalog() -> void:
 	definitions_by_id.clear()
 	for definition in TaskCatalog.build_definitions():
 		register_definition(definition)
+	tasks_changed.emit()
 
 
 func start_new_run() -> void:
 	completed_task_ids.clear()
+	tasks_changed.emit()
 
 
 func register_definition(definition) -> void:
@@ -52,6 +55,7 @@ func complete_task(task_id: String) -> bool:
 	var definition = definitions_by_id[task_id]
 	completed_task_ids.append(task_id)
 	task_completed.emit(definition)
+	tasks_changed.emit()
 	return true
 
 
@@ -125,6 +129,7 @@ func import_state(state: Dictionary) -> void:
 		var safe_id := String(task_id)
 		if definitions_by_id.has(safe_id) and not completed_task_ids.has(safe_id):
 			completed_task_ids.append(safe_id)
+	tasks_changed.emit()
 
 
 func _make_hotspot(definition) -> Dictionary:
@@ -137,6 +142,8 @@ func _make_hotspot(definition) -> Dictionary:
 		"label_key": definition.label_key,
 		"text_key": definition.text_key,
 	}
+	if definition.hold_seconds > 0.0:
+		hotspot["task_hold_seconds"] = definition.hold_seconds
 
 	if definition.required_item_id.is_empty():
 		hotspot["actions"] = [

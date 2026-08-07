@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "scene_id": "room_105_door_window",
+  "source_path": "res://resource/images/room_105_door_window.png",
+  "source_sha256": "3319ddf805552057f47b894c043f06e937c937f35c4cff5b5ab27d9b54bd6b6b",
+  "canvas": {
+    "width": 1448,
+    "height": 1086
+  },
+  "layers": [
+    {
+      "slot": "bedding_unmade",
+      "task_id": "room_105_fold_bedding",
+      "visible_states": ["pending"],
+      "path": "res://resource/images/tasks/room_105_door_window/bedding_unmade_v2.png",
+      "sha256": "0d4b06aae369df39c5df9ccec33d50ee1a4bdab2a7fc03599ef0588c38c9b0cc",
+      "z_index": 10,
+      "normalized_hotspot_rect": [0.286, 0.459, 0.714, 0.540],
+      "suppressed_by_event_ids": ["vacant_room_blanket_child"]
+    },
+    {
+      "slot": "trash_cup",
+      "task_id": "room_105_collect_trash_cup",
+      "object_id": "cup",
+      "visible_states": ["pending"],
+      "path": "res://resource/images/tasks/room_105_door_window/trash_cup_v1.png",
+      "sha256": "0fd30d7aed548022033d44c3b81ffef3b9199b3fb32520765d91ec88f64c771a",
+      "z_index": 20,
+      "normalized_hotspot_rect": [0.312, 0.792, 0.062, 0.083]
+    },
+    {
+      "slot": "trash_receipt",
+      "task_id": "room_105_collect_trash_receipt",
+      "object_id": "receipt",
+      "visible_states": ["pending"],
+      "path": "res://resource/images/tasks/room_105_door_window/trash_receipt_v1.png",
+      "sha256": "2ee36ac7300a0cbf3ae1c1f73df5c08f2927c720b5a1c76493364676a4a3f88a",
+      "z_index": 20,
+      "normalized_hotspot_rect": [0.269, 0.851, 0.066, 0.076]
+    },
+    {
+      "slot": "trash_wrapper",
+      "task_id": "room_105_collect_trash_wrapper",
+      "object_id": "wrapper",
+      "visible_states": ["pending"],
+      "path": "res://resource/images/tasks/room_105_door_window/trash_wrapper_v1.png",
+      "sha256": "02a1fb198099cf3ea67f4847dee37790c09e3238f9671d2e618f76a30afa7905",
+      "z_index": 20,
+      "normalized_hotspot_rect": [0.336, 0.855, 0.074, 0.097]
+    }
+  ]
+}

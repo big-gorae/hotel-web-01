@@ -3,11 +3,16 @@ extends Control
 
 const MODE_CIRCULAR := "circular"
 const MODE_HORIZONTAL := "horizontal"
+const ROLE_ANOMALY := "anomaly"
+const ROLE_TASK := "task"
+const ANOMALY_COLOR := Color(0.93, 0.12, 0.10, 0.96)
+const TASK_COLOR := Color(0.18, 0.82, 0.30, 0.96)
 
 var _mode := MODE_CIRCULAR
 var _progress := 0.0
 var _focus_position := Vector2.ZERO
 var _active := false
+var _role := ROLE_ANOMALY
 
 
 func _ready() -> void:
@@ -16,8 +21,9 @@ func _ready() -> void:
 	visible = false
 
 
-func show_hold(mode: String, focus_position := Vector2.ZERO) -> void:
+func show_hold(mode: String, focus_position := Vector2.ZERO, role := ROLE_ANOMALY) -> void:
 	_mode = mode if mode in [MODE_CIRCULAR, MODE_HORIZONTAL] else MODE_CIRCULAR
+	_role = role if role in [ROLE_ANOMALY, ROLE_TASK] else ROLE_ANOMALY
 	_focus_position = focus_position
 	_progress = 0.0
 	_active = true
@@ -71,7 +77,7 @@ func _draw_circular() -> void:
 			-PI * 0.5,
 			-PI * 0.5 + TAU * _progress,
 			maxi(4, int(64.0 * _progress)),
-			Color(0.93, 0.12, 0.10, 0.96),
+			_progress_color(),
 			5.0,
 			true
 		)
@@ -87,5 +93,17 @@ func _draw_horizontal() -> void:
 	)
 	draw_rect(rect.grow(6.0), Color(0.0, 0.0, 0.0, 0.74), true)
 	draw_rect(rect, Color(1.0, 1.0, 1.0, 0.16), true)
-	draw_rect(Rect2(rect.position, Vector2(rect.size.x * _progress, rect.size.y)), Color(0.78, 0.06, 0.05, 0.96), true)
+	draw_rect(Rect2(rect.position, Vector2(rect.size.x * _progress, rect.size.y)), _progress_color(), true)
 	draw_rect(rect, Color(1.0, 1.0, 1.0, 0.34), false, 1.0)
+
+
+func get_role() -> String:
+	return _role
+
+
+func get_progress_color() -> Color:
+	return _progress_color()
+
+
+func _progress_color() -> Color:
+	return TASK_COLOR if _role == ROLE_TASK else ANOMALY_COLOR

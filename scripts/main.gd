@@ -21,6 +21,7 @@ const HotelTaskManagerScript = preload("res://scripts/tasks/task_manager.gd")
 const HotelRuleBookManagerScript = preload("res://scripts/rules/rule_book_manager.gd")
 const HotelInteractionContextScript = preload("res://scripts/interactions/interaction_context.gd")
 const HotelInteractionActionRunnerScript = preload("res://scripts/interactions/interaction_action_runner.gd")
+const HotelHoldInteractionControllerScript = preload("res://scripts/interactions/hold_interaction_controller.gd")
 const HotelShowerCurtainStateScript = preload("res://scripts/interactions/shower_curtain_state.gd")
 const HotelSceneCatalogScript = preload("res://scripts/scenes/hotel_scene_catalog.gd")
 const HotelEyeCloseControllerScript = preload("res://scripts/systems/eye_close_controller.gd")
@@ -33,6 +34,7 @@ const HotelAnomalyContentCatalogScript = preload("res://scripts/horror/anomaly_c
 const HotelAnomalyVisualOverlayScript = preload("res://scripts/ui/anomaly_visual_overlay.gd")
 const HotelAnomalyPresentationLayerScript = preload("res://scripts/ui/anomaly_presentation_layer.gd")
 const HotelHoldProgressOverlayScript = preload("res://scripts/ui/hold_progress_overlay.gd")
+const HotelTaskVisualOverlayScript = preload("res://scripts/ui/task_visual_overlay.gd")
 const HotelJumpscareLabScript = preload("res://scripts/ui/jumpscare_lab.gd")
 const HotelAnomalyAudioControllerScript = preload("res://scripts/horror/anomaly_audio_controller.gd")
 const HotelEquippedItemHazardControllerScript = preload("res://scripts/horror/equipped_item_hazard_controller.gd")
@@ -101,6 +103,8 @@ var task_manager = null
 var horror_event_manager = null
 var rule_book_manager = null
 var interaction_runner = null
+var task_hold_controller = null
+var task_hold_hotspot: Dictionary = {}
 var shower_curtain_state = null
 var eye_close_controller = null
 var closet_pig_man_system = null
@@ -186,6 +190,7 @@ var lobby_overlay: Control
 var room_109_overlay
 var anomaly_visual_overlay
 var anomaly_presentation_layer
+var task_visual_overlay
 var hold_progress_overlay
 var choice_dialogue_overlay
 var anomaly_audio_controller
@@ -216,6 +221,11 @@ func _ready() -> void:
 	shower_curtain_state.setup(flag_store)
 	task_manager = HotelTaskManagerScript.new()
 	task_manager.setup_default_catalog()
+	task_hold_controller = HotelHoldInteractionControllerScript.new()
+	task_hold_controller.hold_started.connect(_on_task_hold_started)
+	task_hold_controller.progress_changed.connect(_on_task_hold_progress_changed)
+	task_hold_controller.hold_cancelled.connect(_on_task_hold_cancelled)
+	task_hold_controller.hold_completed.connect(_on_task_hold_completed)
 	horror_event_manager = HotelHorrorEventManagerScript.new()
 	horror_event_manager.setup_default_catalog(flag_store)
 	horror_event_manager.set_jumpscares_enabled(LETHAL_GIMMICKS_ENABLED)
@@ -244,6 +254,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if game_started and not intro_dialogue_active and not _is_lobby_open() and not _is_menu_open():
+		if task_hold_controller != null:
+			task_hold_controller.advance(delta)
 		horror_event_manager.tick_scene_view(current_scene_id, delta)
 		var content_active: bool = anomaly_content_runtime != null and anomaly_content_runtime.has_active_anomaly()
 		var night_active: bool = night_anomaly_director != null and night_anomaly_director.has_active_anomaly()
@@ -350,6 +362,7 @@ func _should_use_scene_transition(scene_id: String, play_transition_sound: bool)
 
 
 func _apply_scene_change(scene_id: String, play_transition_sound := true) -> void:
+	_cancel_task_hold()
 	if play_transition_sound and current_scene_id != scene_id:
 		_play_transition_footsteps()
 
@@ -382,6 +395,8 @@ func _apply_scene_change(scene_id: String, play_transition_sound := true) -> voi
 		closet_pig_man_system.set_external_anomaly_active(content_active or night_active)
 	if anomaly_visual_overlay != null:
 		anomaly_visual_overlay.set_scene(scene_id)
+	if task_visual_overlay != null:
+		task_visual_overlay.set_scene(scene_id)
 	_build_hotspots(_scene_hotspots(scene_id, scene_data))
 	_build_navigation(scene_data["exits"])
 	_apply_brightness()
@@ -401,6 +416,10 @@ func _build_ui() -> void:
 	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	photo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	gameplay_layer.add_child(photo)
+
+	task_visual_overlay = HotelTaskVisualOverlayScript.new()
+	gameplay_layer.add_child(task_visual_overlay)
+	task_visual_overlay.setup(task_manager)
 
 	anomaly_visual_overlay = HotelAnomalyVisualOverlayScript.new()
 	gameplay_layer.add_child(anomaly_visual_overlay)
@@ -1137,7 +1156,11 @@ func _build_hotspots(hotspots: Array) -> void:
 		button.add_theme_font_size_override("font_size", 15)
 		button.pressed.connect(_on_hotspot_pressed.bind(hotspot))
 		var hotspot_id := String(hotspot.get("id", ""))
-		if hotspot_id == "laundry_second_washer":
+		if float(hotspot.get("task_hold_seconds", 0.0)) > 0.0:
+			button.button_down.connect(_on_task_hotspot_button_down.bind(hotspot))
+			button.button_up.connect(_on_task_hotspot_button_up)
+			button.mouse_exited.connect(_on_task_hotspot_button_up)
+		elif hotspot_id == "laundry_second_washer":
 			button.mouse_entered.connect(_on_laundry_washer_discovered)
 			button.button_down.connect(_on_laundry_washer_button_down)
 			button.button_up.connect(_on_laundry_washer_button_up)
@@ -1214,6 +1237,8 @@ func _on_filter_preset_selected(preset_name: String) -> void:
 func _on_hotspot_pressed(hotspot: Dictionary) -> void:
 	if intro_dialogue_active:
 		return
+	if float(hotspot.get("task_hold_seconds", 0.0)) > 0.0:
+		return
 	var hotspot_id := String(hotspot.get("id", ""))
 	if _is_content_anomaly_hotspot_id(hotspot_id):
 		if anomaly_content_runtime != null:
@@ -1249,6 +1274,28 @@ func _on_hotspot_pressed(hotspot: Dictionary) -> void:
 		_save_current_day()
 		return
 	_apply_interaction_result(interaction_runner.execute_hotspot(hotspot, _make_interaction_context(hotspot)))
+
+
+func _on_task_hotspot_button_down(hotspot: Dictionary) -> void:
+	if task_hold_controller == null or intro_dialogue_active or _is_lobby_open() or _is_menu_open():
+		return
+	var task_id := String(hotspot.get("task_id", ""))
+	var hold_seconds := float(hotspot.get("task_hold_seconds", 0.0))
+	if task_id.is_empty() or hold_seconds <= 0.0 or task_manager.get_task_state(task_id) == "done":
+		return
+	task_hold_hotspot = hotspot.duplicate(true)
+	task_hold_controller.begin(task_id, hold_seconds)
+
+
+func _on_task_hotspot_button_up() -> void:
+	_cancel_task_hold()
+
+
+func _cancel_task_hold() -> void:
+	if task_hold_controller != null and task_hold_controller.is_active():
+		task_hold_controller.cancel()
+	else:
+		task_hold_hotspot.clear()
 
 
 func _use_equipped_item() -> void:
@@ -1739,6 +1786,12 @@ func _sync_anomaly_visual_overlay() -> void:
 		presentation_state = night_anomaly_director.get_presentation_state()
 	anomaly_visual_overlay.apply_presentation_state(presentation_state)
 	anomaly_visual_overlay.set_scene(current_scene_id)
+	if task_visual_overlay != null:
+		var event_scene_id := String(presentation_state.get("scene_id", ""))
+		var local_event_id := String(presentation_state.get("event_id", ""))
+		if not event_scene_id.is_empty() and event_scene_id != current_scene_id:
+			local_event_id = ""
+		task_visual_overlay.set_active_event_id(local_event_id)
 	var artifact_rendered := false
 	if anomaly_presentation_layer != null:
 		anomaly_presentation_layer.set_scene(current_scene_id)
@@ -1838,7 +1891,8 @@ func _on_anomaly_event_started(event_id: String) -> void:
 func _on_anomaly_hold_started(mode: String, focus_position: Vector2) -> void:
 	if hold_progress_overlay == null:
 		return
-	hold_progress_overlay.show_hold(mode, focus_position)
+	_cancel_task_hold()
+	hold_progress_overlay.show_hold(mode, focus_position, HotelHoldProgressOverlayScript.ROLE_ANOMALY)
 	hold_progress_overlay.move_to_front()
 
 
@@ -1850,6 +1904,41 @@ func _on_anomaly_hold_progress_changed(progress: float) -> void:
 func _on_anomaly_hold_ended() -> void:
 	if hold_progress_overlay != null:
 		hold_progress_overlay.hide_hold()
+
+
+func _on_task_hold_started(_task_id: String, _duration_seconds: float) -> void:
+	if hold_progress_overlay == null:
+		return
+	hold_progress_overlay.show_hold(
+		HotelHoldProgressOverlayScript.MODE_CIRCULAR,
+		get_viewport().get_mouse_position(),
+		HotelHoldProgressOverlayScript.ROLE_TASK,
+	)
+	hold_progress_overlay.move_to_front()
+
+
+func _on_task_hold_progress_changed(_task_id: String, progress: float) -> void:
+	if hold_progress_overlay != null:
+		hold_progress_overlay.set_progress(progress)
+
+
+func _on_task_hold_cancelled(_task_id: String) -> void:
+	task_hold_hotspot.clear()
+	if hold_progress_overlay != null:
+		hold_progress_overlay.hide_hold()
+
+
+func _on_task_hold_completed(task_id: String) -> void:
+	var hotspot := task_hold_hotspot.duplicate(true)
+	task_hold_hotspot.clear()
+	if hold_progress_overlay != null:
+		hold_progress_overlay.hide_hold()
+	if hotspot.is_empty() or String(hotspot.get("task_id", "")) != task_id:
+		return
+	_apply_interaction_result(
+		interaction_runner.execute_hotspot(hotspot, _make_interaction_context(hotspot)),
+		false,
+	)
 
 
 func _on_equipped_hazard_started(_item_id: String) -> void:
@@ -2590,6 +2679,8 @@ func _update_layout() -> void:
 		anomaly_visual_overlay.set_photo_rect(_get_photo_draw_rect())
 	if anomaly_presentation_layer != null and current_texture != null:
 		anomaly_presentation_layer.set_photo_rect(_get_photo_draw_rect())
+	if task_visual_overlay != null and current_texture != null:
+		task_visual_overlay.set_photo_rect(_get_photo_draw_rect())
 	if hold_progress_overlay != null and hold_progress_overlay.is_showing_hold():
 		hold_progress_overlay.set_focus_position(get_viewport().get_mouse_position())
 	_position_title_panel()
